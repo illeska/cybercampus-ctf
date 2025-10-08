@@ -1,0 +1,22 @@
+# --- ENVIRONNEMENTS VIRTUELS ---
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+
+# --- BASE DE DONNÉES LOCALE ---
+*.sqlite3
+
+# --- FICHIERS SENSIBLES ---
+.env
+*.key
+*.pem
+
+# --- OUTILS / ÉDITEURS ---
+.vscode/
+.idea/
+
+# --- SYSTÈME ---
+.DS_Store
+Thumbs.db
