@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Accueil - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  <h2>Bienvenue sur CyberCampus CTF 👾</h2>
+  <p>Participez, apprenez et progressez dans la cybersécurité.</p>
+  {% if not current_user.is_authenticated %}
+    <div class="cta">
+      <a href="{{ url_for('auth.register') }}" class="btn primary-btn">Créer un compte</a>
+      <a href="{{ url_for('auth.login') }}" class="btn secondary-btn">Se connecter</a>
+    </div>
+  {% else %}
+    <a href="{{ url_for('dashboard') }}" class="btn primary-btn">Accéder au tableau de bord</a>
+  {% endif %}
+</section>
+{% endblock %}

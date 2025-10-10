@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  <h2>Bienvenue {{ user.pseudo }} 👋</h2>
+  <p>Rôle : <strong>{{ user.role }}</strong></p>
+
+  <div class="stats">
+    <div class="card glow-box">
+      <h3>Score</h3>
+      <p>{{ user.score if user.score else 0 }}</p>
+    </div>
+    <div class="card glow-box">
+      <h3>Date d’inscription</h3>
+      <p>{{ user.created_at.strftime('%d/%m/%Y') }}</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

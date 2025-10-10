@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CyberCampus CTF{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" class="logo" />
+    <h1 class="title">
+      <a href="{{ url_for('home') }}">CyberCampus CTF</a>
+    </h1>
+  </div>
+  <div class="nav-right">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}" class="btn nav-btn">Tableau de bord</a>
+      <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn nav-btn">Se connecter</a>
+      <a href="{{ url_for('auth.register') }}" class="btn nav-btn register">S’inscrire</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container top">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+
+  <footer>
+    <p>© 2025 CyberCampus CTF - Université Catholique de Lille</p>
+  </footer>
+</body>
+</html>

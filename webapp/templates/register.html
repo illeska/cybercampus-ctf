@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Inscription - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="form-wrapper">
+  <h2>Créer un compte</h2>
+  <form method="POST" class="glow-box">
+    {{ form.hidden_tag() }}
+    <label>{{ form.pseudo.label }}</label>
+    {{ form.pseudo(class="input-field") }}
+    {% for e in form.pseudo.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    <label>{{ form.email.label }}</label>
+    {{ form.email(class="input-field") }}
+    {% for e in form.email.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    <label>{{ form.password.label }}</label>
+    {{ form.password(class="input-field") }}
+    {% for e in form.password.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    <label>{{ form.confirm_password.label }}</label>
+    {{ form.confirm_password(class="input-field") }}
+    {% for e in form.confirm_password.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    {{ form.submit(class="btn primary-btn") }}
+  </form>
+</section>
+{% endblock %}

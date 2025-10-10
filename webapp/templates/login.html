@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Connexion - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="form-wrapper">
+  <h2>Connexion</h2>
+  <form method="POST" class="glow-box">
+    {{ form.hidden_tag() }}
+    <label>{{ form.email.label }}</label>
+    {{ form.email(class="input-field") }}
+    {% for e in form.email.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    <label>{{ form.password.label }}</label>
+    {{ form.password(class="input-field") }}
+    {% for e in form.password.errors %}<p class="error">{{ e }}</p>{% endfor %}
+
+    {{ form.submit(class="btn primary-btn") }}
+  </form>
+</section>
+{% endblock %}
