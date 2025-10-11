@@ -12,21 +12,30 @@
 <body>
 <nav class="navbar">
   <div class="nav-left">
-    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" class="logo" />
-    <h1 class="title">
-      <a href="{{ url_for('home') }}">CyberCampus CTF</a>
-    </h1>
+    <a href="{{ url_for('home') }}" class="brand-link">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="CyberCampus Logo" class="logo" />
+      <h1 class="title">CyberCampus CTF</h1>
+    </a>
   </div>
+
+  <div class="nav-center">
+    <a href="#" class="nav-cat">Scoreboard</a>
+    <a href="#" class="nav-cat">Classement</a>
+    <a href="#" class="nav-cat">Apprendre</a>
+    <a href="#" class="nav-cat">S'exercer</a>
+  </div>
+
   <div class="nav-right">
     {% if current_user.is_authenticated %}
-      <a href="{{ url_for('dashboard') }}" class="btn nav-btn">Tableau de bord</a>
+      <a href="{{ url_for('dashboard') }}" class="btn nav-btn dashboard">Tableau de bord</a>
       <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
     {% else %}
-      <a href="{{ url_for('auth.login') }}" class="btn nav-btn">Se connecter</a>
-      <a href="{{ url_for('auth.register') }}" class="btn nav-btn register">S’inscrire</a>
+      <a href="{{ url_for('auth.login') }}" class="btn nav-btn orange">Se connecter</a>
+      <a href="{{ url_for('auth.register') }}" class="btn nav-btn cyan">S’inscrire</a>
     {% endif %}
   </div>
 </nav>
+
 
 <main>
   {% with messages = get_flashed_messages(with_categories=true) %}

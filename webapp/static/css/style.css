@@ -1,6 +1,30 @@
 /* ------------------------------
-   CyberCampus CTF - Theme UI
+   CyberCampus CTF - Theme UI 2.2
+   Version finale (Neon Aura + Header unifié)
 ------------------------------ */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600;700&family=Russo+One&family=Poppins:wght@400;500;600&display=swap');
+
+/* --------------------------------------------------------
+   Typographie rédactionnelle officielle CyberCampus CTF
+   - Police principale des textes longs : "Rubik"
+   - Style : moderne, géométrique, lisible, professionnelle
+   - Usage : descriptions, paragraphes, consignes, textes informatifs
+   - Exemple :
+     "Participez, apprenez et progressez dans la cybersécurité."
+   -------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap');
+
+/* Application de la police Rubik aux paragraphes */
+p, li, span, input, textarea {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  line-height: 1.6;
+}
+
+/* --- GLOBAL --- */
 body {
   background-color: #0b0f16;
   color: #e6edf3;
@@ -9,36 +33,155 @@ body {
   opacity: 0;
   animation: fadeIn 0.6s ease forwards;
 }
-@keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-
-/* Navbar */
-.navbar {
-  background-color:#0d1522;
-  border-bottom:2px solid #00f5c0;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:15px 40px;position:sticky;top:0;z-index:100;
-  box-shadow:0 0 10px rgba(0,245,192,0.15);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
 }
-.nav-left{display:flex;align-items:center;gap:10px;}
-.logo{width:40px;height:40px;}
-.title a{font-family:'Orbitron',sans-serif;color:#00f5c0;text-decoration:none;letter-spacing:1px;}
-.nav-right a{margin-left:20px;color:#9ca3af;text-decoration:none;transition:.3s;}
-.nav-right a:hover{color:#00f5c0;}
 
-/* ---- Navbar title glow ---- */
-.title a {
-  font-family: 'Orbitron', sans-serif;
-  color: #00f5c0;
+/* ========================================================
+   NAVBAR UNIFIÉE : logo + catégories + boutons
+======================================================== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  /* Couleur de base + barres diagonales */
+  background-color: #0d1522;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(0,245,192,0.08) 0px,
+      rgba(0,245,192,0.08) 2px,
+      transparent 2px,
+      transparent 16px
+    );
+  background-size: 28px 28px;
+
+  border-bottom: 2px solid #00f5c0;
+  box-shadow: 0 0 10px rgba(0,245,192,0.15);
+}
+
+/* Bloc logo + titre cliquable */
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
+  position: relative;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.brand-link:hover {
+  background: rgba(0, 245, 192, 0.05);
+}
+
+/* Logo */
+.logo {
+  width: 42px;
+  height: 42px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.brand-link:hover .logo {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 6px #00f5c0);
+}
+
+/* Titre principal */
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
   letter-spacing: 1px;
+  color: #00f5c0;
+  margin: 0;
+  text-shadow:
+    0 0 6px rgba(0,245,192,0.6),
+    0 0 12px rgba(0,245,192,0.3);
   transition: text-shadow 0.3s ease;
 }
-
-.title a:hover {
-  text-shadow: 0 0 10px rgba(0, 245, 192, 0.8);
+.brand-link:hover .title {
+  text-shadow:
+    0 0 10px #00f5c0,
+    0 0 20px #00f5c0,
+    0 0 35px #00e5ff,
+    0 0 45px #0088ff;
 }
 
-/* ---- Nav buttons ---- */
+/* Centre : catégories */
+.nav-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  flex: 1;
+}
+
+.nav-cat {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-cat:hover {
+  color: #00f5c0;
+  text-shadow: 0 0 8px rgba(0,245,192,0.9), 0 0 20px rgba(0,245,192,0.6);
+  background: linear-gradient(120deg, rgba(0,245,192,0.15), rgba(0,245,192,0.05));
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.nav-cat::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.nav-cat:hover::after {
+  width: 100%;
+}
+
+/* --------------------------------------------------------
+   Séparateurs verticaux néon entre les catégories
+-------------------------------------------------------- */
+
+
+.nav-cat:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  right: -30px; /* Espace entre texte et trait */
+  top: 50%;
+  width: 5px;
+  height: 80px;
+  background: linear-gradient(180deg, #0078ff, #26ffe6);
+  transform: translateY(-50%) rotate(20deg);
+  opacity: 0.5;
+  box-shadow: 0 0 5px rgba(4, 48, 38, 0.3);
+}
+
+/* Droite : boutons */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Boutons */
 .nav-btn {
   background: linear-gradient(90deg, #00f5c0, #0088ff);
   border: none;
@@ -47,66 +190,57 @@ body {
   color: white !important;
   font-weight: 600;
   text-decoration: none;
-  margin-left: 10px;
   transition: all 0.3s ease;
 }
 
 .nav-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 245, 192, 0.4);
+  box-shadow: 0 0 15px rgba(0,245,192,0.4);
+}
+
+.nav-btn.dashboard {
+  background: linear-gradient(90deg, #6a00ff, #b043ff);
+}
+
+.nav-btn.dashboard:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(176, 67, 255, 0.45);
+}
+
+.nav-btn.orange {
+  background: linear-gradient(90deg, #ff8a00, #ff3d00);
+}
+
+.nav-btn.orange:hover {
+  box-shadow: 0 0 15px rgba(255,138,0,0.5);
+}
+.nav-btn.cyan {
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
 }
 
 
-
-/* Containers */
-.container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 80px);animation:slideUp .8s ease;}
-@keyframes slideUp{from{transform:translateY(15px);opacity:0}to{transform:none;opacity:1}}
-
-/* Form */
-.form-wrapper {
+/* --- Containers --- */
+.container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  min-height: calc(100vh - 100px);
-  margin-top: 80px; /* plus proche du header */
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  animation: slideUp .8s ease;
 }
+@keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-form{background:#111827;padding:30px;border-radius:10px;width:360px;box-shadow:0 0 20px rgba(0,245,192,.2);position:relative;}
-label{display:block;margin-top:10px;color:#a1a1aa;text-align:left;}
-.input-field{width:100%;padding:10px;margin-top:5px;border:none;border-radius:6px;background:#0b0f16;color:#e6edf3;}
-.input-field:focus{outline:2px solid #00f5c0;box-shadow:0 0 8px #00f5c0;}
-
-/* Buttons */
-.btn{display:inline-block;padding:10px 20px;border:none;border-radius:8px;color:white;background:linear-gradient(90deg,#00f5c0,#0088ff);cursor:pointer;transition:.3s;position:relative;overflow:hidden;}
-.btn:hover{transform:scale(1.05);box-shadow:0 0 15px rgba(0,245,192,.4);}
-.primary-btn{width:100%;}
-.secondary-btn{background:linear-gradient(90deg,#ff8a00,#ff3d00);}
-.logout{color:#f87171;}
-.register{color:#10b981;}
-
-
-/* Glow Box */
-.glow-box{box-shadow:0 0 10px rgba(0,245,192,0.25);transition:box-shadow .3s;}
-.glow-box:hover{box-shadow:0 0 20px rgba(0,245,192,0.45);}
-
-
-/* ---- Page wrapper ---- */
+/* --- PAGE D’ACCUEIL --- */
 .page-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   min-height: calc(100vh - 100px);
-  margin-top: 80px; /* même distance que la page de connexion */
+  margin-top: 80px;
   animation: fadeUp 0.8s ease;
 }
-
-.page-wrapper h2 {
-  color: #00f5c0;
-  margin-bottom: 10px;
-  text-align: center;
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 .page-wrapper p {
   text-align: center;
@@ -115,28 +249,177 @@ label{display:block;margin-top:10px;color:#a1a1aa;text-align:left;}
   margin-bottom: 25px;
 }
 
-.cta {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
+/* --- TITRE ACCUEIL : Aura néonisée réaliste --- */
+.animated-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.6rem;
+  color: #00f5c0;
+  text-align: center;
+  margin-top: -10px;
+  position: relative;
+  display: inline-block;
+  letter-spacing: 1px;
+  text-shadow:
+    0 0 2px #00f5c0,
+    0 0 6px #00e5ff,
+    0 0 10px #0088ff;
+  animation: auraPulse 7s ease-in-out infinite;
+}
+@keyframes auraPulse {
+  0%, 100% {
+    text-shadow:
+      0 0 2px rgba(0,245,192,0.6),
+      0 0 6px rgba(0,245,192,0.3),
+      0 0 10px rgba(0,138,255,0.25);
+  }
+  50% {
+    text-shadow:
+      0 0 3px rgba(0,245,192,0.7),
+      0 0 8px rgba(0,245,192,0.4),
+      0 0 14px rgba(0,138,255,0.3);
+  }
 }
 
+/* Fumée diffuse plus proche et douce */
+.animated-title::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(circle, rgba(0,245,192,0.08), transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+  animation: smokeMove 10s ease-in-out infinite;
+}
+@keyframes smokeMove {
+  0%, 100% { transform: translate(0,0) scale(1); opacity: 0.75; }
+  50% { transform: translate(4px,-3px) scale(1.03); opacity: 0.6; }
+}
 
-/* Dashboard */
-.stats{display:flex;justify-content:center;flex-wrap:wrap;gap:20px;margin-top:30px;}
-.card{background:#1e293b;padding:20px;border-radius:10px;width:180px;text-align:center;}
+/* --- FORMULAIRES LOGIN / REGISTER --- */
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 100px);
+  margin-top: 80px;
+}
+form {
+  background: #111827;
+  padding: 30px;
+  border-radius: 10px;
+  width: 360px;
+  box-shadow: 0 0 20px rgba(0,245,192,.2);
+  position: relative;
+}
+label {
+  display: block;
+  margin-top: 10px;
+  color: #a1a1aa;
+  text-align: left;
+}
 
-/* Flash messages */
+/* --- Champs modernes --- */
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 6px;
+  background: #0b0f16;
+  color: #e6edf3;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+}
+.input-field:focus {
+  outline: 2px solid #00f5c0;
+  box-shadow: 0 0 8px #00f5c0;
+}
+
+/* --- Titres connexion/inscription --- */
+.form-wrapper h2 {
+  font-family: 'Russo One', sans-serif;
+  color: #00f5c0;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 25px;
+  position: relative;
+  text-shadow: 0 0 10px rgba(0,245,192,0.7);
+}
+.form-wrapper h2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
+  margin: 10px auto 0;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0,245,192,0.5);
+}
+
+/* --- Boutons formulaires modernes + centrés --- */
+form .btn.primary-btn {
+  display: block;
+  margin: 25px auto 0 auto;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  padding: 10px 30px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
+  box-shadow: 0 0 10px rgba(0,245,192,0.25);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+form .btn.primary-btn:hover {
+  transform: scale(1.07);
+  box-shadow: 0 0 20px rgba(0,245,192,0.5);
+}
+
+/* --- Glow Box --- */
+.glow-box {
+  box-shadow: 0 0 10px rgba(0,245,192,0.25);
+  transition: box-shadow .3s;
+}
+.glow-box:hover {
+  box-shadow: 0 0 20px rgba(0,245,192,0.45);
+}
+
+/* --- DASHBOARD --- */
+.page-wrapper h2 {
+  font-family: 'Russo One', sans-serif;
+  font-size: 2rem;
+  color: #00f5c0;
+  text-shadow: 0 0 10px #00f5c0;
+}
+.stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
+}
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 10px;
+  width: 180px;
+  text-align: center;
+}
+
+/* --- FLASH MESSAGES --- */
 .flash-container.top {
   position: fixed;
-  top: 70px; /* juste sous la navbar */
+  top: 70px;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   z-index: 200;
 }
-
 .flash {
   padding: 12px 20px;
   border-radius: 6px;
@@ -150,7 +433,19 @@ label{display:block;margin-top:10px;color:#a1a1aa;text-align:left;}
 .flash.success { background: #10b981; }
 .flash.danger { background: #ef4444; }
 .flash.info { background: #3b82f6; }
-@keyframes flashFade{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes flashFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: none; }
+}
 
-/* Footer */
-footer{text-align:center;color:#6b7280;font-size:.9rem;border-top:1px solid #1e293b;padding:15px;margin-top:50px;}
+
+
+/* --- FOOTER --- */
+footer {
+  text-align: center;
+  color: #6b7280;
+  font-size: .9rem;
+  border-top: 1px solid #1e293b;
+  padding: 15px;
+  margin-top: 50px;
+}
