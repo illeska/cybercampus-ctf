@@ -14,10 +14,10 @@ class Config:
     Elle centralise tous les paramètres du projet.
     """
     # Clé secrète pour sécuriser les sessions et formulaires
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev_key_change_me")
 
     # URL de connexion à la base de données
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///cybercampus.db")
 
     # Désactivation du suivi des modifications (optimisation)
     SQLALCHEMY_TRACK_MODIFICATIONS = False

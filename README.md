@@ -1,0 +1,1 @@
+### README Disponible dès le 5/11/25, pour présenter le projet et ses fonctionnalités
