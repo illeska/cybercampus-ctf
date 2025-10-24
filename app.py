@@ -2,7 +2,7 @@
 # CyberCampus CTF - Application principale
 # ------------------------------
 
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for, redirect
 from flask_login import login_required, current_user
 from core import init_app, db
 from core.models import User
@@ -36,8 +36,11 @@ with app.app_context():
 # ------------------------------
 
 @app.route('/')
+def root():
+    return redirect(url_for('home'))
+
+@app.route('/home')
 def home():
-    """Page d'accueil du site"""
     return render_template("index.html")
 
 @app.route('/dashboard')

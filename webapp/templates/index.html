@@ -5,12 +5,50 @@
 <section class="page-wrapper">
   <h2 class="animated-title">Bienvenue sur CyberCampus CTF 👾</h2>
   <p>Participez, apprenez et progressez dans la cybersécurité.</p>
+
   {% if not current_user.is_authenticated %}
     <div class="cta">
-
+      <a href="{{ url_for('auth_bp.login') }}" class="btn primary-btn">Se connecter</a>
+      <a href="{{ url_for('auth_bp.register') }}" class="btn secondary-btn">Créer un compte</a>
     </div>
-  {% else %}
-    <a href="{{ url_for('dashboard') }}" class="btn primary-btn">Accéder au tableau de bord</a>
   {% endif %}
+
+  <!-- ========================== -->
+  <!-- Blocs de contenu d'accueil -->
+  <!-- ========================== -->
+  <div class="home-containers">
+    <div class="home-block">
+      <h3>Derniers challenges</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer facilisis, lorem vitae ullamcorper tempor, elit sapien fringilla nunc, vel luctus nulla justo at velit.</p>
+    </div>
+
+    <div class="home-block">
+      <h3>Classement en direct</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum in eros sit amet justo aliquam congue. Praesent in erat quis magna volutpat pharetra.</p>
+    </div>
+
+    <div class="home-block">
+      <h3>Actualités Cyber</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac ante ac justo finibus fringilla sed nec nulla.</p>
+    </div>
+  </div>
 </section>
+
+<!-- Nouvelle section rectangulaire séparée -->
+<section class="section-large">
+  <h3>À propos du CyberCampus CTF</h3>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+    Donec tristique, augue et faucibus porttitor, ipsum libero cursus tortor, 
+    vitae euismod lorem lectus nec metus. Vivamus quis dolor sed lectus feugiat
+    tincidunt non vel lorem. Curabitur vel justo sed sem faucibus placerat.
+  </p>
+  <p>
+    Proin aliquet turpis nec nunc lacinia, et volutpat neque porttitor. 
+    Integer elementum, purus nec tempor varius, justo turpis pretium justo,
+    ut convallis metus est a eros. Suspendisse sodales elit et dui ultricies viverra.
+  </p>
+</section>
+
 {% endblock %}
+

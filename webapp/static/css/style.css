@@ -236,10 +236,11 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: calc(100vh - 100px);
   margin-top: 80px;
+  padding-bottom: 60px; /* pour que ça respire en bas */
   animation: fadeUp 0.8s ease;
 }
+
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 .page-wrapper p {
@@ -388,6 +389,98 @@ form .btn.primary-btn:hover {
   box-shadow: 0 0 20px rgba(0,245,192,0.45);
 }
 
+
+.home-containers {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 50px;
+  z-index: 1;
+}
+
+/* --- Grille animée subtile en fond --- */
+.home-containers::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  left: 0;
+  right: 0;
+  bottom: -50px;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridScroll 30s linear infinite;
+  z-index: -1;
+  opacity: 0.3;
+}
+@keyframes gridScroll {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 40px 40px, 40px 40px; }
+}
+
+/* --- Blocs stylés néon --- */
+.home-block {
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(0, 245, 192, 0.25);
+  border-radius: 14px;
+  padding: 25px;
+  width: 320px;
+  color: #d8fef0;
+  text-align: left;
+  box-shadow: 0 0 12px rgba(0, 245, 192, 0.08);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.home-block h3 {
+  color: #00f5c0;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(0, 245, 192, 0.5);
+}
+
+.home-block:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 0 25px rgba(0, 245, 192, 0.25);
+  border-color: rgba(0, 245, 192, 0.45);
+}
+
+
+.section-large {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 245, 192, 0.25);
+  border-radius: 14px;
+  width: 90%;
+  max-width: 1100px;
+  margin: 40px auto 30px auto;  /* ← rapproché des 3 blocs */
+  padding: 40px 45px;
+  color: #d8fef0;
+  box-shadow: 0 0 15px rgba(0, 245, 192, 0.08);
+  text-align: left;
+  transition: box-shadow 0.3s ease;
+}
+
+.section-large:hover {
+  box-shadow: 0 0 25px rgba(0, 245, 192, 0.18);
+}
+
+.section-large h3 {
+  color: #00f5c0;
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.4rem;
+  margin-bottom: 18px;
+  text-shadow: 0 0 6px rgba(0,245,192,0.4);
+}
+
+.section-large p {
+  color: #cbd5e1;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
 /* --- DASHBOARD --- */
 .page-wrapper h2 {
   font-family: 'Russo One', sans-serif;
