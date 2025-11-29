@@ -18,3 +18,7 @@ email-validator==2.2.0
 gunicorn==22.0.0
 psycopg2-binary==2.9.9
 Werkzeug==3.1.0
+
+
+
+

@@ -24,3 +24,11 @@ pgdata/
 # --- SYSTÈME ---
 .DS_Store
 Thumbs.db
+
+# --- DOCS/DOSSIER ---
+*.pdf
+*.docx
+*.xlsx
+.gantt/
+
+

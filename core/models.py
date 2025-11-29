@@ -28,6 +28,11 @@ class User(UserMixin, db.Model):
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def score(self) -> int:
+        """Retourne le score total de l'utilisateur"""
+        return self.getScore()
+
     def getScore(self) -> int:
         if self.scoreboard:
             return self.scoreboard.points_total
@@ -36,6 +41,42 @@ class User(UserMixin, db.Model):
             if s.challenge and s.challenge.points:
                 total += s.challenge.points
         return total
+
+    def get_solved_challenges(self):
+        """Retourne les challenges résolus (flag correct)"""
+        return Challenge.query.join(Submission).filter(
+            Submission.user_id == self.id,
+            Submission.correct == True
+        ).distinct().all()
+
+    def get_in_progress_challenges(self):
+        """Retourne les challenges en cours (tentés mais pas résolus)"""
+        # Challenges avec au moins une tentative incorrecte
+        attempted = db.session.query(Challenge).join(Submission).filter(
+            Submission.user_id == self.id
+        ).distinct().all()
+        
+        # Enlève ceux qui sont déjà résolus
+        solved_ids = [c.id for c in self.get_solved_challenges()]
+        in_progress = [c for c in attempted if c.id not in solved_ids]
+        
+        return in_progress
+
+    def get_not_started_challenges(self):
+        """Retourne les challenges non commencés"""
+        # Tous les challenges actifs
+        all_active = Challenge.query.filter_by(actif=True).all()
+        
+        # Challenges déjà tentés
+        attempted_ids = db.session.query(Submission.challenge_id).filter(
+            Submission.user_id == self.id
+        ).distinct().all()
+        attempted_ids = [c[0] for c in attempted_ids]
+        
+        # Filtre les non tentés
+        not_started = [c for c in all_active if c.id not in attempted_ids]
+        
+        return not_started
 
 
 class Challenge(db.Model):
@@ -88,18 +129,20 @@ class Submission(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def verifier(self) -> bool:
-        if not self.challenge or not self.challenge.flag:
+        # Charge explicitement le challenge depuis la base
+        challenge = Challenge.query.get(self.challenge_id)
+        
+        if not challenge or not challenge.flag:
             return False
-        return self.challenge.flag.verifierFlag(self.flag_soumis)
+        
+        return challenge.flag.verifierFlag(self.flag_soumis)
 
     def enregistrer(self) -> bool:
         self.correct = self.verifier()
-        self.timestamp = datetime.utcnow()  
         db.session.add(self)
         db.session.commit()
 
         if self.correct:
-            from core.models import Scoreboard, Submission 
             sb = Scoreboard.query.filter_by(user_id=self.user_id).first()
             if not sb:
                 sb = Scoreboard(user_id=self.user_id, points_total=0)
@@ -111,8 +154,10 @@ class Submission(db.Model):
             ).count()
 
             if already <= 1:
-                sb.points_total = (sb.points_total or 0) + (self.challenge.points or 0)
-                db.session.commit()
+                challenge = Challenge.query.get(self.challenge_id)
+                if challenge:
+                    sb.points_total = (sb.points_total or 0) + (challenge.points or 0)
+                    db.session.commit()
 
         return self.correct
 

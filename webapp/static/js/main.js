@@ -1,55 +1,115 @@
-// Effet ripple sur clic
-document.addEventListener("click", e => {
-  if (!e.target.classList.contains("btn")) return;
-  const btn = e.target;
-  const ripple = document.createElement("span");
-  ripple.className = "ripple";
-  ripple.style.left = `${e.offsetX}px`;
-  ripple.style.top = `${e.offsetY}px`;
-  btn.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 600);
+/* --------------------------------------------------------
+   CyberCampus CTF - Clean Script
+-------------------------------------------------------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  initAnimations();
+  initRipple();
+  initFlashMessages();
 });
 
-// Glow + fade global
-window.addEventListener("load", () => {
-  document.body.style.opacity = "1";
-});
-
-// Disparition automatique des flashs
-setTimeout(() => {
-  document.querySelectorAll(".flash").forEach(f => {
-    f.style.transition = "opacity 0.8s";
-    f.style.opacity = "0";
-    setTimeout(() => f.remove(), 800);
+// 1. ANIMATION D'APPARITION (Simp)
+function initAnimations() {
+  const elements = document.querySelectorAll(
+    '.challenge-card, .home-block, form, .card, .section-large, .animated-title, .challenge-info-block, .action-card'
+  );
+  
+  elements.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(15px)';
+    el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+    
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, index * 50 + 50);
   });
-}, 3000);
+}
 
-// Style dynamique pour effet ripple
+// 2. EFFET RIPPLE
+function initRipple() {
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".btn, .nav-btn, .challenge-btn, .primary-btn, .submit-btn, .env-btn, .back-btn-modern");
+    if (!btn) return;
+
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+}
+
+// 3. NOTIFICATIONS FLASH
+function initFlashMessages() {
+  const errors = document.querySelectorAll(".error");
+  const container = document.querySelector(".flash-container") || createFlashContainer();
+
+  errors.forEach(err => {
+    if (err.textContent.trim()) {
+      showFlash(err.textContent, "danger");
+      err.style.display = 'none'; 
+    }
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll(".flash").forEach(f => dismissFlash(f));
+  }, 4000);
+}
+
+function createFlashContainer() {
+  const div = document.createElement("div");
+  div.className = "flash-container top";
+  document.body.prepend(div);
+  return div;
+}
+
+function showFlash(msg, type = "info") {
+  const container = document.querySelector(".flash-container") || createFlashContainer();
+  const notif = document.createElement("div");
+  notif.className = `flash ${type}`;
+  notif.textContent = msg;
+  notif.style.opacity = "0";
+  notif.style.transform = "translateY(-10px)";
+  notif.style.transition = "all 0.3s ease";
+  
+  container.appendChild(notif);
+  
+  requestAnimationFrame(() => {
+    notif.style.opacity = "1";
+    notif.style.transform = "translateY(0)";
+  });
+
+  setTimeout(() => dismissFlash(notif), 4000);
+}
+
+function dismissFlash(el) {
+  el.style.opacity = "0";
+  el.style.transform = "translateY(-10px)";
+  setTimeout(() => el.remove(), 300);
+}
+
+// Styles dynamiques Ripple
 const style = document.createElement("style");
 style.textContent = `
   .ripple {
-    position:absolute;
-    border-radius:50%;
-    background:rgba(255,255,255,0.4);
-    width:100px;height:100px;
-    transform:scale(0);
-    animation:rippleEffect 0.6s linear;
-    pointer-events:none;
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: scale(0); animation: rippleAnim 0.6s linear;
+    pointer-events: none;
   }
-  @keyframes rippleEffect {to{transform:scale(4);opacity:0;}}
+  @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+  .btn, .nav-btn, .challenge-btn, .primary-btn, .back-btn-modern {
+    position: relative; overflow: hidden;
+  }
 `;
 document.head.appendChild(style);
-
-// --- Convertir les erreurs de formulaire en notifications flash ---
-document.addEventListener("DOMContentLoaded", () => {
-  const errors = document.querySelectorAll(".error");
-  errors.forEach(err => {
-    if (err.textContent.trim() !== "") {
-      const notif = document.createElement("div");
-      notif.className = "flash danger";
-      notif.textContent = err.textContent;
-      document.querySelector(".flash-container")?.appendChild(notif);
-    }
-  });
-});
-

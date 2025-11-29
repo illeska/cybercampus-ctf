@@ -8,8 +8,8 @@
 
   {% if not current_user.is_authenticated %}
     <div class="cta">
-      <a href="{{ url_for('auth_bp.login') }}" class="btn primary-btn">Se connecter</a>
-      <a href="{{ url_for('auth_bp.register') }}" class="btn secondary-btn">Créer un compte</a>
+      <a href="{{ url_for('auth.login') }}" class="btn primary-btn">Se connecter</a>
+      <a href="{{ url_for('auth.register') }}" class="btn secondary-btn">Créer un compte</a>
     </div>
   {% endif %}
 

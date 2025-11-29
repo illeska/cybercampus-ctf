@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XSS Challenge - Commentaires</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .comment { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .comment-author { font-weight: bold; color: #007bff; }
+        .comment-time { color: #666; font-size: 0.9em; }
+        textarea { width: 100%; padding: 10px; margin: 10px 0; min-height: 80px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        .flag { background: #d4edda; color: #155724; padding: 15px; margin: 15px 0; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>💬 Livre d'or</h2>
+    <p>Laissez un commentaire ci-dessous !</p>
+    
+    <form method="POST">
+        <input type="text" name="name" placeholder="Votre nom" required />
+        <textarea name="comment" placeholder="Votre commentaire" required></textarea>
+        <button type="submit">Publier</button>
+    </form>
+    
+    {% if flag %}
+        <div class="flag">🎉 Bravo ! Flag : {{ flag }}</div>
+    {% endif %}
+    
+    <h3>Commentaires :</h3>
+    {% for c in comments %}
+        <div class="comment">
+            <div class="comment-author">{{ c.name }}</div>
+            <div class="comment-time">{{ c.timestamp }}</div>
+            <!-- VULNÉRABLE : Pas d'échappement HTML -->
+            <div>{{ c.comment|safe }}</div>
+        </div>
+    {% endfor %}
+    
+    <p style="color: #666; font-size: 0.9em; margin-top: 30px;">
+        💡 Indice : Les commentaires ne sont pas filtrés...
+    </p>
+</body>
+</html>

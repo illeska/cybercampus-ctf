@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Challenges - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  <h2 class="animated-title">📚 Challenges Disponibles</h2>
+  <p>Choisissez un challenge et testez vos compétences en cybersécurité !</p>
+
+  {% if challenges %}
+    <div class="challenges-grid">
+      {% for challenge in challenges %}
+        {% set is_solved = current_user.submissions.filter_by(challenge_id=challenge.id, correct=True).first() %}
+        
+        <div class="challenge-card {% if is_solved %}solved{% endif %}">
+          <div class="challenge-header">
+            <h3>
+              {{ challenge.titre }}
+              {% if is_solved %}
+                <span class="solved-badge">✅</span>
+              {% endif %}
+            </h3>
+            <span class="challenge-points">{{ challenge.points }} pts</span>
+          </div>
+          
+          <div class="challenge-description">
+            <p>{{ challenge.description[:150] }}{% if challenge.description|length > 150 %}...{% endif %}</p>
+          </div>
+          
+          <div class="challenge-footer">
+            <a href="{{ url_for('challenge_view', challenge_id=challenge.id) }}" class="btn challenge-btn">
+              {% if is_solved %}
+                <span class="btn-icon">🔄</span> Revoir le challenge
+              {% else %}
+                <span class="btn-icon">🎯</span> Accéder au challenge
+              {% endif %}
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🚧</div>
+      <h3>Aucun challenge disponible</h3>
+      <p>De nouveaux challenges arrivent bientôt. Revenez plus tard !</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

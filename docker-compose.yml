@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   web:
@@ -38,6 +38,20 @@ services:
       - "5050:80"
     depends_on:
       - db
+
+  sqli-challenge:
+    build: ./challenges/sqli
+    container_name: cybercampus_sqli
+    ports:
+      - "5001:5001"
+    restart: always
+
+  xss-challenge:
+    build: ./challenges/xss
+    container_name: cybercampus_xss
+    ports:
+      - "5002:5002"
+    restart: always
 
 volumes:
   pgdata:

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ challenge.titre }} - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper challenge-detail">
+  
+  <div class="back-btn-container">
+    <a href="{{ url_for('challenges_list') }}" class="back-btn-modern">
+      <span>&#8592;</span> Retour aux challenges
+    </a>
+  </div>
+
+  <h2 class="animated-title">{{ challenge.titre }}</h2>
+  
+  <div class="challenge-content-layout">
+
+    <div class="challenge-info-block">
+      <div class="info-header">
+        <h3>Description</h3>
+      </div>
+      
+      <p>{{ challenge.description }}</p>
+      
+      <div style="margin-top: 20px;">
+        <span class="challenge-points">
+          ⭐ {{ challenge.points }} points
+        </span>
+      </div>
+    </div>
+
+    <div class="challenge-action-block">
+
+      <div class="action-card">
+        <h3>Environnement</h3>
+        
+        {% if challenge.id == 1 %}
+          <p>Accédez à l'application vulnérable pour exploiter la faille SQLi.</p>
+          <div class="env-btn-wrapper">
+            <a href="http://localhost:5001" target="_blank" class="btn env-btn">
+              🔓 Ouvrir Challenge SQLi
+            </a>
+          </div>
+
+        {% elif challenge.id == 2 %}
+          <p>Testez vos compétences XSS sur ce livre d'or non sécurisé.</p>
+          <div class="env-btn-wrapper">
+            <a href="http://localhost:5002" target="_blank" class="btn env-btn">
+              💬 Ouvrir Challenge XSS
+            </a>
+          </div>
+
+        {% else %}
+          <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
+        {% endif %}
+      </div>
+
+      <div class="action-card">
+        <h3>Soumettre Flag</h3>
+        
+        <form method="POST" action="{{ url_for('submit_flag', challenge_id=challenge.id) }}" class="flag-form">
+          <div class="flag-input-wrapper">
+            <input 
+              type="text" 
+              name="flag" 
+              placeholder="CTF{...}" 
+              class="flag-input" 
+              autocomplete="off"
+              required 
+            />
+            <button type="submit" class="btn submit-btn">
+              Valider
+            </button>
+          </div>
+        </form>
+        <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; margin-bottom: 0;">
+           Format : <code>CTF{...}</code>
+        </p>
+      </div>
+
+    </div> </div> </section>
+{% endblock %}
