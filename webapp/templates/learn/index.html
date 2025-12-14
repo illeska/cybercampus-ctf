@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}Bibliothèque de Cours - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper learn-library">
+  
+  <h2 class="animated-title">📚 Bibliothèque de Cours</h2>
+  <p>Apprenez les vulnérabilités web les plus courantes à votre rythme</p>
+
+  <!-- Intro Section -->
+  <div class="library-intro">
+    <div class="intro-icon">🎓</div>
+    <h3>Bienvenue dans notre bibliothèque</h3>
+    <p>
+      Explorez nos cours détaillés sur les vulnérabilités web. Chaque cours couvre les bases théoriques, 
+      des exemples pratiques, et des techniques de protection. Une fois prêt, testez vos connaissances 
+      sur nos challenges interactifs !
+    </p>
+  </div>
+
+  <!-- Catalogue de cours -->
+  <div class="courses-catalog">
+    
+    <!-- Cours SQL Injection -->
+    <div class="course-card sqli-card">
+      <div class="course-ribbon critical">Critique</div>
+      <div class="course-icon">💉</div>
+      <h3>Injection SQL (SQLi)</h3>
+      <p class="course-description">
+        Découvrez comment les attaquants manipulent les requêtes de base de données et apprenez 
+        à protéger vos applications contre ces attaques dévastatrices.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>15 min de lecture</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau débutant</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">🎯</span>
+          <span>Challenge disponible</span>
+        </div>
+      </div>
+
+      <div class="course-topics">
+        <span class="topic-tag">Bases de données</span>
+        <span class="topic-tag">Authentification</span>
+        <span class="topic-tag">Requêtes préparées</span>
+      </div>
+
+      <a href="{{ url_for('learn_sqli') }}" class="btn course-btn">
+        Accéder au cours →
+      </a>
+    </div>
+
+    <!-- Cours XSS -->
+    <div class="course-card xss-card">
+      <div class="course-ribbon high">Élevé</div>
+      <div class="course-icon">🔗</div>
+      <h3>Cross-Site Scripting (XSS)</h3>
+      <p class="course-description">
+        Comprenez comment le code JavaScript malveillant peut être injecté dans les pages web 
+        et maîtrisez les techniques d'échappement et de filtrage.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>12 min de lecture</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau débutant</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">🎯</span>
+          <span>Challenge disponible</span>
+        </div>
+      </div>
+
+      <div class="course-topics">
+        <span class="topic-tag">JavaScript</span>
+        <span class="topic-tag">Sécurité client</span>
+        <span class="topic-tag">DOM</span>
+      </div>
+
+      <a href="{{ url_for('learn_xss') }}" class="btn course-btn">
+        Accéder au cours →
+      </a>
+    </div>
+
+    <!-- Placeholder pour futurs cours -->
+    <div class="course-card coming-soon-card">
+      <div class="course-ribbon soon">Bientôt</div>
+      <div class="course-icon">🔐</div>
+      <h3>CSRF & Sécurité des sessions</h3>
+      <p class="course-description">
+        Apprenez à protéger vos utilisateurs contre les attaques par falsification de requêtes 
+        inter-sites et sécurisez la gestion des sessions.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>À venir</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau intermédiaire</span>
+        </div>
+      </div>
+
+      <div class="coming-soon-overlay">
+        <span>Prochainement</span>
+      </div>
+    </div>
+
+    <div class="course-card coming-soon-card">
+      <div class="course-ribbon soon">Bientôt</div>
+      <div class="course-icon">🗝️</div>
+      <h3>Cryptographie de base</h3>
+      <p class="course-description">
+        Initiez-vous aux concepts fondamentaux de la cryptographie : hachage, chiffrement, 
+        signatures numériques et gestion des clés.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>À venir</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau débutant</span>
+        </div>
+      </div>
+
+      <div class="coming-soon-overlay">
+        <span>Prochainement</span>
+      </div>
+    </div>
+
+    <div class="course-card coming-soon-card">
+      <div class="course-ribbon soon">Bientôt</div>
+      <div class="course-icon">🔍</div>
+      <h3>OSINT & Reconnaissance</h3>
+      <p class="course-description">
+        Découvrez les techniques de recherche d'informations publiques et apprenez à collecter 
+        des données de manière éthique et légale.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>À venir</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau débutant</span>
+        </div>
+      </div>
+
+      <div class="coming-soon-overlay">
+        <span>Prochainement</span>
+      </div>
+    </div>
+
+    <div class="course-card coming-soon-card">
+      <div class="course-ribbon soon">Bientôt</div>
+      <div class="course-icon">⚙️</div>
+      <h3>Reverse Engineering</h3>
+      <p class="course-description">
+        Plongez dans l'analyse de binaires et apprenez à décompiler, déboguer et comprendre 
+        le fonctionnement interne des programmes.
+      </p>
+      
+      <div class="course-meta">
+        <div class="meta-item">
+          <span class="meta-icon">📖</span>
+          <span>À venir</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <span>Niveau avancé</span>
+        </div>
+      </div>
+
+      <div class="coming-soon-overlay">
+        <span>Prochainement</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Section ressources -->
+  <div class="resources-section">
+    <h3>📖 Ressources complémentaires</h3>
+    <div class="resources-grid">
+      <a href="https://owasp.org/www-project-top-ten/" target="_blank" class="resource-link-card">
+        <div class="resource-icon">🔒</div>
+        <h4>OWASP Top 10</h4>
+        <p>Les 10 risques de sécurité les plus critiques</p>
+      </a>
+      
+      <a href="https://portswigger.net/web-security" target="_blank" class="resource-link-card">
+        <div class="resource-icon">🎓</div>
+        <h4>PortSwigger Academy</h4>
+        <p>Formation gratuite et labs interactifs</p>
+      </a>
+      
+      <a href="{{ url_for('challenges_list') }}" class="resource-link-card">
+        <div class="resource-icon">🎯</div>
+        <h4>Nos Challenges</h4>
+        <p>Mettez en pratique vos connaissances</p>
+      </a>
+    </div>
+  </div>
+
+</section>
+{% endblock %}

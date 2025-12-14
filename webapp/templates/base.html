@@ -19,7 +19,7 @@
   </div>
 
   <div class="nav-center">
-    <a href="#" class="nav-cat">Apprendre</a>
+    <a href="{{ url_for('learn') }}" class="nav-cat">Apprendre</a>
     <a href="{{ url_for('challenges_list') }}" class="nav-cat">S'exercer</a>
     <a href="#" class="nav-cat">Classement</a>
     <a href="#" class="nav-cat">Actualités</a>
@@ -31,7 +31,7 @@
       <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
     {% else %}
       <a href="{{ url_for('auth.login') }}" class="btn nav-btn orange">Se connecter</a>
-      <a href="{{ url_for('auth.register') }}" class="btn nav-btn cyan">S’inscrire</a>
+      <a href="{{ url_for('auth.register') }}" class="btn nav-btn cyan">S'inscrire</a>
     {% endif %}
   </div>
 </nav>

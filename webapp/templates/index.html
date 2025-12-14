@@ -19,17 +19,17 @@
   <div class="home-containers">
     <div class="home-block">
       <h3>Derniers challenges</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer facilisis, lorem vitae ullamcorper tempor, elit sapien fringilla nunc, vel luctus nulla justo at velit.</p>
+      <p>Plongez au cœur de l'action avec nos nouveaux scénarios ! De l'injection SQL au Cross-Site Scripting (XSS), mettez vos compétences à l'épreuve sur des environnements réalistes et apprenez à exploiter les vulnérabilités web critiques.</p>
     </div>
 
     <div class="home-block">
       <h3>Classement en direct</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum in eros sit amet justo aliquam congue. Praesent in erat quis magna volutpat pharetra.</p>
+      <p>🚧 Bientôt disponible.</p>
     </div>
 
     <div class="home-block">
       <h3>Actualités Cyber</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac ante ac justo finibus fringilla sed nec nulla.</p>
+      <p>🚧 Bientôt disponible.</p>
     </div>
   </div>
 </section>
@@ -38,16 +38,135 @@
 <section class="section-large">
   <h3>À propos du CyberCampus CTF</h3>
   <p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-    Donec tristique, augue et faucibus porttitor, ipsum libero cursus tortor, 
-    vitae euismod lorem lectus nec metus. Vivamus quis dolor sed lectus feugiat
-    tincidunt non vel lorem. Curabitur vel justo sed sem faucibus placerat.
+    CyberCampus CTF est une plateforme pédagogique dédiée à la sécurité offensive, 
+    conçue pour permettre aux étudiants de pratiquer le hacking éthique dans un cadre 
+    légal et sécurisé. Notre objectif est de démystifier les cyberattaques pour mieux 
+    comprendre comment s'en protéger.
   </p>
   <p>
-    Proin aliquet turpis nec nunc lacinia, et volutpat neque porttitor. 
-    Integer elementum, purus nec tempor varius, justo turpis pretium justo,
-    ut convallis metus est a eros. Suspendisse sodales elit et dui ultricies viverra.
+    Que vous soyez débutant ou confirmé, la plateforme vous accompagne avec des défis progressifs 
+    basés sur des technologies modernes. Analysez les systèmes, exploitez les failles, récupérez 
+    les flags et développez des compétences techniques concrètes recherchées par l'industrie.
   </p>
+</section>
+
+<!-- Section Comment ça marche -->
+<section class="section-large how-it-works">
+  <h3>🚀 Comment ça marche ?</h3>
+  <div class="steps-container">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <div class="step-icon">📚</div>
+      <h4>Apprenez</h4>
+      <p>Consultez nos cours détaillés sur les vulnérabilités web : SQL Injection, XSS, CSRF et bien plus encore.</p>
+    </div>
+    
+    <div class="step-card">
+      <div class="step-icon">🎯</div>
+      <div class="step-number">2</div>
+      <h4>Pratiquez</h4>
+      <p>Accédez à des environnements isolés et vulnérables pour tester vos compétences en conditions réelles.</p>
+    </div>
+    
+    <div class="step-card">
+      <div class="step-icon">🏆</div>
+      <div class="step-number">3</div>
+      <h4>Progressez</h4>
+      <p>Validez les challenges, gagnez des points et grimpez dans le classement pour prouver vos compétences.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section Statistiques -->
+<section class="section-large stats-section">
+  <h3>📊 La plateforme en chiffres</h3>
+  <div class="home-stats-grid">
+    <div class="stat-box">
+      <div class="stat-icon">🎓</div>
+      <div class="stat-number">2</div>
+      <div class="stat-label">Cours disponibles</div>
+    </div>
+    
+    <div class="stat-box">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-number">2</div>
+      <div class="stat-label">Challenges actifs</div>
+    </div>
+    
+    <div class="stat-box">
+      <div class="stat-icon">👥</div>
+      <div class="stat-number">{{ User.query.count() }}</div>
+      <div class="stat-label">Étudiants inscrits</div>
+    </div>
+    
+    <div class="stat-box">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-number">{{ Submission.query.filter_by(correct=True).count() }}</div>
+      <div class="stat-label">Flags validés</div>
+    </div>
+  </div>
+</section>
+
+<!-- Section Catégories -->
+<section class="section-large categories-section">
+  <h3>🗂️ Catégories de challenges</h3>
+  <div class="categories-grid">
+    <div class="category-card active">
+      <div class="category-icon">💉</div>
+      <h4>Web Exploitation</h4>
+      <p>SQL Injection, XSS, CSRF, Path Traversal</p>
+      <span class="category-badge available">2 disponibles</span>
+    </div>
+    
+    <div class="category-card coming-soon">
+      <div class="category-icon">🗝️</div>
+      <h4>Cryptographie</h4>
+      <p>Chiffrement, hachage, décodage</p>
+      <span class="category-badge soon">Bientôt</span>
+    </div>
+    
+    <div class="category-card coming-soon">
+      <div class="category-icon">🔍</div>
+      <h4>OSINT</h4>
+      <p>Recherche d'informations, reconnaissance</p>
+      <span class="category-badge soon">Bientôt</span>
+    </div>
+    
+    <div class="category-card coming-soon">
+      <div class="category-icon">⚙️</div>
+      <h4>Reverse Engineering</h4>
+      <p>Analyse de binaires, décompilation</p>
+      <span class="category-badge soon">Bientôt</span>
+    </div>
+  </div>
+</section>
+
+<!-- Section CTA Final -->
+<section class="section-large final-cta">
+  <div class="cta-content-large">
+    <h3>💻 Prêt à relever le défi ?</h3>
+    <p>
+      Rejoignez des centaines d'étudiants qui développent leurs compétences en cybersécurité 
+      sur CyberCampus CTF. L'apprentissage commence maintenant !
+    </p>
+    <div class="cta-buttons">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('challenges_list') }}" class="btn cta-btn-primary">
+          🎯 Voir les challenges
+        </a>
+        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
+          📚 Accéder aux cours
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn cta-btn-primary">
+          🚀 Créer mon compte gratuitement
+        </a>
+        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
+          📚 Découvrir les cours
+        </a>
+      {% endif %}
+    </div>
+  </div>
 </section>
 
 {% endblock %}

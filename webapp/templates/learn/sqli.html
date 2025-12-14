@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Cours : Injection SQL - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+  
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Injection SQL</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">💉</div>
+    <div class="course-header-content">
+      <h1>Injection SQL (SQLi)</h1>
+      <p class="course-subtitle">Comprendre et prévenir les attaques sur les bases de données</p>
+      <div class="course-badges">
+        <span class="badge-critical">Critique</span>
+        <span class="badge-time">📖 15 min</span>
+        <span class="badge-level">⚡ Débutant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 -->
+    <div class="course-section">
+      <h2>🔍 Qu'est-ce qu'une injection SQL ?</h2>
+      <p>
+        L'injection SQL est une technique d'attaque qui permet à un utilisateur malveillant d'<strong>injecter du code SQL</strong> 
+        dans une requête de base de données. Cette vulnérabilité survient lorsque les données fournies par l'utilisateur 
+        sont directement intégrées dans une requête SQL sans validation ni échappement approprié.
+      </p>
+      <p>
+        Les conséquences peuvent être catastrophiques : contournement de l'authentification, vol de données sensibles, 
+        modification ou suppression de données, et même prise de contrôle totale du serveur dans certains cas.
+      </p>
+      
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Le saviez-vous ?</strong>
+          <p>L'injection SQL figure dans le Top 3 du classement OWASP depuis plus de 15 ans. 
+          Malgré sa dangerosité connue, elle reste l'une des vulnérabilités les plus exploitées sur le web.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="course-section">
+      <h2>⚙️ Comment fonctionne une attaque SQLi ?</h2>
+      <p>Prenons un exemple concret d'un formulaire de connexion vulnérable :</p>
+      
+      <div class="code-block vulnerable">
+        <div class="code-header">
+          <span class="code-status">❌ Code vulnérable</span>
+          <span class="code-lang">Python / Flask</span>
+        </div>
+        <pre><code>username = request.form['username']
+password = request.form['password']
+
+# Danger : Concaténation directe dans la requête SQL
+query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
+cursor.execute(query)
+
+user = cursor.fetchone()
+if user:
+    login_user(user)</code></pre>
+      </div>
+
+      <p>Ce code semble fonctionnel, mais il est <strong>extrêmement dangereux</strong>. Voici pourquoi :</p>
+
+      <h3>Scénario d'attaque :</h3>
+      <p>Un attaquant entre les valeurs suivantes dans le formulaire :</p>
+      
+      <div class="attack-showcase">
+        <div class="attack-input">
+          <label>Username :</label>
+          <code>admin' OR '1'='1' --</code>
+        </div>
+        <div class="attack-input">
+          <label>Password :</label>
+          <code><em>(n'importe quoi)</em></code>
+        </div>
+      </div>
+
+      <p>La requête SQL devient alors :</p>
+      
+      <div class="code-block">
+        <pre><code>SELECT * FROM users WHERE username='admin' OR '1'='1' --' AND password='...'</code></pre>
+      </div>
+
+      <div class="explanation-box">
+        <h4>Analyse de l'attaque :</h4>
+        <ul>
+          <li><code>'admin'</code> : Tentative de connexion en tant qu'admin</li>
+          <li><code>OR '1'='1'</code> : Condition toujours vraie qui court-circuite la vérification</li>
+          <li><code>--</code> : Commentaire SQL qui ignore tout ce qui suit (le mot de passe)</li>
+        </ul>
+        <p><strong>Résultat :</strong> L'attaquant se connecte en tant qu'admin sans connaître le mot de passe !</p>
+      </div>
+
+      <h3>Autres types d'attaques :</h3>
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🔓 Bypass d'authentification</h4>
+          <p>Se connecter sans identifiants valides</p>
+          <code>admin' --</code>
+        </div>
+        <div class="attack-type-card">
+          <h4>📂 Extraction de données</h4>
+          <p>Récupérer des informations sensibles</p>
+          <code>' UNION SELECT password FROM users --</code>
+        </div>
+        <div class="attack-type-card">
+          <h4>💣 Modification de données</h4>
+          <p>Altérer ou supprimer des enregistrements</p>
+          <code>'; DROP TABLE users; --</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="course-section">
+      <h2>🛡️ Comment se protéger ?</h2>
+      <p>Heureusement, il existe plusieurs méthodes efficaces pour prévenir les injections SQL :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Requêtes préparées (Prepared Statements)</h3>
+          <p>La méthode la plus sûre : séparez complètement la structure SQL des données utilisateur.</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python / SQLite</span>
+            </div>
+            <pre><code>username = request.form['username']
+password = request.form['password']
+
+# Les ? sont des placeholders - les données sont échappées automatiquement
+query = "SELECT * FROM users WHERE username=? AND password=?"
+cursor.execute(query, (username, password))
+
+user = cursor.fetchone()</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Pourquoi c'est sûr :</strong> Les paramètres sont traités comme des données pures, 
+            jamais comme du code SQL. Impossible d'injecter des commandes.
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>ORM (Object-Relational Mapping)</h3>
+          <p>Utilisez un framework qui abstrait les requêtes SQL et gère la sécurité automatiquement.</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python / SQLAlchemy</span>
+            </div>
+            <pre><code>from models import User
+
+username = request.form['username']
+password = request.form['password']
+
+# SQLAlchemy échappe automatiquement les valeurs
+user = User.query.filter_by(
+    username=username,
+    password=password
+).first()
+
+if user:
+    login_user(user)</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Validation et filtrage des entrées</h3>
+          <p>Vérifiez toujours les données utilisateur avant de les utiliser :</p>
+          <ul>
+            <li>Définissez des types de données attendus (int, email, etc.)</li>
+            <li>Limitez la longueur des champs</li>
+            <li>Utilisez des expressions régulières pour valider le format</li>
+            <li>Créez une liste blanche de caractères autorisés</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Principe du moindre privilège</h3>
+          <p>Limitez les permissions du compte de base de données utilisé par votre application :</p>
+          <ul>
+            <li>N'utilisez jamais un compte <code>root</code> ou <code>admin</code></li>
+            <li>Accordez uniquement les permissions nécessaires (SELECT, INSERT, UPDATE)</li>
+            <li>Interdisez DROP, CREATE, ALTER sur les comptes applicatifs</li>
+            <li>Séparez les comptes par environnement (dev, prod)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="course-section">
+      <h2>📝 Résumé des bonnes pratiques</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilisez toujours des requêtes préparées ou un ORM</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ne concaténez JAMAIS directement les entrées utilisateur dans du SQL</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Validez et filtrez toutes les données côté serveur</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Limitez les privilèges de vos comptes de base de données</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Loggez et surveillez les tentatives d'injection</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Gardez vos frameworks et bibliothèques à jour</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Maintenant que vous comprenez les injections SQL, testez vos connaissances sur notre challenge interactif ! 
+          Vous devrez exploiter une vulnérabilité SQLi pour vous connecter en tant qu'administrateur.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>150 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau débutant</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>15-30 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=1) }}" class="btn challenge-btn-large">
+          Accéder au challenge SQL Injection
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn') }}" class="nav-btn back">
+        ← Retour à la bibliothèque
+      </a>
+      <a href="{{ url_for('learn_xss') }}" class="nav-btn next">
+        Cours suivant : XSS →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

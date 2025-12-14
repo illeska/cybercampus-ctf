@@ -4,7 +4,7 @@
 
 from flask import Flask, render_template, url_for, redirect, request, flash  
 from flask_login import login_required, current_user
-from datetime import datetime # Import direct ici
+from datetime import datetime
 
 from core import init_app, db
 from core.models import User, Challenge, Submission  
@@ -39,13 +39,14 @@ with app.app_context():
 @app.context_processor
 def inject_globals():
     """
-    Injecte 'now', 'Challenge' et 'Submission' dans tous les templates.
+    Injecte 'now', 'Challenge', 'Submission' et 'User' dans tous les templates.
     Cela corrige l'erreur même si la route vient de core/auth.py
     """
     return {
-        'now': datetime.now,       # Pour calculer les jours depuis l'inscription
-        'Challenge': Challenge,    # Pour compter le total des challenges
-        'Submission': Submission   # Pour d'autres logiques si besoin
+        'now': datetime.now,
+        'Challenge': Challenge,
+        'Submission': Submission,
+        'User': User  # ← AJOUT ICI
     }
 
 # ------------------------------
@@ -60,13 +61,26 @@ def root():
 def home():
     return render_template("index.html")
 
-# Note : Si vous avez déjà une route /dashboard dans auth_bp, celle-ci peut être ignorée par Flask.
-# Mais grâce au context_processor ci-dessus, le template fonctionnera dans les deux cas.
 @app.route('/dashboard')
 @login_required
 def dashboard():
     """Page du tableau de bord (protégée)"""
     return render_template("dashboard.html", user=current_user)
+
+@app.route('/learn')
+def learn():
+    """Bibliothèque de cours - Page d'index"""
+    return render_template("learn/index.html")
+
+@app.route('/learn/sqli')
+def learn_sqli():
+    """Cours sur les injections SQL"""
+    return render_template("learn/sqli.html")
+
+@app.route('/learn/xss')
+def learn_xss():
+    """Cours sur le Cross-Site Scripting"""
+    return render_template("learn/xss.html")
 
 @app.route('/challenges')
 @login_required
