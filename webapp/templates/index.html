@@ -83,13 +83,13 @@
   <div class="home-stats-grid">
     <div class="stat-box">
       <div class="stat-icon">🎓</div>
-      <div class="stat-number">2</div>
+      <div class="stat-number">{{ Challenge.query.count() }}</div>
       <div class="stat-label">Cours disponibles</div>
     </div>
     
     <div class="stat-box">
       <div class="stat-icon">🎯</div>
-      <div class="stat-number">2</div>
+      <div class="stat-number">{{ Challenge.query.count() }}</div>
       <div class="stat-label">Challenges actifs</div>
     </div>
     

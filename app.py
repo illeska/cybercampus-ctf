@@ -1,13 +1,13 @@
 # ------------------------------
-# CyberCampus CTF - Application principale
+# CyberCampus CTF - Application principale avec système de hints
 # ------------------------------
 
-from flask import Flask, render_template, url_for, redirect, request, flash  
+from flask import Flask, render_template, url_for, redirect, request, flash, session, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
 
 from core import init_app, db
-from core.models import User, Challenge, Submission  
+from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 
 
@@ -24,6 +24,99 @@ init_app(app)
 app.register_blueprint(auth_bp)
 
 # ------------------------------
+# SYSTÈME DE HINTS EN MÉMOIRE
+# ------------------------------
+HINTS_DATABASE = {
+    1: {  # Challenge SQLi
+        "hints": [
+            {
+                "text": "💡 Les identifiants sont vérifiés avec une requête SQL. Que se passe-t-il si vous entrez des caractères spéciaux dans le champ username ?",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Essayez d'utiliser le caractère guillemet simple (') dans le champ username pour 'casser' la requête SQL. Vous pouvez ajouter des conditions logiques comme OR.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Utilisez cette payload dans le champ username : admin' OR '1'='1' -- \n\nLe symbole -- commente le reste de la requête SQL, ce qui ignore la vérification du mot de passe.",
+                "penalty_percent": 30
+            }
+        ]
+    },
+    2: {  # Challenge XSS
+        "hints": [
+            {
+                "text": "💡 Les commentaires ne sont pas filtrés. Que se passe-t-il si vous injectez du code HTML dans le champ commentaire ?",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Le filtre |safe désactive l'échappement HTML. Essayez d'insérer une balise <script> dans votre commentaire pour exécuter du JavaScript.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Tapez exactement ceci dans le champ commentaire : <script>alert('XSS')</script>\n\nVous pouvez aussi essayer avec des attributs comme : <img src=x onerror=alert('XSS')>",
+                "penalty_percent": 30
+            }
+        ]
+    },
+    3: {  # Challenge Bruteforce
+        "hints": [
+            {
+                "text": "💡 Le code est composé de 4 chiffres (0000 à 9999). Tester manuellement prendrait trop de temps... Pensez à automatiser avec un script !",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Utilisez la bibliothèque requests de Python pour envoyer des requêtes POST automatiquement. Parcourez tous les codes de 0000 à 9999 avec une boucle for.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Voici un squelette de script Python :\n\nimport requests\nfor code in range(10000):\n    code_str = str(code).zfill(4)\n    response = requests.post('http://localhost:5004', data={'code': code_str})\n    if 'FLAG' in response.text or 'déverrouillé' in response.text:\n        print(f'Code trouvé: {code_str}')\n        break",
+                "penalty_percent": 30
+            }
+        ]
+    }
+}
+
+def get_hints_for_challenge(challenge_id):
+    """Récupère les hints d'un challenge"""
+    return HINTS_DATABASE.get(challenge_id, {"hints": []})
+
+def get_revealed_hints(challenge_id):
+    """Récupère les indices déjà révélés par l'utilisateur pour ce challenge"""
+    if 'revealed_hints' not in session:
+        session['revealed_hints'] = {}
+    
+    user_hints = session['revealed_hints']
+    key = f"{current_user.id}_{challenge_id}"
+    return user_hints.get(key, [])
+
+def reveal_hint(challenge_id, hint_index):
+    """Marque un indice comme révélé pour l'utilisateur"""
+    if 'revealed_hints' not in session:
+        session['revealed_hints'] = {}
+    
+    key = f"{current_user.id}_{challenge_id}"
+    if key not in session['revealed_hints']:
+        session['revealed_hints'][key] = []
+    
+    if hint_index not in session['revealed_hints'][key]:
+        session['revealed_hints'][key].append(hint_index)
+    
+    session.modified = True
+
+def calculate_hint_penalty(challenge_id):
+    """Calcule la pénalité totale basée sur les indices révélés"""
+    revealed = get_revealed_hints(challenge_id)
+    hints_data = get_hints_for_challenge(challenge_id)
+    
+    total_penalty = 0
+    for idx in revealed:
+        if idx < len(hints_data["hints"]):
+            total_penalty += hints_data["hints"][idx]["penalty_percent"]
+    
+    return total_penalty
+
+# ------------------------------
 # Création automatique de la base de données
 # ------------------------------
 with app.app_context():
@@ -34,19 +127,16 @@ with app.app_context():
         print("⚠️ Erreur lors de la création des tables :", e)
 
 # ------------------------------
-# INJECTION GLOBALE (Règle vos erreurs 'undefined')
+# INJECTION GLOBALE
 # ------------------------------
 @app.context_processor
 def inject_globals():
-    """
-    Injecte 'now', 'Challenge', 'Submission' et 'User' dans tous les templates.
-    Cela corrige l'erreur même si la route vient de core/auth.py
-    """
+    """Injecte des variables globales dans tous les templates"""
     return {
         'now': datetime.now,
         'Challenge': Challenge,
         'Submission': Submission,
-        'User': User  # ← AJOUT ICI
+        'User': User
     }
 
 # ------------------------------
@@ -82,6 +172,11 @@ def learn_xss():
     """Cours sur le Cross-Site Scripting"""
     return render_template("learn/xss.html")
 
+@app.route('/learn/bruteforce')
+def learn_bruteforce():
+    """Cours sur le Bruteforce"""
+    return render_template("learn/bruteforce.html")
+
 @app.route('/challenges')
 @login_required
 def challenges_list():
@@ -97,13 +192,56 @@ def challenge_view(challenge_id):
         flash("Ce challenge n'est pas encore disponible.", "warning")
         return redirect(url_for('dashboard'))
     
-    return render_template("challenge.html", challenge=challenge)
+    # Récupérer les hints et ceux déjà révélés
+    hints_data = get_hints_for_challenge(challenge_id)
+    revealed_indices = get_revealed_hints(challenge_id)
+    current_penalty = calculate_hint_penalty(challenge_id)
+    
+    return render_template(
+        "challenge.html", 
+        challenge=challenge,
+        hints=hints_data["hints"],
+        revealed_hints=revealed_indices,
+        current_penalty=current_penalty
+    )
+
+@app.route('/challenge/<int:challenge_id>/hint/<int:hint_index>', methods=['POST'])
+@login_required
+def reveal_hint_route(challenge_id, hint_index):
+    """Révèle un indice pour l'utilisateur"""
+    challenge = Challenge.query.get_or_404(challenge_id)
+    hints_data = get_hints_for_challenge(challenge_id)
+    
+    # Vérifier que l'indice existe
+    if hint_index >= len(hints_data["hints"]):
+        return jsonify({"error": "Indice invalide"}), 400
+    
+    # Vérifier que l'indice n'a pas déjà été révélé
+    revealed = get_revealed_hints(challenge_id)
+    if hint_index in revealed:
+        return jsonify({"error": "Indice déjà révélé"}), 400
+    
+    # Révéler l'indice
+    reveal_hint(challenge_id, hint_index)
+    
+    hint = hints_data["hints"][hint_index]
+    new_penalty = calculate_hint_penalty(challenge_id)
+    
+    return jsonify({
+        "success": True,
+        "hint_text": hint["text"],
+        "penalty": hint["penalty_percent"],
+        "total_penalty": new_penalty
+    })
 
 @app.route('/challenge/<int:challenge_id>/submit', methods=['POST'])
 @login_required
 def submit_flag(challenge_id):
     challenge = Challenge.query.get_or_404(challenge_id)
     flag_soumis = request.form.get('flag', '').strip()
+    
+    # Calculer la pénalité AVANT soumission
+    penalty_percent = calculate_hint_penalty(challenge_id)
     
     submission = Submission(
         user_id=current_user.id,
@@ -112,7 +250,46 @@ def submit_flag(challenge_id):
     )
     
     if submission.enregistrer():
-        flash(f"✅ Bravo ! Flag correct ! +{challenge.points} points", "success")
+        # Calculer les points avec pénalité
+        base_points = challenge.points
+        penalty_points = int(base_points * penalty_percent / 100)
+        final_points = base_points - penalty_points
+        
+        # Récupérer ou créer le scoreboard
+        sb = Scoreboard.query.filter_by(user_id=current_user.id).first()
+        if not sb:
+            sb = Scoreboard(user_id=current_user.id, points_total=0)
+            db.session.add(sb)
+            db.session.flush()
+        
+        # Vérifier si c'est la première validation de ce challenge
+        previous_correct = Submission.query.filter_by(
+            user_id=current_user.id,
+            challenge_id=challenge_id,
+            correct=True
+        ).count()
+        
+        # Si c'est la première fois, ajuster avec la pénalité
+        if previous_correct == 1:  # === 1 car on vient juste d'enregistrer
+            # Retirer les points de base déjà ajoutés par Submission.enregistrer()
+            sb.points_total = sb.points_total - base_points + final_points
+            db.session.commit()
+        
+        # Message personnalisé selon la pénalité
+        if penalty_percent > 0:
+            flash(
+                f"✅ Bravo ! Flag correct ! +{final_points} points "
+                f"({base_points} - {penalty_points} de pénalité)",
+                "success"
+            )
+        else:
+            flash(f"✅ Bravo ! Flag correct ! +{final_points} points", "success")
+        
+        # Réinitialiser les hints pour ce challenge
+        key = f"{current_user.id}_{challenge_id}"
+        if 'revealed_hints' in session and key in session['revealed_hints']:
+            del session['revealed_hints'][key]
+            session.modified = True
     else:
         flash("❌ Flag incorrect. Réessayez !", "danger")
     

@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+{% block title %}Cours : Attaques par Force Brute - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+  
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Attaques par Force Brute</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">🔨</div>
+    <div class="course-header-content">
+      <h1>Attaques par Force Brute (Bruteforce)</h1>
+      <p class="course-subtitle">Comprendre et se protéger contre les attaques par essais successifs</p>
+      <div class="course-badges">
+        <span class="badge-high">Élevé</span>
+        <span class="badge-time">📖 18 min</span>
+        <span class="badge-level">⚡ Débutant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 -->
+    <div class="course-section">
+      <h2>🔍 Qu'est-ce qu'une attaque par force brute ?</h2>
+      <p>
+        Une attaque par <strong>force brute</strong> (ou bruteforce) est une méthode simple mais efficace qui consiste à 
+        <strong>tester systématiquement toutes les combinaisons possibles</strong> jusqu'à trouver la bonne. 
+        C'est comme essayer toutes les clés d'un trousseau jusqu'à trouver celle qui ouvre la serrure.
+      </p>
+      <p>
+        Contrairement aux attaques par injection (SQLi, XSS) qui exploitent des failles de programmation, 
+        le bruteforce exploite simplement le <strong>manque de protection</strong> contre les tentatives répétées. 
+        Si un système ne limite pas le nombre d'essais, un attaquant peut tester des milliers, voire des millions 
+        de combinaisons.
+      </p>
+      
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Exemple concret :</strong>
+          <p>
+            Imaginez un cadenas à 4 chiffres (0000 à 9999). Il existe 10 000 combinaisons possibles. 
+            En testant chaque combinaison une par une, vous êtes CERTAIN de l'ouvrir en maximum 10 000 essais. 
+            C'est le principe du bruteforce : la patience et la persévérance remplacent l'intelligence.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="course-section">
+      <h2>🎯 Les différents types de bruteforce</h2>
+      
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🔤 Bruteforce Simple</h4>
+          <p>Teste toutes les combinaisons possibles de caractères, lettre par lettre.</p>
+          <div class="code-snippet">
+            <code>a, b, c, ... aa, ab, ac, ... aaa, aab, ...</code>
+          </div>
+          <p style="margin-top: 10px; font-size: 0.85rem; color: #94a3b8;">
+            ⏱️ <strong>Très lent</strong> mais garantit de trouver le mot de passe
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>📖 Attaque par Dictionnaire</h4>
+          <p>Teste une liste de mots de passe courants (dictionnaire).</p>
+          <div class="code-snippet">
+            <code>password, 123456, admin, qwerty, ...</code>
+          </div>
+          <p style="margin-top: 10px; font-size: 0.85rem; color: #94a3b8;">
+            ⚡ <strong>Très rapide</strong> si le mot de passe est commun
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🎭 Attaque Hybride</h4>
+          <p>Combine dictionnaire + variations (ajout de chiffres, majuscules, symboles).</p>
+          <div class="code-snippet">
+            <code>password → Password1, p@ssword, password123</code>
+          </div>
+          <p style="margin-top: 10px; font-size: 0.85rem; color: #94a3b8;">
+            ⚖️ <strong>Équilibré</strong> entre vitesse et efficacité
+          </p>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 25px;">
+        <div class="info-icon">📊</div>
+        <div class="info-content">
+          <strong>Statistiques impressionnantes :</strong>
+          <p>
+            Avec une machine moderne, on peut tester environ <strong>10 milliards de combinaisons par seconde</strong> 
+            pour des hashes MD5. Cela signifie qu'un mot de passe de 6 caractères alphanumériques 
+            (62^6 = 56 milliards de combinaisons) peut être cracké en moins de 6 secondes !
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="course-section">
+      <h2>⚙️ Comment fonctionne une attaque par dictionnaire ?</h2>
+      <p>Prenons l'exemple d'un formulaire de connexion non protégé :</p>
+      
+      <div class="code-block vulnerable">
+        <div class="code-header">
+          <span class="code-status">❌ Code vulnérable</span>
+          <span class="code-lang">Python / Flask</span>
+        </div>
+        <pre><code>@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+    
+    # Vérification simple sans limitation
+    if username == 'admin' and password == 'secret123':
+        return "Connexion réussie !"
+    else:
+        return "Identifiants incorrects"</code></pre>
+      </div>
+
+      <p>Ce code présente <strong>plusieurs faiblesses critiques</strong> :</p>
+
+      <div class="explanation-box">
+        <h4>Pourquoi ce code est vulnérable ?</h4>
+        <ul>
+          <li><strong>Aucune limitation du nombre de tentatives</strong> - On peut essayer infiniment</li>
+          <li><strong>Pas de délai entre les tentatives</strong> - On peut envoyer des milliers de requêtes par seconde</li>
+          <li><strong>Pas de blocage temporaire</strong> - Le compte n'est jamais verrouillé</li>
+          <li><strong>Réponse instantanée</strong> - Aucun ralentissement artificiel</li>
+          <li><strong>Pas de CAPTCHA</strong> - Un script automatisé peut fonctionner sans interruption</li>
+        </ul>
+      </div>
+
+      <h3>Scénario d'attaque avec un script Python :</h3>
+      
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">🔴 Script d'attaque</span>
+          <span class="code-lang">Python</span>
+        </div>
+        <pre><code>import requests
+
+# Liste de mots de passe courants
+passwords = ['123456', 'password', 'admin', 'qwerty', 'secret123', '12345']
+
+url = 'http://site-vulnerable.com/login'
+
+for pwd in passwords:
+    data = {'username': 'admin', 'password': pwd}
+    response = requests.post(url, data=data)
+    
+    if "Connexion réussie" in response.text:
+        print(f"✅ Mot de passe trouvé : {pwd}")
+        break
+    else:
+        print(f"❌ Échec avec : {pwd}")</code></pre>
+      </div>
+
+      <div class="example-box">
+        <strong>Résultat de l'attaque :</strong>
+        <code>❌ Échec avec : 123456
+❌ Échec avec : password
+❌ Échec avec : admin
+❌ Échec avec : qwerty
+✅ Mot de passe trouvé : secret123</code>
+        <p style="margin-top: 10px;">
+          En quelques secondes, l'attaquant a testé 5 mots de passe et trouvé le bon. 
+          Avec une liste de 10 000 mots de passe, cela prendrait quelques minutes seulement.
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="course-section">
+      <h2>🛡️ Comment se protéger efficacement ?</h2>
+      <p>La protection contre le bruteforce repose sur plusieurs couches de défense :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Limitation du nombre de tentatives (Rate Limiting)</h3>
+          <p>Limitez le nombre d'essais autorisés dans une période donnée.</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python / Flask</span>
+            </div>
+            <pre><code>from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+@app.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")  # Max 5 tentatives par minute
+def login():
+    # ... code de connexion ...</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Résultat :</strong> Après 5 tentatives échouées en une minute, l'attaquant doit attendre. 
+            Avec cette limite, tester 10 000 mots de passe prendrait plus de 33 heures au lieu de quelques minutes !
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Délai progressif (Progressive Delay)</h3>
+          <p>Augmentez le temps d'attente après chaque échec successif.</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>import time
+
+failed_attempts = {}  # {ip: nombre_d_echecs}
+
+@app.route('/login', methods=['POST'])
+def login():
+    ip = request.remote_addr
+    
+    # Récupérer le nombre d'échecs pour cette IP
+    attempts = failed_attempts.get(ip, 0)
+    
+    # Délai progressif : 2^n secondes (1s, 2s, 4s, 8s, ...)
+    if attempts > 0:
+        delay = min(2 ** attempts, 60)  # Max 60 secondes
+        time.sleep(delay)
+    
+    # Vérification des identifiants
+    if verify_credentials(username, password):
+        failed_attempts[ip] = 0  # Reset en cas de succès
+        return "Connexion réussie"
+    else:
+        failed_attempts[ip] = attempts + 1
+        return "Identifiants incorrects"</code></pre>
+          </div>
+
+          <div class="transformation-box">
+            <div class="transform-before">
+              <strong>Sans délai progressif :</strong>
+              <code>1000 essais = 10 secondes</code>
+            </div>
+            <div class="transform-arrow">→</div>
+            <div class="transform-after">
+              <strong>Avec délai progressif :</strong>
+              <code>1000 essais = plusieurs heures</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>CAPTCHA après plusieurs échecs</h3>
+          <p>Forcez l'attaquant à prouver qu'il est humain après X tentatives échouées.</p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé</span>
+              <span class="code-lang">Python / Flask</span>
+            </div>
+            <pre><code>from flask import session
+
+@app.route('/login', methods=['POST'])
+def login():
+    attempts = session.get('failed_login_attempts', 0)
+    
+    # Après 3 échecs, demander un CAPTCHA
+    if attempts >= 3:
+        captcha = request.form.get('captcha')
+        if not verify_captcha(captcha):
+            return "CAPTCHA invalide"
+    
+    if verify_credentials(username, password):
+        session['failed_login_attempts'] = 0
+        return "Connexion réussie"
+    else:
+        session['failed_login_attempts'] = attempts + 1
+        return render_template('login.html', show_captcha=True)</code></pre>
+          </div>
+
+          <p style="margin-top: 15px;">
+            Les CAPTCHA modernes (reCAPTCHA v3) fonctionnent de manière invisible et ne perturbent 
+            pas les utilisateurs légitimes tout en bloquant efficacement les bots.
+          </p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Verrouillage temporaire du compte</h3>
+          <p>Bloquez complètement le compte pendant X minutes après Y tentatives échouées.</p>
+          
+          <ul>
+            <li>Exemple : 5 échecs = compte verrouillé pendant 15 minutes</li>
+            <li>Envoyez un email à l'utilisateur légitime pour le prévenir</li>
+            <li>Proposez une réinitialisation de mot de passe par email</li>
+            <li>Loggez toutes les tentatives suspectes pour analyse</li>
+          </ul>
+
+          <div class="success-box">
+            <strong>⚠️ Attention :</strong> Cette méthode peut être exploitée pour faire du déni de service (DoS). 
+            Un attaquant pourrait intentionnellement verrouiller des comptes légitimes. 
+            Combinez toujours avec d'autres protections.
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">5</div>
+        <div class="method-content">
+          <h3>Politique de mots de passe robustes</h3>
+          <p>Imposez des mots de passe difficiles à deviner :</p>
+          
+          <div class="checklist">
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Minimum 12 caractères (idéalement 16+)</span>
+            </div>
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Mélange obligatoire : majuscules, minuscules, chiffres, symboles</span>
+            </div>
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Interdire les mots de passe communs (liste noire)</span>
+            </div>
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Vérifier contre les bases de données de mots de passe compromis (Have I Been Pwned)</span>
+            </div>
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Forcer le changement périodique (tous les 6 mois)</span>
+            </div>
+            <div class="checklist-item">
+              <span class="check">✅</span>
+              <span>Empêcher la réutilisation des 5 derniers mots de passe</span>
+            </div>
+          </div>
+
+          <div class="example-box" style="margin-top: 20px;">
+            <strong>Temps pour cracker selon la complexité :</strong>
+            <code>• "password" (8 lettres) → Instantané
+• "Password123" (12 caractères) → Quelques heures
+• "P@ssw0rd!2024" (13 caractères mixtes) → Plusieurs semaines
+• "Tr0p!c@l_P@r@d!se_2024" (24 caractères) → Des millions d'années</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">6</div>
+        <div class="method-content">
+          <h3>Authentification à deux facteurs (2FA)</h3>
+          <p>Ajoutez une couche de sécurité supplémentaire au-delà du mot de passe :</p>
+          
+          <ul>
+            <li><strong>SMS/Email</strong> : Code temporaire envoyé sur le téléphone ou email</li>
+            <li><strong>Application d'authentification</strong> : Google Authenticator, Authy, etc.</li>
+            <li><strong>Clé de sécurité physique</strong> : YubiKey, Titan Security Key</li>
+            <li><strong>Biométrie</strong> : Empreinte digitale, reconnaissance faciale</li>
+          </ul>
+
+          <div class="success-box">
+            <strong>Impact :</strong> Même si l'attaquant trouve le mot de passe par bruteforce, 
+            il ne pourra pas se connecter sans le second facteur d'authentification. 
+            Le 2FA réduit le risque de compromission de <strong>99,9%</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="course-section">
+      <h2>🔬 Détecter une attaque en cours</h2>
+      <p>Comment savoir si votre système est victime d'un bruteforce ?</p>
+
+      <div class="info-box">
+        <div class="info-icon">🚨</div>
+        <div class="info-content">
+          <strong>Indicateurs d'une attaque :</strong>
+          <ul style="margin: 10px 0;">
+            <li>Nombre anormal de requêtes de connexion sur une courte période</li>
+            <li>Multiples échecs de connexion depuis la même IP</li>
+            <li>Tentatives de connexion sur de nombreux comptes différents</li>
+            <li>Pics de trafic inhabituels sur la page de login</li>
+            <li>User-Agent suspects ou absents dans les logs</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Outils de monitoring recommandés :</h3>
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>📊 Fail2Ban</h4>
+          <p>Bannit automatiquement les IP suspectes après X échecs</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🛡️ Cloudflare</h4>
+          <p>Protection DDoS et rate limiting au niveau réseau</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>📈 ELK Stack</h4>
+          <p>Analyse en temps réel des logs d'authentification</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="course-section">
+      <h2>📝 Résumé des bonnes pratiques</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Limitez strictement le nombre de tentatives (rate limiting)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Implémentez un délai progressif après chaque échec</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ajoutez un CAPTCHA après 3-5 tentatives échouées</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Verrouillez temporairement les comptes après trop d'échecs</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Imposez des mots de passe robustes (12+ caractères)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Activez l'authentification à deux facteurs (2FA)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Surveillez les logs et détectez les patterns suspects</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ne révélez jamais si le problème vient du username ou du password</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Hashage sécurisé avec bcrypt/Argon2 (jamais MD5/SHA1)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Maintenant que vous comprenez les attaques par force brute, testez vos compétences sur notre challenge ! 
+          Vous devrez utiliser une technique de bruteforce pour découvrir un code secret à 4 chiffres.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>100 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau débutant</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>10-15 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=3) }}" class="btn challenge-btn-large">
+          Accéder au challenge Bruteforce
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn_xss') }}" class="nav-btn back">
+        ← Cours précédent : XSS
+      </a>
+      <a href="{{ url_for('learn') }}" class="nav-btn next">
+        Retour à la bibliothèque →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

@@ -22,15 +22,21 @@
       
       <p>{{ challenge.description }}</p>
       
-      <div style="margin-top: 20px;">
+      <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
         <span class="challenge-points">
           ⭐ {{ challenge.points }} points
         </span>
+        {% if current_penalty > 0 %}
+          <span class="penalty-badge">
+            -{{ current_penalty }}% de pénalité
+          </span>
+        {% endif %}
       </div>
     </div>
 
     <div class="challenge-action-block">
 
+      <!-- Carte Environnement -->
       <div class="action-card">
         <h3>Environnement</h3>
         
@@ -50,11 +56,77 @@
             </a>
           </div>
 
+        {% elif challenge.id == 3 %}
+          <p>Accédez au coffre-fort digital et trouvez le code secret à 4 chiffres.</p>
+          <div class="env-btn-wrapper">
+            <a href="http://localhost:5004" target="_blank" class="btn env-btn">
+              🔐 Ouvrir Challenge Bruteforce
+            </a>
+          </div>
+
         {% else %}
           <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
         {% endif %}
       </div>
 
+      <!-- Carte Indices -->
+      {% if hints and hints|length > 0 %}
+      <div class="action-card hints-card">
+        <h3>💡 Besoin d'aide ?</h3>
+        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 15px;">
+          {{ hints|length }} indices disponibles (avec pénalités progressives)
+        </p>
+        
+        <div class="hints-list">
+          {% for hint in hints %}
+            {% set is_revealed = loop.index0 in revealed_hints %}
+            {% set can_reveal = loop.index0 == 0 or (loop.index0 - 1) in revealed_hints %}
+            
+            <div class="hint-item {% if is_revealed %}revealed{% endif %} {% if not can_reveal %}locked{% endif %}">
+              <div class="hint-header">
+                <span class="hint-number">
+                  {% if not can_reveal %}🔒{% endif %} Indice {{ loop.index }}
+                </span>
+                <span class="hint-penalty">-{{ hint.penalty_percent }}%</span>
+              </div>
+              
+              {% if is_revealed %}
+                <!-- Indice déjà révélé -->
+                <div class="hint-content revealed">
+                  <p>{{ hint.text }}</p>
+                </div>
+              {% elif can_reveal %}
+                <!-- Indice disponible -->
+                <div class="hint-content hidden">
+                  <button 
+                    class="btn hint-btn" 
+                    onclick="showHintWarning({{ challenge.id }}, {{ loop.index0 }}, {{ hint.penalty_percent }}, {{ challenge.points }})"
+                  >
+                    🔓 Révéler l'indice
+                  </button>
+                </div>
+              {% else %}
+                <!-- Indice verrouillé -->
+                <div class="hint-content locked">
+                  <p style="color: #64748b; font-style: italic; font-size: 0.85rem; margin: 0;">
+                    Déverrouillez l'indice précédent pour accéder à celui-ci
+                  </p>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if current_penalty > 0 %}
+          <div class="penalty-summary">
+            <strong>Pénalité actuelle :</strong> -{{ current_penalty }}% 
+            ({{ (challenge.points * current_penalty / 100)|int }} points)
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Carte Soumission Flag -->
       <div class="action-card">
         <h3>Soumettre Flag</h3>
         
@@ -74,9 +146,377 @@
           </div>
         </form>
         <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; margin-bottom: 0;">
-           Format : <code>CTF{...}</code>
+          Format : <code>CTF{...}</code>
         </p>
       </div>
 
-    </div> </div> </section>
+    </div>
+  </div>
+</section>
+
+<!-- Modale d'avertissement -->
+<div id="hintWarningModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>⚠️ Attention</h3>
+    </div>
+    <div class="modal-body">
+      <p id="warningMessage"></p>
+      <div class="penalty-visualization">
+        <div class="points-display">
+          <div class="points-before">
+            <span class="label">Points actuels :</span>
+            <span class="value" id="pointsBefore">150</span>
+          </div>
+          <div class="arrow">→</div>
+          <div class="points-after">
+            <span class="label">Points après indice :</span>
+            <span class="value" id="pointsAfter">135</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn modal-btn cancel" onclick="closeHintModal()">
+        Annuler
+      </button>
+      <button class="btn modal-btn confirm" id="confirmReveal">
+        Révéler l'indice
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentHintData = null;
+
+function showHintWarning(challengeId, hintIndex, penalty, basePoints) {
+  currentHintData = { challengeId, hintIndex, penalty, basePoints };
+  
+  const currentPenalty = {{ current_penalty }};
+  const newTotalPenalty = currentPenalty + penalty;
+  
+  const pointsBefore = basePoints - Math.floor(basePoints * currentPenalty / 100);
+  const pointsAfter = basePoints - Math.floor(basePoints * newTotalPenalty / 100);
+  const lostPoints = pointsBefore - pointsAfter;
+  
+  document.getElementById('warningMessage').innerHTML = 
+    `Vous êtes sur le point de révéler l'indice ${hintIndex + 1}.<br><br>` +
+    `<strong style="color: #ef4444;">Cela vous coûtera ${penalty}% des points (${lostPoints} points).</strong><br><br>` +
+    `Êtes-vous sûr de vouloir continuer ?`;
+  
+  document.getElementById('pointsBefore').textContent = pointsBefore;
+  document.getElementById('pointsAfter').textContent = pointsAfter;
+  
+  document.getElementById('hintWarningModal').style.display = 'flex';
+}
+
+function closeHintModal() {
+  document.getElementById('hintWarningModal').style.display = 'none';
+  currentHintData = null;
+}
+
+document.getElementById('confirmReveal').addEventListener('click', async () => {
+  if (!currentHintData) return;
+  
+  const { challengeId, hintIndex } = currentHintData;
+  
+  try {
+    const response = await fetch(`/challenge/${challengeId}/hint/${hintIndex}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Recharger la page pour afficher l'indice
+      window.location.reload();
+    } else {
+      alert('Erreur : ' + (data.error || 'Impossible de révéler l\'indice'));
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    alert('Une erreur est survenue');
+  }
+  
+  closeHintModal();
+});
+
+// Fermer la modale en cliquant à l'extérieur
+window.onclick = function(event) {
+  const modal = document.getElementById('hintWarningModal');
+  if (event.target === modal) {
+    closeHintModal();
+  }
+}
+</script>
+
+<style>
+/* Styles pour les indices */
+.hints-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.hints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.hint-item.revealed {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.hint-item.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.hint-number {
+  font-weight: 600;
+  color: #f59e0b;
+  font-size: 0.9rem;
+}
+
+.hint-penalty {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.hint-content.hidden {
+  text-align: center;
+}
+
+.hint-content.revealed p {
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.hint-content.locked p {
+  color: #64748b;
+  font-style: italic;
+  text-align: center;
+}
+
+.hint-btn {
+  width: 100%;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  font-size: 0.85rem;
+}
+
+.hint-btn:hover {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  color: #050a10;
+  border-color: transparent;
+}
+
+.penalty-summary {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.penalty-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Styles pour la modale */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: rgba(15, 23, 36, 0.95);
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 16px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #f59e0b;
+  font-size: 1.4rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-body p {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin: 0 0 20px 0;
+}
+
+.penalty-visualization {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.points-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 15px;
+}
+
+.points-before,
+.points-after {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.points-before .label,
+.points-after .label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.points-before .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #10b981;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.points-after .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f59e0b;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.arrow {
+  font-size: 2rem;
+  color: #64748b;
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.modal-btn.cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.modal-btn.confirm {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  color: #050a10;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.modal-btn.confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .points-display {
+    flex-direction: column;
+  }
+  
+  .arrow {
+    transform: rotate(90deg);
+  }
+}
+</style>
+
 {% endblock %}

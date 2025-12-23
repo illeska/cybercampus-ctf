@@ -1,5 +1,5 @@
 /* --------------------------------------------------------
-   CyberCampus CTF - Clean Script
+   CyberCampus CTF
 -------------------------------------------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {

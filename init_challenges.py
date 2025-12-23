@@ -3,7 +3,6 @@ from core import db
 from core.models import Challenge, Flag
 
 # Liste de configuration de vos challenges
-# C'est ici que tu ajoutes ou modifies tes challenges
 CHALLENGES_DATA = [
     {
         "titre": "SQL Injection - Login Bypass",
@@ -18,6 +17,13 @@ CHALLENGES_DATA = [
         "points": 120,
         "actif": True,
         "flag_str": "CTF{XSS_r3fl3ct3d_pwn3d}"
+    },
+    {
+        "titre": "Bruteforce - Coffre-fort Digital",
+        "description": "Trouvez le code secret à 4 chiffres pour déverrouiller le coffre-fort. Aucune limite de tentatives... pour l'instant.",
+        "points": 100,
+        "actif": True,
+        "flag_str": "CTF{Brut3F0rc3_M4st3r_7394}"
     }
 ]
 

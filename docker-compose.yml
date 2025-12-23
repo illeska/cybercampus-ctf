@@ -53,5 +53,12 @@ services:
       - "5002:5002"
     restart: always
 
+  bruteforce-challenge:
+    build: ./challenges/bruteforce
+    container_name: cybercampus_bruteforce
+    ports:
+      - "5004:5004"
+    restart: always
+
 volumes:
   pgdata:
