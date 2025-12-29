@@ -11,7 +11,7 @@ from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 
 
-# Création de l'application Flask
+# Création de l'application Flask.
 app = Flask(__name__, template_folder="./webapp/templates", static_folder="./webapp/static")
 
 # Chargement de la configuration depuis config.py
