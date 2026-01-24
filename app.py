@@ -9,6 +9,7 @@ from datetime import datetime
 from core import init_app, db
 from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
+from core.admin import admin_bp
 
 
 # Création de l'application Flask.
@@ -22,6 +23,7 @@ init_app(app)
 
 # Enregistrement des blueprints
 app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
 
 # ------------------------------
 # SYSTÈME DE HINTS EN MÉMOIRE

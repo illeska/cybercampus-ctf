@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Gestion Utilisateurs - Admin{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  
+  <h2 class="animated-title">👥 Gestion des Utilisateurs</h2>
+  <p>Total : {{ users|length }} utilisateurs</p>
+
+  <!-- Navigation Admin -->
+  <div class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-btn">📊 Dashboard</a>
+    <a href="{{ url_for('admin.users') }}" class="admin-nav-btn active">👥 Utilisateurs</a>
+    <a href="{{ url_for('admin.challenges') }}" class="admin-nav-btn">🎯 Challenges</a>
+    <a href="{{ url_for('admin.submissions') }}" class="admin-nav-btn">📝 Soumissions</a>
+    <a href="{{ url_for('admin.export_scoreboard') }}" class="admin-nav-btn">📥 Export CSV</a>
+  </div>
+
+  <!-- Table des utilisateurs -->
+  <div class="admin-section">
+    <div class="users-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Pseudo</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Score</th>
+            <th>Inscription</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr class="{% if user.role == 'banned' %}banned-row{% endif %}">
+            <td><span class="user-id">#{{ user.id }}</span></td>
+            <td>
+              <strong>{{ user.pseudo }}</strong>
+              {% if user.id == current_user.id %}
+                <span class="badge-you">Vous</span>
+              {% endif %}
+            </td>
+            <td><span class="email-text">{{ user.email }}</span></td>
+            <td>
+              {% if user.role == "admin" %}
+                <span class="role-badge admin">👑 Admin</span>
+              {% elif user.role == "banned" %}
+                <span class="role-badge banned">🔨 Banni</span>
+              {% else %}
+                <span class="role-badge user">👤 User</span>
+              {% endif %}
+            </td>
+            <td><strong class="score-text">{{ user.score }}</strong> pts</td>
+            <td><span class="date-text">{{ user.created_at.strftime('%d/%m/%Y') }}</span></td>
+            <td>
+              <div class="action-buttons">
+                {% if user.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.ban_user', user_id=user.id) }}" style="display: inline;">
+                    {% if user.role == "banned" %}
+                      <button type="submit" class="action-btn unban" onclick="return confirm('Débannir {{ user.pseudo }} ?')">
+                        ✅ Débannir
+                      </button>
+                    {% else %}
+                      <button type="submit" class="action-btn ban" onclick="return confirm('Bannir {{ user.pseudo }} ?')">
+                        🔨 Bannir
+                      </button>
+                    {% endif %}
+                  </form>
+
+                  <form method="POST" action="{{ url_for('admin.reset_user_score', user_id=user.id) }}" style="display: inline;">
+                    <button type="submit" class="action-btn reset" onclick="return confirm('Réinitialiser le score de {{ user.pseudo }} ?')">
+                      🔄 Reset
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="disabled-action">—</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<style>
+/* Navigation Admin */
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  background: rgba(15, 23, 36, 0.6);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.admin-nav-btn:hover,
+.admin-nav-btn.active {
+  background: rgba(0, 245, 192, 0.1);
+  border-color: rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+  transform: translateY(-2px);
+}
+
+/* Section */
+.admin-section {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 30px;
+}
+
+/* Table Wrapper */
+.users-table-wrapper {
+  overflow-x: auto;
+}
+
+/* Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 15px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table th {
+  color: #00f5c0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(0, 245, 192, 0.03);
+}
+
+/* Row States */
+.banned-row {
+  opacity: 0.6;
+  background: rgba(239, 68, 68, 0.05) !important;
+  border-left: 3px solid #ef4444;
+}
+
+/* Table Content */
+.user-id {
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
+.email-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.score-text {
+  color: #00f5c0;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.date-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+/* Badges */
+.badge-you {
+  background: rgba(0, 136, 255, 0.2);
+  color: #0088ff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 8px;
+  border: 1px solid rgba(0, 136, 255, 0.3);
+}
+
+.role-badge {
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.role-badge.admin {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.role-badge.banned {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.role-badge.user {
+  background: rgba(0, 245, 192, 0.1);
+  color: #00f5c0;
+  border: 1px solid rgba(0, 245, 192, 0.3);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.action-btn.ban {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.action-btn.ban:hover {
+  background: #ef4444;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.action-btn.unban {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.unban:hover {
+  background: #10b981;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn.reset {
+  background: rgba(0, 136, 255, 0.2);
+  color: #0088ff;
+  border: 1px solid rgba(0, 136, 255, 0.3);
+}
+
+.action-btn.reset:hover {
+  background: #0088ff;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 136, 255, 0.4);
+}
+
+.disabled-action {
+  color: #64748b;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+</style>
+{% endblock %}

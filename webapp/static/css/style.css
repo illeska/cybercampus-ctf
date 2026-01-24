@@ -1634,3 +1634,16 @@ footer {
   box-shadow: none;
   background: rgba(100, 116, 139, 0.2);
 }
+
+.nav-btn.dashboard { background: linear-gradient(90deg, #6a00ff, #b043ff); color: white !important; }
+.nav-btn.orange { background: linear-gradient(90deg, #ff8a00, #ff3d00); color: white !important; }
+.nav-btn.admin { 
+  background: linear-gradient(90deg, #fbbf24, #f59e0b); 
+  color: #050a10 !important; 
+  font-weight: 700;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+}
+.nav-btn.admin:hover {
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.5);
+  transform: translateY(-2px);
+}

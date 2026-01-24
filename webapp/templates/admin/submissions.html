@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% block title %}Historique Soumissions - Admin{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  
+  <h2 class="animated-title">📝 Historique des Soumissions</h2>
+  <p>Total : {{ submissions.total }} soumissions</p>
+
+  <!-- Navigation Admin -->
+  <div class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-btn">📊 Dashboard</a>
+    <a href="{{ url_for('admin.users') }}" class="admin-nav-btn">👥 Utilisateurs</a>
+    <a href="{{ url_for('admin.challenges') }}" class="admin-nav-btn">🎯 Challenges</a>
+    <a href="{{ url_for('admin.submissions') }}" class="admin-nav-btn active">📝 Soumissions</a>
+    <a href="{{ url_for('admin.export_scoreboard') }}" class="admin-nav-btn">📥 Export CSV</a>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <a href="{{ url_for('admin.submissions') }}" class="filter-btn {% if not request.args.get('status') %}active{% endif %}">
+      📋 Toutes ({{ submissions.total }})
+    </a>
+    <a href="{{ url_for('admin.submissions', status='correct') }}" class="filter-btn {% if request.args.get('status') == 'correct' %}active{% endif %}">
+      ✅ Validées
+    </a>
+    <a href="{{ url_for('admin.submissions', status='incorrect') }}" class="filter-btn {% if request.args.get('status') == 'incorrect' %}active{% endif %}">
+      ❌ Échouées
+    </a>
+  </div>
+
+  <!-- Table -->
+  <div class="admin-section">
+    <div class="submissions-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Utilisateur</th>
+            <th>Challenge</th>
+            <th>Flag Soumis</th>
+            <th>Statut</th>
+            <th>Date & Heure</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in submissions.items %}
+          <tr class="{% if sub.correct %}row-success{% else %}row-error{% endif %}">
+            <td><span class="sub-id">#{{ sub.id }}</span></td>
+            <td>
+              <div class="user-cell">
+                <strong>{{ sub.user.pseudo }}</strong>
+                <small>{{ sub.user.email }}</small>
+              </div>
+            </td>
+            <td><strong class="challenge-name">{{ sub.challenge.titre }}</strong></td>
+            <td>
+              <code class="flag-display">{{ sub.flag_soumis[:35] }}{% if sub.flag_soumis|length > 35 %}...{% endif %}</code>
+            </td>
+            <td>
+              {% if sub.correct %}
+                <span class="status-badge success">✅ Validé</span>
+              {% else %}
+                <span class="status-badge error">❌ Échoué</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="date-cell">
+                <span class="date">{{ sub.timestamp.strftime('%d/%m/%Y') }}</span>
+                <small class="time">{{ sub.timestamp.strftime('%H:%M:%S') }}</small>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+              Aucune soumission pour ce filtre
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if submissions.pages > 1 %}
+    <div class="pagination">
+      {% if submissions.has_prev %}
+        <a href="{{ url_for('admin.submissions', page=submissions.prev_num, status=request.args.get('status')) }}" class="page-btn">
+          ← Précédent
+        </a>
+      {% endif %}
+
+      <span class="page-info">
+        Page {{ submissions.page }} / {{ submissions.pages }}
+      </span>
+
+      {% if submissions.has_next %}
+        <a href="{{ url_for('admin.submissions', page=submissions.next_num, status=request.args.get('status')) }}" class="page-btn">
+          Suivant →
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</section>
+
+<style>
+/* Navigation Admin */
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  background: rgba(15, 23, 36, 0.6);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.admin-nav-btn:hover,
+.admin-nav-btn.active {
+  background: rgba(0, 245, 192, 0.1);
+  border-color: rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+  transform: translateY(-2px);
+}
+
+/* Filters Bar */
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  background: rgba(15, 23, 36, 0.6);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: rgba(0, 245, 192, 0.15);
+  border-color: rgba(0, 245, 192, 0.4);
+  color: #00f5c0;
+  box-shadow: 0 0 15px rgba(0, 245, 192, 0.2);
+}
+
+/* Section */
+.admin-section {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 30px;
+}
+
+/* Table */
+.submissions-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 15px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table th {
+  color: #00f5c0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(0, 245, 192, 0.03);
+}
+
+/* Row States */
+.row-success {
+  background: rgba(16, 185, 129, 0.03);
+  border-left: 3px solid #10b981;
+}
+
+.row-error {
+  background: rgba(239, 68, 68, 0.02);
+  border-left: 3px solid #ef4444;
+}
+
+/* Cells */
+.sub-id {
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-cell strong {
+  color: #fff;
+}
+
+.user-cell small {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.challenge-name {
+  color: #00f5c0;
+}
+
+.flag-display {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  display: block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge {
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.status-badge.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.date-cell .date {
+  font-weight: 600;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.date-cell .time {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page-btn {
+  padding: 10px 20px;
+  background: rgba(0, 245, 192, 0.1);
+  border: 1px solid rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+  background: rgba(0, 245, 192, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 245, 192, 0.3);
+}
+
+.page-info {
+  color: #94a3b8;
+  font-weight: 600;
+}
+</style>
+{% endblock %}

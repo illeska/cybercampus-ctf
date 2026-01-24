@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}Gestion Challenges - Admin{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  
+  <h2 class="animated-title">🎯 Gestion des Challenges</h2>
+  <p>Total : {{ stats|length }} challenges</p>
+
+  <!-- Navigation Admin -->
+  <div class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-btn">📊 Dashboard</a>
+    <a href="{{ url_for('admin.users') }}" class="admin-nav-btn">👥 Utilisateurs</a>
+    <a href="{{ url_for('admin.challenges') }}" class="admin-nav-btn active">🎯 Challenges</a>
+    <a href="{{ url_for('admin.submissions') }}" class="admin-nav-btn">📝 Soumissions</a>
+    <a href="{{ url_for('admin.export_scoreboard') }}" class="admin-nav-btn">📥 Export CSV</a>
+  </div>
+
+  <!-- Grille 3 colonnes -->
+  <div class="challenges-admin-grid-3col">
+    {% for stat in stats %}
+    <div class="challenge-admin-card {% if not stat.challenge.actif %}inactive{% endif %}">
+      
+      <!-- Badge statut -->
+      <div class="challenge-status-badge">
+        {% if stat.challenge.actif %}
+          <span class="status-active">✅ Actif</span>
+        {% else %}
+          <span class="status-inactive">⏸️ Inactif</span>
+        {% endif %}
+      </div>
+
+      <!-- Titre -->
+      <h3>{{ stat.challenge.titre }}</h3>
+
+      <!-- Description -->
+      <p class="challenge-desc">{{ stat.challenge.description[:120] }}...</p>
+
+      <!-- Stats Grid -->
+      <div class="challenge-stats-grid">
+        <div class="stat-item-mini">
+          <span class="stat-label-mini">Points</span>
+          <span class="stat-value-mini points">{{ stat.challenge.points }}</span>
+        </div>
+        <div class="stat-item-mini">
+          <span class="stat-label-mini">Tentatives</span>
+          <span class="stat-value-mini">{{ stat.total_attempts }}</span>
+        </div>
+        <div class="stat-item-mini">
+          <span class="stat-label-mini">Validés</span>
+          <span class="stat-value-mini success">{{ stat.total_solved }}</span>
+        </div>
+        <div class="stat-item-mini">
+          <span class="stat-label-mini">Taux</span>
+          <span class="stat-value-mini {% if stat.success_rate > 50 %}success{% else %}warning{% endif %}">
+            {{ stat.success_rate }}%
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="challenge-actions">
+        <form method="POST" action="{{ url_for('admin.toggle_challenge', challenge_id=stat.challenge.id) }}" style="flex: 1;">
+          {% if stat.challenge.actif %}
+            <button type="submit" class="action-btn-challenge deactivate">
+              ⏸️ Désactiver
+            </button>
+          {% else %}
+            <button type="submit" class="action-btn-challenge activate">
+              ▶️ Activer
+            </button>
+          {% endif %}
+        </form>
+
+        <a href="{{ url_for('admin.edit_challenge', challenge_id=stat.challenge.id) }}" class="action-btn-challenge edit">
+          ✏️ Modifier
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</section>
+
+<style>
+/* Navigation Admin */
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  background: rgba(15, 23, 36, 0.6);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.admin-nav-btn:hover,
+.admin-nav-btn.active {
+  background: rgba(0, 245, 192, 0.1);
+  border-color: rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+  transform: translateY(-2px);
+}
+
+/* Grille 3 colonnes */
+.challenges-admin-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin-top: 30px;
+}
+
+@media (max-width: 1400px) {
+  .challenges-admin-grid-3col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .challenges-admin-grid-3col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Challenge Card */
+.challenge-admin-card {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 25px;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.challenge-admin-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 245, 192, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.challenge-admin-card.inactive {
+  opacity: 0.6;
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
+.challenge-admin-card.inactive:hover {
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+/* Status Badge */
+.challenge-status-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.status-active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-inactive {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Title */
+.challenge-admin-card h3 {
+  color: #00f5c0;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  padding-right: 100px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Description */
+.challenge-desc {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* Stats Grid */
+.challenge-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.stat-item-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label-mini {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value-mini {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.1rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.stat-value-mini.points {
+  color: #ff9f43;
+}
+
+.stat-value-mini.success {
+  color: #10b981;
+}
+
+.stat-value-mini.warning {
+  color: #f59e0b;
+}
+
+/* Actions */
+.challenge-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn-challenge {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-challenge.deactivate {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.action-btn-challenge.deactivate:hover {
+  background: #ef4444;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.action-btn-challenge.activate {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.action-btn-challenge.activate:hover {
+  background: #10b981;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn-challenge.edit {
+  background: rgba(0, 136, 255, 0.2);
+  color: #0088ff;
+  border: 1px solid rgba(0, 136, 255, 0.3);
+}
+
+.action-btn-challenge.edit:hover {
+  background: #0088ff;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 136, 255, 0.4);
+}
+</style>
+{% endblock %}
