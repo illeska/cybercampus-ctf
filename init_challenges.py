@@ -7,14 +7,14 @@ CHALLENGES_DATA = [
     {
         "titre": "SQL Injection - Login Bypass",
         "description": "Connectez-vous en tant qu'administrateur pour récupérer le flag. L'application utilise une requête SQL vulnérable.",
-        "points": 150,
+        "points": 25,
         "actif": True,
         "flag_str": "CTF{SQL_1nj3ct10n_m4st3r}"
     },
     {
         "titre": "XSS Reflected - Livre d'or",
         "description": "Exploitez une faille XSS dans le système de commentaires pour obtenir le flag.",
-        "points": 120,
+        "points": 50,
         "actif": True,
         "flag_str": "CTF{XSS_r3fl3ct3d_pwn3d}"
     },
@@ -24,7 +24,15 @@ CHALLENGES_DATA = [
         "points": 100,
         "actif": True,
         "flag_str": "CTF{Brut3F0rc3_M4st3r_7394}"
+    },
+        {
+        "titre": "Cryptographie - Rainbow Tables & Hash Cracking",
+        "description": "Vous avez obtenu un dump SQL avec des mots de passe hashés en MD5. Utilisez des outils pour craquer les hash et récupérer le flag !",
+        "points": 25,
+        "actif": True,
+        "flag_str": "CTF{r41nb0w_t4bl3s_pwn3d}"
     }
+    
 ]
 
 with app.app_context():

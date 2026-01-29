@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptographie Challenge - CyberCampus CTF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 15px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #00ff41;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        
+        .header .subtitle {
+            color: #00cc33;
+            font-size: 1.1rem;
+        }
+        
+        .intro {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 40px;
+            line-height: 1.7;
+            color: #aaa;
+        }
+        
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.05);
+            height: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #00cc33);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+            font-size: 1rem;
+        }
+        
+        .levels-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* Niveau déverrouillé */
+        .level {
+            background: rgba(0, 255, 65, 0.05);
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .level:hover {
+            border-color: rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+        
+        /* Niveau verrouillé */
+        .level.locked {
+            background: rgba(50, 50, 50, 0.3);
+            border: 2px dashed rgba(100, 100, 100, 0.3);
+            padding: 50px;
+            text-align: center;
+            cursor: not-allowed;
+        }
+        
+        .level.locked .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            animation: shake 3s ease-in-out infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        .level.locked .lock-text {
+            color: #666;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        /* Niveau complété */
+        .level.completed {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: #00ff41;
+        }
+        
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .level-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .level-number {
+            background: rgba(0, 255, 65, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff41;
+        }
+        
+        .level-name {
+            font-size: 1.4rem;
+            color: #00ff41;
+        }
+        
+        .level-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .level-status.active {
+            background: rgba(255, 200, 0, 0.2);
+            color: #ffc800;
+            border: 1px solid rgba(255, 200, 0, 0.4);
+        }
+        
+        .level-status.completed {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border: 1px solid rgba(0, 255, 65, 0.4);
+        }
+        
+        .hash-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid #ff6b00;
+        }
+        
+        .hash-label {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .hash-value {
+            color: #ff6b00;
+            font-size: 1.1rem;
+            word-break: break-all;
+            font-weight: bold;
+        }
+        
+        .hint-box {
+            background: rgba(255, 200, 0, 0.1);
+            border: 1px solid rgba(255, 200, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            color: #ffc800;
+        }
+        
+        .input-group {
+            margin-top: 20px;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .password-input {
+            flex: 1;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 8px;
+            color: #00ff41;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        
+        .submit-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00ff41, #00cc33);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.4);
+        }
+        
+        .result-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .result-message.success {
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid rgba(0, 255, 65, 0.4);
+            color: #00ff41;
+        }
+        
+        .result-message.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.4);
+            color: #ff4444;
+        }
+        
+        .completed-password {
+            background: rgba(0, 255, 65, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            color: #00ff41;
+            font-size: 1.2rem;
+        }
+        
+        .flag-section {
+            background: rgba(0, 255, 65, 0.08);
+            border: 3px solid #00ff41;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .flag-section h2 {
+            color: #00ff41;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .flag-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            color: #00ff41;
+            font-size: 1.3rem;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+        
+        .flag-input:focus {
+            outline: none;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
+        }
+        
+        .final-message {
+            background: linear-gradient(135deg, #00ff41, #00cc33);
+            color: #000;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 30px 0;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.6);
+        }
+        
+        .reset-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.4);
+            border-radius: 8px;
+            color: #ff4444;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-link:hover {
+            background: rgba(255, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Cryptographie Challenge</h1>
+            <p class="subtitle">Crackez les hash dans l'ordre pour progresser</p>
+        </div>
+
+        <div class="intro">
+            <strong>🎯 Mission :</strong> Une base de données a été compromise. Les mots de passe sont hashés en MD5. 
+            Utilisez ce que vous pouvez pour retrouver les mots de passe en clair et obtenir le flag final.
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: {{ progress }}%;">
+                {{ cracked_count }} / {{ total_users }}
+            </div>
+        </div>
+
+        {% if message %}
+        <div class="result-message {% if flag %}success{% else %}error{% endif %}">
+            {{ message|safe }}
+        </div>
+        {% endif %}
+
+        {% if flag %}
+        <div class="final-message">
+            🎉 {{ flag }}
+        </div>
+        {% endif %}
+
+        <div class="levels-container">
+            {% for user in users %}
+            {% set is_completed = cracked.get(user.id|string) %}
+            {% set is_locked = False %}
+            
+            {# Vérifier si verrouillé #}
+            {% if user.id > 1 %}
+                {% set prev_id = user.id - 1 %}
+                {% if not cracked.get(prev_id|string) %}
+                    {% set is_locked = True %}
+                {% endif %}
+            {% endif %}
+            
+            {% if is_locked %}
+            {# NIVEAU VERROUILLÉ #}
+            <div class="level locked">
+                <div class="lock-icon">🔒</div>
+                <div class="lock-text">NIVEAU {{ user.id }} - VERROUILLÉ</div>
+                <p style="color: #888; margin-top: 10px; font-size: 0.9rem;">
+                    Complétez le niveau {{ user.id - 1 }} pour déverrouiller
+                </p>
+            </div>
+            
+            {% else %}
+            {# NIVEAU DÉVERROUILLÉ #}
+            <div class="level {% if is_completed %}completed{% endif %}">
+                <div class="level-header">
+                    <div class="level-title">
+                        <div class="level-number">{{ user.id }}</div>
+                        <div class="level-name">{{ user.username }}</div>
+                    </div>
+                    <div class="level-status {% if is_completed %}completed{% else %}active{% endif %}">
+                        {% if is_completed %}
+                            ✅ Complété
+                        {% else %}
+                            🔓 En cours
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="hash-box">
+                    <div class="hash-label">Hash MD5 :</div>
+                    <div class="hash-value">{{ user.password_hash }}</div>
+                </div>
+
+                <div class="hint-box">
+                    💡 <strong>Indice :</strong> {{ user.hint }}
+                </div>
+
+                {% if is_completed %}
+                {# NIVEAU COMPLÉTÉ #}
+                <div class="completed-password">
+                    ✅ Mot de passe trouvé : <strong>{{ cracked.get(user.id|string) }}</strong>
+                </div>
+                
+                {% else %}
+                {# FORMULAIRE DE SOUMISSION #}
+                <form method="POST" class="input-group">
+                    <input type="hidden" name="crack_hash" value="1">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="hash" value="{{ user.password_hash }}">
+                    
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            name="password" 
+                            class="password-input"
+                            placeholder="Entrez le mot de passe en clair..."
+                            required
+                            autocomplete="off"
+                        />
+                        <button type="submit" class="submit-btn">Vérifier</button>
+                    </div>
+                </form>
+
+                {% if crack_result and crack_result.user_id == user.id|string %}
+                <div class="result-message {{ 'success' if crack_result.success else 'error' }}">
+                    {{ crack_result.message|safe }}
+                </div>
+                {% endif %}
+                
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/reset" class="reset-link">🔄 Réinitialiser la progression</a>
+        </div>
+    </div>
+</body>
+</html>

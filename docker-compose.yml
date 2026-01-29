@@ -59,6 +59,13 @@ services:
     ports:
       - "5004:5004"
     restart: always
+    
+  crypto-challenge:
+    build: ./challenges/crypto
+    container_name: cybercampus_crypto
+    ports:
+      - "5003:5003"
+    restart: always
 
 volumes:
   pgdata:

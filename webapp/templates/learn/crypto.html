@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+{% block title %}Cours : Rainbow Tables - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+  
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Cryptographie</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">🌈</div>
+    <div class="course-header-content">
+      <h1>Cryptographie</h1>
+      <p class="course-subtitle">Comprendre les attaques sur les mots de passe hashés</p>
+      <div class="course-badges">
+        <span class="badge-high">Élevé</span>
+        <span class="badge-time">📖 20 min</span>
+        <span class="badge-level">⚡ Intermédiaire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 -->
+    <div class="course-section">
+      <h2>🔍 C'est quoi un hash ?</h2>
+      <p>
+        Un <strong>hash</strong> (ou empreinte cryptographique) est le résultat d'une fonction mathématique qui transforme 
+        n'importe quelle donnée en une chaîne de caractères de taille fixe. C'est une <strong>fonction à sens unique</strong> : 
+        facile dans un sens, quasi impossible dans l'autre.
+      </p>
+      
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">📌 Exemple MD5</span>
+          <span class="code-lang">Python</span>
+        </div>
+        <pre><code>import hashlib
+
+# Hasher un mot de passe
+password = "password"
+hash_md5 = hashlib.md5(password.encode()).hexdigest()
+
+print(hash_md5)
+# Résultat : 5f4dcc3b5aa765d61d8327deb882cf99</code></pre>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Propriété importante :</strong>
+          <p>
+            Le même mot de passe produit TOUJOURS le même hash. C'est ce qui rend MD5 vulnérable aux rainbow tables !
+          </p>
+        </div>
+      </div>
+
+      <h3>Caractéristiques d'une fonction de hash</h3>
+      <ul>
+        <li><strong>Déterministe</strong> : Même entrée = même hash</li>
+        <li><strong>Rapide à calculer</strong> : Calcul quasi instantané</li>
+        <li><strong>Irréversible</strong> : Impossible de retrouver l'entrée depuis le hash (en théorie)</li>
+        <li><strong>Effet avalanche</strong> : Un petit changement dans l'entrée change complètement le hash</li>
+        <li><strong>Résistance aux collisions</strong> : Deux entrées différentes ne doivent pas donner le même hash</li>
+      </ul>
+
+      <div class="transformation-box">
+        <div class="transform-before">
+          <strong>Entrée :</strong>
+          <code>password</code>
+        </div>
+        <div class="transform-arrow">→</div>
+        <div class="transform-after">
+          <strong>Hash MD5 :</strong>
+          <code>5f4dcc3b5aa765d61d8327deb882cf99</code>
+        </div>
+      </div>
+
+      <div class="transformation-box">
+        <div class="transform-before">
+          <strong>Entrée :</strong>
+          <code>Password</code> (P majuscule)
+        </div>
+        <div class="transform-arrow">→</div>
+        <div class="transform-after">
+          <strong>Hash MD5 :</strong>
+          <code>dc647eb65e6711e155375218212b3964</code>
+        </div>
+      </div>
+
+      <p style="margin-top: 15px;">
+        Comme vous pouvez le voir, un simple changement de casse modifie complètement le hash !
+      </p>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="course-section">
+      <h2>🌈 Qu'est-ce qu'une Rainbow Table ?</h2>
+      <p>
+        Une <strong>rainbow table</strong> est une immense base de données pré-calculée qui contient des millions 
+        (voire des milliards) de mots de passe courants et leurs hash correspondants.
+      </p>
+
+      <h3>Le principe</h3>
+      <div class="example-box">
+        <strong>Base de données pré-calculée :</strong>
+        <code>password     → 5f4dcc3b5aa765d61d8327deb882cf99
+123456       → e10adc3949ba59abbe56e057f20f883e
+qwerty       → d8578edf8458ce06fbc5bb76a58c5ca4
+admin        → 21232f297a57a5a743894a0e4a801fc3
+letmein      → 0d107d09f5bbe40cade3de5c71e9e9b7</code>
+      </div>
+
+      <h3>Comment ça marche ?</h3>
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>1️⃣ Pré-calcul</h4>
+          <p>On génère des millions de hash à l'avance et on les stocke dans une base de données.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>2️⃣ Recherche</h4>
+          <p>Quand on récupère un hash, on le cherche simplement dans la table pour retrouver le mot de passe.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>3️⃣ Succès instantané</h4>
+          <p>Si le hash est dans la table, on obtient le mot de passe en quelques millisecondes !</p>
+        </div>
+      </div>
+
+      <div class="explanation-box">
+        <h4>Taille des rainbow tables</h4>
+        <p>Les rainbow tables modernes contiennent :</p>
+        <ul>
+          <li>📊 Plusieurs <strong>milliards</strong> de hash pré-calculés</li>
+          <li>💾 Plusieurs <strong>téraoctets</strong> de données</li>
+          <li>⚡ Résultats en <strong>quelques secondes</strong> au lieu de plusieurs jours</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="course-section">
+      <h2>💥 Pourquoi MD5 est dangereux ?</h2>
+      <p>
+        MD5 (Message Digest 5) était autrefois considéré comme sûr, mais il présente aujourd'hui 
+        de <strong>graves failles de sécurité</strong> :
+      </p>
+
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>⚡ Trop rapide</h4>
+          <p>
+            Une carte graphique moderne peut calculer <strong>10 milliards de hash MD5 par seconde</strong>. 
+            Un mot de passe de 6 caractères peut être cracké en quelques secondes.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🔄 Collisions</h4>
+          <p>
+            Des chercheurs ont démontré qu'il est possible de trouver deux entrées différentes 
+            qui produisent le même hash MD5.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🌈 Rainbow Tables</h4>
+          <p>
+            Des bases de données publiques contiennent des milliards de hash MD5 pré-calculés, 
+            rendant le cracking quasi instantané.
+          </p>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 25px;">
+        <div class="info-icon">⏱️</div>
+        <div class="info-content">
+          <strong>Temps de cracking selon la longueur :</strong>
+          <code>• 4 caractères (a-z, 0-9) → Instantané
+• 6 caractères (a-z, 0-9) → Quelques secondes
+• 8 caractères (a-z, A-Z, 0-9) → Quelques heures
+• 10 caractères (a-z, A-Z, 0-9, symboles) → Plusieurs jours
+• 12 caractères+ avec symboles → Années (mais toujours vulnérable)</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="course-section">
+      <h2>🛠️ Outils de hash cracking</h2>
+      <p>Voici les principaux outils utilisés par les professionnels de la sécurité :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>CrackStation (En ligne)</h3>
+          <p>
+            <strong>Site :</strong> <a href="https://crackstation.net" target="_blank" style="color: #00f5c0;">crackstation.net</a>
+          </p>
+          <p>
+            Service gratuit avec une rainbow table massive. Idéal pour les débutants. 
+            Supporte MD5, SHA1, SHA256, et bien d'autres.
+          </p>
+          <div class="success-box">
+            <strong>Avantages :</strong> Gratuit, rapide, aucune installation requise
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Hashcat (Professionnel)</h3>
+          <p>L'outil de référence pour le hash cracking professionnel.</p>
+          
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔧 Installation & Usage</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Installation
+sudo apt install hashcat
+
+# Créer un fichier avec les hash
+echo "5f4dcc3b5aa765d61d8327deb882cf99" > hash.txt
+
+# Attaque par dictionnaire (mode 0 = MD5)
+hashcat -m 0 -a 0 hash.txt rockyou.txt
+
+# Attaque avec règles (variations)
+hashcat -m 0 -a 0 hash.txt rockyou.txt -r rules/best64.rule
+
+# Afficher les résultats
+hashcat -m 0 hash.txt --show</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Avantages :</strong> Très rapide, supporte GPU, règles avancées, tous les algorithmes
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>John the Ripper</h3>
+          <p>Un autre outil classique, plus ancien que Hashcat mais toujours très utilisé.</p>
+          
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔧 Usage basique</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Installation
+sudo apt install john
+
+# Cracker un hash
+john --format=Raw-MD5 --wordlist=rockyou.txt hashes.txt
+
+# Voir les résultats
+john --show --format=Raw-MD5 hashes.txt</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="course-section">
+      <h2>🛡️ Comment se protéger ?</h2>
+      <p>
+        Les rainbow tables exploitent une faiblesse fondamentale : <strong>le même mot de passe 
+        donne toujours le même hash</strong>. Voici comment se protéger efficacement :
+      </p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Utiliser un algorithme moderne (bcrypt, Argon2, scrypt)</h3>
+          <p>
+            Ces algorithmes sont <strong>intentionnellement lents</strong> et incluent automatiquement 
+            un sel unique pour chaque mot de passe.
+          </p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Code sécurisé avec bcrypt</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>import bcrypt
+
+# Hasher un mot de passe (avec sel automatique)
+password = "password"
+salt = bcrypt.gensalt(rounds=12)  # 2^12 itérations
+hashed = bcrypt.hashpw(password.encode(), salt)
+
+print(hashed)
+# Résultat : $2b$12$N9qo8uLOickgx2ZMRZoMye...
+# Chaque hash est UNIQUE même pour le même mot de passe !</code></pre>
+          </div>
+
+          <div class="transformation-box">
+            <div class="transform-before">
+              <strong>Avec MD5 (dangereux) :</strong>
+              <code>password → 5f4dcc3b5aa...
+password → 5f4dcc3b5aa... (identique !)</code>
+            </div>
+            <div class="transform-arrow">→</div>
+            <div class="transform-after">
+              <strong>Avec bcrypt (sécurisé) :</strong>
+              <code>password → $2b$12$N9qo8...
+password → $2b$12$X7pq9... (différent !)</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Ajouter un sel unique (Salt)</h3>
+          <p>
+            Un <strong>sel</strong> est une valeur aléatoire ajoutée au mot de passe avant le hashage. 
+            Chaque utilisateur a un sel différent.
+          </p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Exemple avec sel</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>import hashlib
+import os
+
+# Générer un sel aléatoire unique
+salt = os.urandom(32)  # 32 bytes aléatoires
+
+# Combiner mot de passe + sel
+password = "password"
+salted = password.encode() + salt
+
+# Hasher le tout
+hash_with_salt = hashlib.sha256(salted).hexdigest()
+
+# Stocker : hash + sel (le sel n'est pas secret)
+# En base : hash_with_salt, salt.hex()</code></pre>
+          </div>
+
+          <div class="explanation-box">
+            <h4>Pourquoi le sel fonctionne ?</h4>
+            <p>
+              Même si deux utilisateurs ont le même mot de passe, leurs sels différents produiront 
+              des hash différents. Les rainbow tables deviennent inutiles car chaque hash est unique !
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Ajouter un pepper (Sel secret)</h3>
+          <p>
+            Un <strong>pepper</strong> est comme un sel, mais il est <strong>identique pour tous les utilisateurs</strong> 
+            et stocké séparément de la base de données (dans le code ou une variable d'environnement).
+          </p>
+          
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Exemple avec pepper</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>import hashlib
+import os
+
+# Pepper stocké dans une variable d'environnement
+PEPPER = os.getenv('PASSWORD_PEPPER', 'super_secret_pepper_2025')
+
+# Sel unique par utilisateur
+salt = os.urandom(32)
+password = "password"
+
+# Combiner : mot de passe + sel + pepper
+combined = password.encode() + salt + PEPPER.encode()
+hash_final = hashlib.sha256(combined).hexdigest()
+
+# Même si la BDD est compromise, sans le pepper, impossible de craquer !</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Avantage :</strong> Si votre base de données est volée, l'attaquant n'a pas le pepper 
+            et ne peut donc pas craquer les hash, même avec une rainbow table !
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Imposer des mots de passe robustes</h3>
+          <ul>
+            <li><strong>Minimum 12 caractères</strong> (idéalement 16+)</li>
+            <li><strong>Mélange obligatoire :</strong> majuscules, minuscules, chiffres, symboles</li>
+            <li><strong>Interdire les mots de passe communs</strong> (liste noire)</li>
+            <li><strong>Vérifier contre les bases de fuites</strong> (Have I Been Pwned API)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="course-section">
+      <h2>⚖️ Comparaison des algorithmes</h2>
+      
+      <div class="code-snippet" style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px;">
+        <table style="width: 100%; color: #cbd5e1;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(0, 245, 192, 0.3);">
+              <th style="text-align: left; padding: 10px; color: #00f5c0;">Algorithme</th>
+              <th style="text-align: center; padding: 10px; color: #00f5c0;">Statut</th>
+              <th style="text-align: center; padding: 10px; color: #00f5c0;">Vitesse</th>
+              <th style="text-align: center; padding: 10px; color: #00f5c0;">Sécurité</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <td style="padding: 10px;"><strong>MD5</strong></td>
+              <td style="text-align: center; padding: 10px; color: #ef4444;">❌ OBSOLÈTE</td>
+              <td style="text-align: center; padding: 10px;">10 Mrd/s</td>
+              <td style="text-align: center; padding: 10px; color: #ef4444;">Très faible</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <td style="padding: 10px;"><strong>SHA-1</strong></td>
+              <td style="text-align: center; padding: 10px; color: #ef4444;">❌ OBSOLÈTE</td>
+              <td style="text-align: center; padding: 10px;">5 Mrd/s</td>
+              <td style="text-align: center; padding: 10px; color: #ef4444;">Très faible</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <td style="padding: 10px;"><strong>SHA-256</strong></td>
+              <td style="text-align: center; padding: 10px; color: #f59e0b;">⚠️ Déconseillé</td>
+              <td style="text-align: center; padding: 10px;">2 Mrd/s</td>
+              <td style="text-align: center; padding: 10px; color: #f59e0b;">Faible (sans sel)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <td style="padding: 10px;"><strong>bcrypt</strong></td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">✅ RECOMMANDÉ</td>
+              <td style="text-align: center; padding: 10px;">~50/s</td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">Excellente</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+              <td style="padding: 10px;"><strong>Argon2</strong></td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">✅ RECOMMANDÉ</td>
+              <td style="text-align: center; padding: 10px;">~10/s</td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">Excellente</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px;"><strong>scrypt</strong></td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">✅ RECOMMANDÉ</td>
+              <td style="text-align: center; padding: 10px;">~5/s</td>
+              <td style="text-align: center; padding: 10px; color: #10b981;">Excellente</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-box" style="margin-top: 25px;">
+        <div class="info-icon">📊</div>
+        <div class="info-content">
+          <strong>Pourquoi la lenteur est importante :</strong>
+          <p>
+            Un attaquant peut tester 10 milliards de mots de passe par seconde avec MD5, 
+            mais seulement 50 avec bcrypt. Cela rend le cracking <strong>200 millions de fois plus lent</strong> !
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="course-section">
+      <h2>📝 Résumé des bonnes pratiques</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>N'utilisez JAMAIS MD5, SHA-1 ou SHA-256 seuls pour les mots de passe</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilisez bcrypt, Argon2 ou scrypt avec un facteur de coût adapté</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ajoutez TOUJOURS un sel unique par utilisateur</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Envisagez l'ajout d'un pepper (sel secret global)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Imposez des mots de passe robustes (12+ caractères)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Vérifiez les mots de passe contre les bases de fuites</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Activez l'authentification à deux facteurs (2FA)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Mettez à jour régulièrement vos bibliothèques de hashing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Maintenant que vous comprenez les rainbow tables et les failles de MD5, testez vos compétences ! 
+          Vous devrez craquer 5 hash MD5 issus d'une base de données compromise pour obtenir le flag.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>180 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau intermédiaire</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>10-20 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=4) }}" class="btn challenge-btn-large">
+          Accéder au challenge Cryptographie
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn_bruteforce') }}" class="nav-btn back">
+        ← Cours précédent : Bruteforce
+      </a>
+      <a href="{{ url_for('learn') }}" class="nav-btn next">
+        Retour à la bibliothèque →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

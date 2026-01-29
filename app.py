@@ -76,9 +76,25 @@ HINTS_DATABASE = {
                 "penalty_percent": 30
             }
         ]
+    },
+    4: {  # Challenge Crypto
+        "hints": [
+            {
+                "text": "💡 Les mots de passe sont hashés avec MD5 sans sel. Les rainbow tables peuvent être utilisées pour craquer ces hash rapidement.",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Utilisez des outils comme 'hashcat' ou des services en ligne pour rechercher les hash MD5. Vous pouvez aussi écrire un script Python pour automatiser la recherche.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Par exemple, le hash '5f4dcc3b5aa765d61d8327deb882cf99' correspond au mot de passe 'password'. Essayez de craquer les autres hash de la même manière.",
+                "penalty_percent": 30
+            }
+        ]
     }
+    
 }
-
 def get_hints_for_challenge(challenge_id):
     """Récupère les hints d'un challenge"""
     return HINTS_DATABASE.get(challenge_id, {"hints": []})
@@ -178,6 +194,12 @@ def learn_xss():
 def learn_bruteforce():
     """Cours sur le Bruteforce"""
     return render_template("learn/bruteforce.html")
+
+@app.route('/learn/crypto')
+def learn_crypto():
+    """Cours sur la Cryptographie"""
+    return render_template("learn/crypto.html")
+
 
 @app.route('/challenges')
 @login_required
