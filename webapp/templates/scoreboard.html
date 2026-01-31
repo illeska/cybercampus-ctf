@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+{% block title %}Classement - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+  
+  <h2 class="animated-title">🏆 Classement Général</h2>
+  <p>Les 100 meilleurs joueurs de la plateforme</p>
+
+  <!-- Position de l'utilisateur -->
+  {% if current_user.is_authenticated and user_rank %}
+  <div class="user-position-card">
+    <div class="position-icon">🎯</div>
+    <div class="position-content">
+      <div class="position-label">Votre position</div>
+      <div class="position-rank">#{{ user_rank }}</div>
+      <div class="position-score">{{ user_score }} points</div>
+    </div>
+    {% if user_rank <= 100 %}
+      <div class="position-badge top100">🌟 Top 100</div>
+    {% elif user_rank <= 50 %}
+      <div class="position-badge top50">⭐ Top 50</div>
+    {% elif user_rank <= 10 %}
+      <div class="position-badge top10">💎 Top 10</div>
+    {% elif user_rank <= 3 %}
+      <div class="position-badge podium">👑 Podium</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Podium visuel (Top 3) -->
+  {% if classement|length >= 3 %}
+  <div class="podium-section">
+    <h3 class="section-title">🏆 Podium</h3>
+    <div class="podium-container">
+      <!-- 2ème place -->
+      <div class="podium-place second">
+        <div class="podium-rank">🥈</div>
+        <div class="podium-avatar">{{ classement[1][1].pseudo[0].upper() }}</div>
+        <div class="podium-name">{{ classement[1][1].pseudo }}</div>
+        <div class="podium-score">{{ classement[1][0].points_total }} pts</div>
+        <div class="podium-base second-base">2</div>
+      </div>
+
+      <!-- 1ère place -->
+      <div class="podium-place first">
+        <div class="podium-rank">🏆</div>
+        <div class="podium-avatar champion">{{ classement[0][1].pseudo[0].upper() }}</div>
+        <div class="podium-name champion-name">{{ classement[0][1].pseudo }}</div>
+        <div class="podium-score champion-score">{{ classement[0][0].points_total }} pts</div>
+        <div class="podium-base first-base">1</div>
+      </div>
+
+      <!-- 3ème place -->
+      <div class="podium-place third">
+        <div class="podium-rank">🥉</div>
+        <div class="podium-avatar">{{ classement[2][1].pseudo[0].upper() }}</div>
+        <div class="podium-name">{{ classement[2][1].pseudo }}</div>
+        <div class="podium-score">{{ classement[2][0].points_total }} pts</div>
+        <div class="podium-base third-base">3</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tableau du classement complet -->
+  <div class="scoreboard-section">
+    <h3 class="section-title">📊 Classement Complet</h3>
+    
+    <div class="scoreboard-table-wrapper">
+      <table class="scoreboard-table">
+        <thead>
+          <tr>
+            <th class="rank-col">Rang</th>
+            <th class="player-col">Joueur</th>
+            <th class="score-col">Score</th>
+            <th class="challenges-col">Challenges</th>
+            <th class="date-col">Membre depuis</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for scoreboard_entry, user in classement %}
+          {% set rank = loop.index %}
+          <tr class="scoreboard-row {% if current_user.is_authenticated and user.id == current_user.id %}current-user{% endif %} {% if rank <= 3 %}podium-row{% endif %}">
+            
+            <!-- Rang -->
+            <td class="rank-col">
+              {% if rank == 1 %}
+                <span class="rank-badge gold">🏆 1</span>
+              {% elif rank == 2 %}
+                <span class="rank-badge silver">🥈 2</span>
+              {% elif rank == 3 %}
+                <span class="rank-badge bronze">🥉 3</span>
+              {% else %}
+                <span class="rank-number">{{ rank }}</span>
+              {% endif %}
+            </td>
+
+            <!-- Joueur -->
+            <td class="player-col">
+              <div class="player-info">
+                <div class="player-avatar">{{ user.pseudo[0].upper() }}</div>
+                <div class="player-details">
+                  <div class="player-name">
+                    {{ user.pseudo }}
+                    {% if current_user.is_authenticated and user.id == current_user.id %}
+                      <span class="you-badge">Vous</span>
+                    {% endif %}
+                  </div>
+                  <div class="player-email">{{ user.email }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Score -->
+            <td class="score-col">
+              <span class="score-value">{{ scoreboard_entry.points_total }}</span>
+              <span class="score-label">pts</span>
+            </td>
+
+            <!-- Challenges résolus -->
+            <td class="challenges-col">
+              {% set solved_count = user.get_solved_challenges()|length %}
+              <span class="challenges-value">{{ solved_count }}</span>
+              <span class="challenges-label">/ {{ Challenge.query.filter_by(actif=True).count() }}</span>
+            </td>
+
+            <!-- Date d'inscription -->
+            <td class="date-col">
+              {{ user.created_at.strftime('%d/%m/%Y') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if classement|length == 0 %}
+    <div class="empty-scoreboard">
+      <div class="empty-icon">📊</div>
+      <h3>Aucun score enregistré</h3>
+      <p>Soyez le premier à résoudre un challenge et à apparaître dans le classement !</p>
+      <a href="{{ url_for('challenges_list') }}" class="btn primary-btn">
+        Voir les challenges
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</section>
+
+<style>
+/* ===================================
+   POSITION DE L'UTILISATEUR
+=================================== */
+.user-position-card {
+  background: linear-gradient(135deg, rgba(0, 245, 192, 0.1), rgba(0, 136, 255, 0.1));
+  border: 2px solid rgba(0, 245, 192, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-position-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 245, 192, 0.1), transparent);
+  border-radius: 50%;
+}
+
+.position-icon {
+  font-size: 4rem;
+  flex-shrink: 0;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.position-content {
+  flex: 1;
+}
+
+.position-label {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.position-rank {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #00f5c0;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.position-score {
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.position-badge {
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.position-badge.top100 {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 2px solid rgba(251, 191, 36, 0.4);
+}
+
+.position-badge.top50 {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 2px solid rgba(245, 158, 11, 0.4);
+}
+
+.position-badge.top10 {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+}
+
+.position-badge.podium {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
+  color: #fbbf24;
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+/* ===================================
+   PODIUM VISUEL
+=================================== */
+.podium-section {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 50px;
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.podium-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.podium-place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.podium-rank {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.podium-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0088ff, #00f5c0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #050a10;
+  margin-bottom: 15px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.podium-avatar.champion {
+  width: 100px;
+  height: 100px;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+}
+
+.podium-name {
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.podium-name.champion-name {
+  font-size: 1.2rem;
+  color: #fbbf24;
+}
+
+.podium-score {
+  font-family: 'Orbitron', sans-serif;
+  color: #00f5c0;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.podium-score.champion-score {
+  font-size: 1.3rem;
+  color: #fbbf24;
+}
+
+.podium-base {
+  width: 150px;
+  height: 120px;
+  background: linear-gradient(135deg, rgba(0, 136, 255, 0.2), rgba(0, 245, 192, 0.2));
+  border: 2px solid rgba(0, 245, 192, 0.3);
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.podium-base.first-base {
+  height: 160px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.podium-base.second-base {
+  height: 120px;
+}
+
+.podium-base.third-base {
+  height: 90px;
+}
+
+.podium-place.first {
+  order: 2;
+}
+
+.podium-place.second {
+  order: 1;
+}
+
+.podium-place.third {
+  order: 3;
+}
+
+/* ===================================
+   TABLEAU DE CLASSEMENT
+=================================== */
+.scoreboard-section {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.scoreboard-table-wrapper {
+  overflow-x: auto;
+  margin-top: 30px;
+}
+
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scoreboard-table thead {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid rgba(0, 245, 192, 0.3);
+}
+
+.scoreboard-table th {
+  padding: 15px 20px;
+  text-align: left;
+  color: #00f5c0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scoreboard-table td {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.scoreboard-row {
+  transition: all 0.3s ease;
+}
+
+.scoreboard-row:hover {
+  background: rgba(0, 245, 192, 0.03);
+}
+
+.scoreboard-row.current-user {
+  background: rgba(0, 136, 255, 0.1);
+  border-left: 4px solid #0088ff;
+}
+
+.scoreboard-row.podium-row {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+/* Colonnes */
+.rank-col {
+  width: 80px;
+  text-align: center;
+}
+
+.player-col {
+  min-width: 250px;
+}
+
+.score-col {
+  width: 120px;
+  text-align: center;
+}
+
+.challenges-col {
+  width: 120px;
+  text-align: center;
+}
+
+.date-col {
+  width: 130px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Rang */
+.rank-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.rank-badge.gold {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.rank-badge.silver {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.rank-badge.bronze {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.rank-number {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Joueur */
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.player-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0088ff, #00f5c0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #050a10;
+  flex-shrink: 0;
+}
+
+.player-details {
+  flex: 1;
+}
+
+.player-name {
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.you-badge {
+  background: rgba(0, 136, 255, 0.2);
+  color: #0088ff;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(0, 136, 255, 0.3);
+}
+
+.player-email {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Score */
+.score-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00f5c0;
+}
+
+.score-label {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-left: 5px;
+}
+
+/* Challenges */
+.challenges-value {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.challenges-label {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-left: 3px;
+}
+
+/* État vide */
+.empty-scoreboard {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-scoreboard h3 {
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+.empty-scoreboard p {
+  color: #64748b;
+  margin-bottom: 30px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .podium-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .podium-place.first,
+  .podium-place.second,
+  .podium-place.third {
+    order: initial;
+  }
+  
+  .podium-base {
+    width: 200px;
+  }
+  
+  .user-position-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .scoreboard-table {
+    font-size: 0.85rem;
+  }
+  
+  .scoreboard-table td {
+    padding: 12px 10px;
+  }
+  
+  .player-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  
+  .player-email {
+    display: none;
+  }
+}
+</style>
+{% endblock %}

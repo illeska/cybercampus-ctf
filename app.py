@@ -175,6 +175,29 @@ def dashboard():
     """Page du tableau de bord (protégée)"""
     return render_template("dashboard.html", user=current_user)
 
+@app.route('/scoreboard')
+def scoreboard():
+    """Page du classement général (Top 100)"""
+    # Récupérer le classement général (Top 100)
+    classement = Scoreboard.afficherClassement(limit=100)
+    
+    # Si l'utilisateur est connecté, trouver sa position
+    user_rank = None
+    user_score = None
+    if current_user.is_authenticated:
+        user_score = current_user.score
+        # Compter combien d'utilisateurs ont plus de points
+        user_rank = Scoreboard.query.filter(
+            Scoreboard.points_total > user_score
+        ).count() + 1
+    
+    return render_template(
+        "scoreboard.html",
+        classement=classement,
+        user_rank=user_rank,
+        user_score=user_score
+    )
+
 @app.route('/learn')
 def learn():
     """Bibliothèque de cours - Page d'index"""
