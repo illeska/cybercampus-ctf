@@ -18,6 +18,14 @@ app = Flask(__name__, template_folder="./webapp/templates", static_folder="./web
 # Chargement de la configuration depuis config.py
 app.config.from_object("config.Config")
 
+app.config.update(
+    SESSION_COOKIE_SECURE=True,    # Force le cookie à ne passer que par HTTPS
+    SESSION_COOKIE_HTTPONLY=True,  # Empêche le JavaScript de voler le cookie (sécurité anti-XSS)
+    SESSION_COOKIE_SAMESITE='Lax', # Permet de garder la session lors de la navigation interne
+    SESSION_COOKIE_NAME='cybercampus_session', # Un nom unique pour ton CTF
+    PERMANENT_SESSION_LIFETIME=1800 # Session de 30 minutes
+)
+
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
 init_app(app)
 
@@ -26,6 +34,12 @@ print("DB URI =", app.config["SQLALCHEMY_DATABASE_URI"])
 # Enregistrement des blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # On redirige vers l'accueil ou on affiche une page propre
+    # Cela garantit que l'utilisateur reste dans le contexte de l'app
+    return render_template('./webapp/templates/404.html'), 404
 
 # ------------------------------
 # SYSTÈME DE HINTS EN MÉMOIRE
