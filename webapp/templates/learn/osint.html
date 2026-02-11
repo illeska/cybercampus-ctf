@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Cours : OSINT - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">OSINT</span>
+  </div>
+
+  <!-- Header -->
+  <div class="course-header">
+    <div class="course-header-icon">🕵️</div>
+    <div class="course-header-content">
+      <h1>OSINT (Open Source Intelligence)</h1>
+      <p class="course-subtitle">
+        Comprendre la collecte d’informations en sources ouvertes, ses usages et ses risques
+      </p>
+      <div class="course-badges">
+        <span class="badge-medium">Intermédiaire</span>
+        <span class="badge-time">📖 25 min</span>
+        <span class="badge-level">🎓 Fondamental</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="course-content">
+
+    <!-- SECTION 1 -->
+    <div class="course-section">
+      <h2>📖 Définition académique</h2>
+
+      <p>
+        L’OSINT désigne l’ensemble des techniques permettant de collecter,
+        analyser et exploiter des informations accessibles publiquement,
+        dans le but de produire un renseignement exploitable.
+      </p>
+
+      <p>
+        Il ne s’agit pas de piratage.  
+        Il s’agit d’<strong>analyse méthodique de données ouvertes</strong>.
+      </p>
+
+      <div class="info-box">
+        <div class="info-icon">🎯</div>
+        <div class="info-content">
+          <strong>Principe central :</strong>
+          <p>
+            Une donnée isolée a peu de valeur.
+            Plusieurs données recoupées produisent un renseignement structuré.
+          </p>
+        </div>
+      </div>
+
+      <h3>Donnée vs Information vs Renseignement</h3>
+      <ul>
+        <li><strong>Donnée :</strong> un nom affiché sur un site</li>
+        <li><strong>Information :</strong> ce nom correspond à un employé d’une entreprise</li>
+        <li><strong>Renseignement :</strong> cette personne travaille sur un projet précis exposé publiquement</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="course-section">
+      <h2>🌍 Les domaines de l’OSINT</h2>
+
+      <div class="attack-types">
+
+        <div class="attack-type-card">
+          <h4>🌐 OSINT Web</h4>
+          <p>
+            Analyse de sites internet, commentaires HTML, fichiers robots.txt,
+            pages oubliées, archives web.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>📱 OSINT Réseaux sociaux</h4>
+          <p>
+            Analyse des publications, connexions, habitudes,
+            géolocalisation implicite, relations professionnelles.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>📄 OSINT Documentaire</h4>
+          <p>
+            Métadonnées de fichiers PDF, Word, Excel.
+            Auteur, version logicielle, date de modification.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🖼️ OSINT Multimédia</h4>
+          <p>
+            Métadonnées EXIF d’images, analyse d’arrière-plan,
+            reconnaissance d’objets ou de bâtiments.
+          </p>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>🌍 OSINT Technique</h4>
+          <p>
+            WHOIS, DNS, informations sur les serveurs,
+            fuites de bases de données publiques.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="course-section">
+      <h2>🔎 Exemples concrets d’exploitation OSINT</h2>
+
+      <h3>Exemple 1 : Métadonnées d’image</h3>
+      <div class="code-block">
+<pre><code>Camera: Smartphone X
+Date: 2025:01:12 18:45:02
+GPS Latitude: 48.8566
+GPS Longitude: 2.3522</code></pre>
+      </div>
+      <p>
+        Ces coordonnées permettent de localiser précisément l’endroit où la photo a été prise.
+      </p>
+
+      <h3>Exemple 2 : Commentaire HTML oublié</h3>
+      <div class="code-block vulnerable">
+<pre><code>&lt;!-- Version beta interne - accès admin : /admin-dev --&gt;</code></pre>
+      </div>
+
+      <h3>Exemple 3 : Métadonnées d’un PDF</h3>
+      <div class="code-block">
+<pre><code>Author: John Smith
+Company: Internal Department
+Software: Microsoft Word 2016</code></pre>
+      </div>
+
+      <p>
+        Ces informations peuvent révéler la structure interne d’une organisation.
+      </p>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="course-section">
+      <h2>⚠️ Les dangers de l’OSINT</h2>
+
+      <div class="info-box">
+        <div class="info-icon">🚨</div>
+        <div class="info-content">
+          <strong>Pourquoi l’OSINT est dangereux :</strong>
+          <ul>
+            <li>Profilage précis d’une personne</li>
+            <li>Préparation d’attaques de phishing ciblées</li>
+            <li>Usurpation d’identité</li>
+            <li>Cartographie des infrastructures techniques</li>
+            <li>Reconnaissance préalable à une intrusion</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        L’OSINT est souvent la première phase d’une attaque.
+        Avant toute intrusion technique, un attaquant collecte des informations.
+      </p>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="course-section">
+      <h2>🛡️ Comment se protéger contre l’OSINT</h2>
+
+      <div class="checklist">
+        <div class="checklist-item"><span class="check">✅</span><span>Supprimer les métadonnées avant publication</span></div>
+        <div class="checklist-item"><span class="check">✅</span><span>Limiter les informations publiques sur les réseaux sociaux</span></div>
+        <div class="checklist-item"><span class="check">✅</span><span>Éviter les commentaires sensibles dans le code source</span></div>
+        <div class="checklist-item"><span class="check">✅</span><span>Configurer correctement les permissions serveur</span></div>
+        <div class="checklist-item"><span class="check">✅</span><span>Sensibiliser les employés aux risques de divulgation</span></div>
+      </div>
+
+      <div class="info-box" style="margin-top:20px;">
+        <div class="info-icon">🔐</div>
+        <div class="info-content">
+          <strong>Principe clé :</strong>
+          <p>
+            Toute information publique peut être analysée.
+            La meilleure protection reste la réduction de surface d’exposition.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="course-section">
+      <h2>🎓 S’entraîner à l’OSINT</h2>
+
+      <p>
+        Pour progresser, il faut développer :
+      </p>
+
+      <ul>
+        <li>La rigueur méthodologique</li>
+        <li>L’esprit critique</li>
+        <li>La capacité à recouper des informations</li>
+        <li>La patience et l’observation</li>
+      </ul>
+
+      <div class="example-box">
+        <strong>Exercice d'entraînement :</strong>
+        <code>
+        1. Analyser une image
+        2. Extraire ses métadonnées
+        3. Identifier un lieu
+        4. Rechercher des informations liées à ce lieu
+        5. Recouper les résultats
+        </code>
+      </div>
+
+      <p style="margin-top:15px;">
+        L’OSINT n’est pas une question de complexité technique,
+        mais de méthode structurée.
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Mise en pratique</h2>
+        <p>
+          Dans le challenge OSINT, vous devrez collecter,
+          analyser et recouper plusieurs informations
+          afin de reconstituer un renseignement caché.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail"><span class="cta-icon">⭐</span><span><strong>150 points</strong></span></div>
+          <div class="cta-detail"><span class="cta-icon">⏱️</span><span>10-15 minutes</span></div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=4) }}" class="btn challenge-btn-large">
+          Accéder au challenge OSINT
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

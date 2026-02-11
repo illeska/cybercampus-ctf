@@ -21,6 +21,8 @@ app.config.from_object("config.Config")
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
 init_app(app)
 
+print("DB URI =", app.config["SQLALCHEMY_DATABASE_URI"])
+
 # Enregistrement des blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
@@ -92,6 +94,23 @@ HINTS_DATABASE = {
                 "penalty_percent": 30
             }
         ]
+    },
+    5: {    # Challenge Osint
+        "hints": [
+            {
+                "text": "",
+                "penalty_percent": 10
+            },
+            {
+                "text": "",
+                "penalty_percent": 20
+            },
+            {
+                "text": "",
+                "penalty_percent": 30
+            }
+        ]
+        
     }
     
 }
@@ -222,6 +241,11 @@ def learn_bruteforce():
 def learn_crypto():
     """Cours sur la Cryptographie"""
     return render_template("learn/crypto.html")
+
+@app.route('/learn/osint')
+def learn_osint():
+    """Cours sur l'OSINT"""
+    return render_template("learn/osint.html")
 
 
 @app.route('/challenges')

@@ -72,6 +72,14 @@
             </a>
           </div>
 
+        {% elif challenge.id == 5 %}
+          <p>OSINT.</p>
+          <div class="env-btn-wrapper">
+            <a href="http://localhost:5005" target="_blank" class="btn env-btn">
+              🌈 Ouvrir Challenge OSINT
+            </a>
+          </div>  
+
         {% else %}
           <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
         {% endif %}

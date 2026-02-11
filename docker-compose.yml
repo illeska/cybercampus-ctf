@@ -1,11 +1,12 @@
-# version: "3.9"
+version: "3.9"
 
 services:
   web:
     build: .
     container_name: cybercampus_web
+    # Écoute uniquement en local pour Nginx
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     env_file:
       - .env
     depends_on:
@@ -22,8 +23,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
+    # La BDD n'est jamais exposée à l'extérieur
+    expose:
+      - "5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -34,6 +36,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    # Gardé ouvert pour ton accès admin (à sécuriser via Firewall Cloud)
     ports:
       - "5050:80"
     depends_on:
@@ -43,28 +46,28 @@ services:
     build: ./challenges/sqli
     container_name: cybercampus_sqli
     ports:
-      - "5001:5001"
+      - "127.0.0.1:5001:5001"
     restart: always
 
   xss-challenge:
     build: ./challenges/xss
     container_name: cybercampus_xss
     ports:
-      - "5002:5002"
+      - "127.0.0.1:5002:5002"
     restart: always
 
   bruteforce-challenge:
     build: ./challenges/bruteforce
     container_name: cybercampus_bruteforce
     ports:
-      - "5004:5004"
+      - "127.0.0.1:5004:5004"
     restart: always
     
   crypto-challenge:
     build: ./challenges/crypto
     container_name: cybercampus_crypto
     ports:
-      - "5003:5003"
+      - "127.0.0.1:5003:5003"
     restart: always
 
 volumes:
