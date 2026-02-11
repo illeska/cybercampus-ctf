@@ -39,9 +39,17 @@ app.register_blueprint(admin_bp)
 
 @app.errorhandler(404)
 def page_not_found(e):
-    # On redirige vers l'accueil ou on affiche une page propre
-    # Cela garantit que l'utilisateur reste dans le contexte de l'app
-    return render_template('404.html'), 404
+    # On renvoie directement le HTML sans passer par render_template
+    return """
+    <html>
+        <head><title>404 - CyberCampus</title></head>
+        <body style="font-family:sans-serif; text-align:center; padding-top:50px;">
+            <h1>404 - Page non trouvée</h1>
+            <p>Désolé, cette page n'existe pas.</p>
+            <a href="/home" style="color: #007bff; text-decoration: none;">Retourner à l'accueil</a>
+        </body>
+    </html>
+    """, 404
 
 # ------------------------------
 # SYSTÈME DE HINTS EN MÉMOIRE
