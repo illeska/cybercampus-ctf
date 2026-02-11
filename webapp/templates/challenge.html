@@ -43,7 +43,7 @@
         {% if challenge.id == 1 %}
           <p>Accédez à l'application vulnérable pour exploiter la faille SQLi.</p>
           <div class="env-btn-wrapper">
-            <a href="http://localhost:5001" target="_blank" class="btn env-btn">
+            <a href="/challenges/sqli/" target="_blank" class="btn env-btn">
               🔓 Ouvrir Challenge SQLi
             </a>
           </div>
@@ -51,7 +51,7 @@
         {% elif challenge.id == 2 %}
           <p>Testez vos compétences XSS sur ce livre d'or non sécurisé.</p>
           <div class="env-btn-wrapper">
-            <a href="http://localhost:5002" target="_blank" class="btn env-btn">
+            <a href="/challenges/xss/" target="_blank" class="btn env-btn">
               💬 Ouvrir Challenge XSS
             </a>
           </div>
@@ -59,7 +59,7 @@
         {% elif challenge.id == 3 %}
           <p>Accédez au coffre-fort digital et trouvez le code secret à 4 chiffres.</p>
           <div class="env-btn-wrapper">
-            <a href="http://localhost:5004" target="_blank" class="btn env-btn">
+            <a href="/challenges/bruteforce/" target="_blank" class="btn env-btn">
               🔐 Ouvrir Challenge Bruteforce
             </a>
           </div>
@@ -67,18 +67,10 @@
         {% elif challenge.id == 4 %}
           <p>Tentez de craquer les hash MD5 pour récupérer le flag.</p>
           <div class="env-btn-wrapper">
-            <a href="http://localhost:5003" target="_blank" class="btn env-btn">
+            <a href="/challenges/crypto/" target="_blank" class="btn env-btn">
               🌈 Ouvrir Challenge Cryptographie
             </a>
           </div>
-
-        {% elif challenge.id == 5 %}
-          <p>OSINT.</p>
-          <div class="env-btn-wrapper">
-            <a href="http://localhost:5005" target="_blank" class="btn env-btn">
-              🌈 Ouvrir Challenge OSINT
-            </a>
-          </div>  
 
         {% else %}
           <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>

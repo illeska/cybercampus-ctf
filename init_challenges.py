@@ -2,12 +2,10 @@ from app import app
 from core import db
 from core.models import Challenge, Flag
 
-# Liste de configuration de vos challenges avec URLs RELATIVES
 CHALLENGES_DATA = [
     {
         "titre": "SQL Injection - Login Bypass",
         "description": "Connectez-vous en tant qu'administrateur pour récupérer le flag. L'application utilise une requête SQL vulnérable.",
-        "url": "/challenges/sqli/", # URL relative pour Nginx
         "points": 25,
         "actif": True,
         "flag_str": "CTF{SQL_1nj3ct10n_m4st3r}"
@@ -15,7 +13,6 @@ CHALLENGES_DATA = [
     {
         "titre": "XSS Reflected - Livre d'or",
         "description": "Exploitez une faille XSS dans le système de commentaires pour obtenir le flag.",
-        "url": "/challenges/xss/", # URL relative pour Nginx
         "points": 50,
         "actif": True,
         "flag_str": "CTF{XSS_r3fl3ct3d_pwn3d}"
@@ -23,7 +20,6 @@ CHALLENGES_DATA = [
     {
         "titre": "Bruteforce - Coffre-fort Digital",
         "description": "Trouvez le code secret à 4 chiffres pour déverrouiller le coffre-fort.",
-        "url": "/challenges/bruteforce/", # URL relative pour Nginx
         "points": 100,
         "actif": True,
         "flag_str": "CTF{Brut3F0rc3_M4st3r_7394}"
@@ -31,7 +27,6 @@ CHALLENGES_DATA = [
     {
         "titre": "Cryptographie - Rainbow Tables & Hash Cracking",
         "description": "Déchiffrez le message pour obtenir le flag.",
-        "url": "/challenges/crypto/", # URL relative pour Nginx
         "points": 75,
         "actif": True,
         "flag_str": "CTF{H4sh_Cr4ck1ng_1s_Fun}"
@@ -48,7 +43,6 @@ def sync_challenges():
                 if challenge:
                     print(f"🔄 Mise à jour du challenge : {data['titre']}")
                     challenge.description = data["description"]
-                    challenge.url = data["url"] # Mise à jour vers l'URL relative
                     challenge.points = data["points"]
                     challenge.actif = data["actif"]
                     
@@ -61,7 +55,6 @@ def sync_challenges():
                     new_challenge = Challenge(
                         titre=data["titre"],
                         description=data["description"],
-                        url=data["url"], # Utilisation de l'URL relative
                         points=data["points"],
                         actif=data["actif"]
                     )
