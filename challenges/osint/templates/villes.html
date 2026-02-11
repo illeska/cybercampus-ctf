@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge OSINT - Villes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .container {
+            flex: 1;
+            padding: 3rem 2rem;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .city-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .city-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        .city-card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .city-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .city-card a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        .city-card a:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/accueil">🏠 Accueil</a></li>
+            <li><a href="/villes">🏙️ Villes</a></li>
+            <li><a href="/lille">📍 Lille</a></li>
+            <li><a href="/roubaix">📍 Roubaix</a></li>
+            <li><a href="/tourcoing">📍 Tourcoing</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <h1>🏙️ Explorez les Villes</h1>
+        <div class="cities-grid">
+            <div class="city-card">
+                <h2>🏛️ Lille</h2>
+                <p>Capitale des Flandres, Lille est une ville dynamique et culturelle, connue pour son architecture flamande et sa Grande Place.</p>
+                <a href="/lille">Explorer Lille</a>
+            </div>
+            
+            <div class="city-card">
+                <h2>🏭 Roubaix</h2>
+                <p>Ancienne cité textile, Roubaix s'est réinventée avec La Piscine, musée d'art et d'industrie installé dans une ancienne piscine art déco.</p>
+                <a href="/roubaix">Explorer Roubaix</a>
+            </div>
+            
+            <div class="city-card">
+                <h2>🎨 Tourcoing</h2>
+                <p>Ville d'art et d'histoire, Tourcoing possède un riche patrimoine architectural et industriel, témoin de son passé textile.</p>
+                <a href="/tourcoing">Explorer Tourcoing</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

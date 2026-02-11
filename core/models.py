@@ -88,7 +88,7 @@ class Challenge(db.Model):
     points = db.Column(db.Integer, default=0)
     actif = db.Column(db.Boolean, default=True)
 
-    submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
+    submissions = db.relationship('Submission', backref='challenge', lazy=True, cascade='all, delete-orphan')
     flag = db.relationship("Flag", backref="challenge", uselist=False, cascade="all, delete-orphan")
 
     def activer(self):

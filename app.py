@@ -119,22 +119,21 @@ HINTS_DATABASE = {
             }
         ]
     },
-    5: {    # Challenge Osint
+    5: {  # Challenge OSINT
         "hints": [
             {
-                "text": "",
+                "text": "💡 Certaines informations ne sont pas visibles à l’écran mais restent accessibles publiquement.",
                 "penalty_percent": 10
             },
             {
-                "text": "",
+                "text": "🎯 Tous les onglets ne sont pas forcément visibles dans le menu principal.",
                 "penalty_percent": 20
             },
             {
-                "text": "",
+                "text": "🔑 Examinez attentivement le code source de l'une des villes. Certains chemins ou liens peuvent y apparaître sans être affichés à l’écran",
                 "penalty_percent": 30
             }
         ]
-        
     }
     
 }

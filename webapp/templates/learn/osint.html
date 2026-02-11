@@ -3,7 +3,7 @@
 
 {% block content %}
 <section class="page-wrapper course-page">
-
+  
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
@@ -11,238 +11,343 @@
     <span class="current">OSINT</span>
   </div>
 
-  <!-- Header -->
+  <!-- En-tête du cours -->
   <div class="course-header">
-    <div class="course-header-icon">🕵️</div>
+    <div class="course-header-icon">🔍</div>
     <div class="course-header-content">
       <h1>OSINT (Open Source Intelligence)</h1>
-      <p class="course-subtitle">
-        Comprendre la collecte d’informations en sources ouvertes, ses usages et ses risques
-      </p>
+      <p class="course-subtitle">L'art de collecter des informations publiques pour révéler l'invisible</p>
       <div class="course-badges">
-        <span class="badge-medium">Intermédiaire</span>
-        <span class="badge-time">📖 25 min</span>
-        <span class="badge-level">🎓 Fondamental</span>
+        <span class="badge-info">Reconnaissance</span>
+        <span class="badge-time">📖 10 min</span>
+        <span class="badge-level">⚡ Débutant</span>
       </div>
     </div>
   </div>
 
+  <!-- Contenu du cours -->
   <div class="course-content">
 
-    <!-- SECTION 1 -->
+    <!-- Section 1 -->
     <div class="course-section">
-      <h2>📖 Définition académique</h2>
-
+      <h2>🔍 Qu'est-ce que l'OSINT ?</h2>
       <p>
-        L’OSINT désigne l’ensemble des techniques permettant de collecter,
-        analyser et exploiter des informations accessibles publiquement,
-        dans le but de produire un renseignement exploitable.
+        L'<strong>OSINT (Open Source Intelligence)</strong> désigne la collecte et l'analyse d'informations provenant de 
+        <strong>sources publiques et légalement accessibles</strong>. Contrairement au piratage informatique, l'OSINT n'exploite 
+        aucune faille technique : elle repose uniquement sur des données déjà disponibles en ligne.
       </p>
-
       <p>
-        Il ne s’agit pas de piratage.  
-        Il s’agit d’<strong>analyse méthodique de données ouvertes</strong>.
+        Ces informations peuvent provenir de multiples sources : réseaux sociaux, sites web, bases de données publiques, 
+        images, métadonnées, documents partagés, registres officiels, forums, et bien d'autres. L'objectif est de 
+        <strong>croiser et analyser</strong> ces données pour révéler des informations stratégiques.
       </p>
-
+      
       <div class="info-box">
-        <div class="info-icon">🎯</div>
+        <div class="info-icon">💡</div>
         <div class="info-content">
-          <strong>Principe central :</strong>
-          <p>
-            Une donnée isolée a peu de valeur.
-            Plusieurs données recoupées produisent un renseignement structuré.
-          </p>
+          <strong>Le saviez-vous ?</strong>
+          <p>L'OSINT est utilisée par les services de renseignement, les journalistes d'investigation, les enquêteurs 
+          privés, les équipes de cybersécurité et même les recruteurs. C'est devenu une compétence essentielle dans 
+          de nombreux domaines professionnels.</p>
         </div>
       </div>
-
-      <h3>Donnée vs Information vs Renseignement</h3>
-      <ul>
-        <li><strong>Donnée :</strong> un nom affiché sur un site</li>
-        <li><strong>Information :</strong> ce nom correspond à un employé d’une entreprise</li>
-        <li><strong>Renseignement :</strong> cette personne travaille sur un projet précis exposé publiquement</li>
-      </ul>
     </div>
 
-    <!-- SECTION 2 -->
+    <!-- Section 2 -->
     <div class="course-section">
-      <h2>🌍 Les domaines de l’OSINT</h2>
+      <h2>🌐 Les sources d'information OSINT</h2>
+      <p>L'OSINT exploite une multitude de sources publiques. Voici les principales catégories :</p>
 
       <div class="attack-types">
-
         <div class="attack-type-card">
-          <h4>🌐 OSINT Web</h4>
-          <p>
-            Analyse de sites internet, commentaires HTML, fichiers robots.txt,
-            pages oubliées, archives web.
-          </p>
+          <h4>🌍 Web et Réseaux Sociaux</h4>
+          <p>Facebook, LinkedIn, Twitter, Instagram, TikTok, forums, blogs personnels</p>
         </div>
-
         <div class="attack-type-card">
-          <h4>📱 OSINT Réseaux sociaux</h4>
-          <p>
-            Analyse des publications, connexions, habitudes,
-            géolocalisation implicite, relations professionnelles.
-          </p>
+          <h4>📸 Métadonnées d'images</h4>
+          <p>Données EXIF (GPS, date, appareil), géolocalisation, reverse image search</p>
         </div>
-
         <div class="attack-type-card">
-          <h4>📄 OSINT Documentaire</h4>
-          <p>
-            Métadonnées de fichiers PDF, Word, Excel.
-            Auteur, version logicielle, date de modification.
-          </p>
+          <h4>🗂️ Bases de données publiques</h4>
+          <p>WHOIS, DNS, registres d'entreprises, archives web (Wayback Machine)</p>
         </div>
-
         <div class="attack-type-card">
-          <h4>🖼️ OSINT Multimédia</h4>
-          <p>
-            Métadonnées EXIF d’images, analyse d’arrière-plan,
-            reconnaissance d’objets ou de bâtiments.
-          </p>
+          <h4>📄 Documents et fichiers</h4>
+          <p>PDFs, Word, métadonnées de documents, code source sur GitHub</p>
         </div>
+      </div>
 
-        <div class="attack-type-card">
-          <h4>🌍 OSINT Technique</h4>
-          <p>
-            WHOIS, DNS, informations sur les serveurs,
-            fuites de bases de données publiques.
-          </p>
+      <h3>Exemple concret : Le code source HTML</h3>
+      <p>Un site web peut contenir des informations cachées dans son code source :</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">🔎 Code source HTML</span>
+          <span class="code-lang">HTML</span>
         </div>
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Page d'accueil&lt;/title&gt;
+    &lt;!-- TODO: Retirer l'accès à /admin avant la mise en production --&gt;
+    &lt;!-- Mot de passe par défaut: Admin2024! --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Bienvenue&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
 
+      <div class="explanation-box">
+        <h4>Ce que révèle ce code :</h4>
+        <ul>
+          <li>🚪 Existence d'une page <code>/admin</code> non référencée publiquement</li>
+          <li>🔑 Mot de passe par défaut laissé en commentaire</li>
+          <li>⚠️ Mauvaise pratique de développement (informations sensibles dans le code)</li>
+        </ul>
+        <p><strong>Leçon :</strong> Les développeurs oublient souvent de nettoyer les commentaires avant déploiement !</p>
       </div>
     </div>
 
-    <!-- SECTION 3 -->
+    <!-- Section 3 -->
     <div class="course-section">
-      <h2>🔎 Exemples concrets d’exploitation OSINT</h2>
+      <h2>🛠️ Techniques et outils OSINT</h2>
 
-      <h3>Exemple 1 : Métadonnées d’image</h3>
-      <div class="code-block">
-<pre><code>Camera: Smartphone X
-Date: 2025:01:12 18:45:02
-GPS Latitude: 48.8566
-GPS Longitude: 2.3522</code></pre>
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Google Dorking</h3>
+          <p>Utilisez des opérateurs de recherche avancés pour trouver des informations spécifiques :</p>
+          
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔍 Exemples de Google Dorks</span>
+            </div>
+            <pre><code>site:example.com filetype:pdf
+# Trouve tous les PDFs sur example.com
+
+intitle:"index of" password.txt
+# Recherche des répertoires exposés contenant des fichiers password.txt
+
+inurl:admin site:example.com
+# Trouve les pages d'admin sur un site spécifique
+
+"email" site:linkedin.com "@example.com"
+# Trouve des adresses email sur LinkedIn</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Astuce :</strong> Combinez plusieurs opérateurs pour affiner vos recherches. Google indexe 
+            parfois des informations que les propriétaires de sites pensaient privées !
+          </div>
+        </div>
       </div>
-      <p>
-        Ces coordonnées permettent de localiser précisément l’endroit où la photo a été prise.
-      </p>
 
-      <h3>Exemple 2 : Commentaire HTML oublié</h3>
-      <div class="code-block vulnerable">
-<pre><code>&lt;!-- Version beta interne - accès admin : /admin-dev --&gt;</code></pre>
-      </div>
-
-      <h3>Exemple 3 : Métadonnées d’un PDF</h3>
-      <div class="code-block">
-<pre><code>Author: John Smith
-Company: Internal Department
-Software: Microsoft Word 2016</code></pre>
-      </div>
-
-      <p>
-        Ces informations peuvent révéler la structure interne d’une organisation.
-      </p>
-    </div>
-
-    <!-- SECTION 4 -->
-    <div class="course-section">
-      <h2>⚠️ Les dangers de l’OSINT</h2>
-
-      <div class="info-box">
-        <div class="info-icon">🚨</div>
-        <div class="info-content">
-          <strong>Pourquoi l’OSINT est dangereux :</strong>
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Analyse de métadonnées</h3>
+          <p>Les fichiers contiennent souvent des informations cachées :</p>
+          
           <ul>
-            <li>Profilage précis d’une personne</li>
-            <li>Préparation d’attaques de phishing ciblées</li>
-            <li>Usurpation d’identité</li>
-            <li>Cartographie des infrastructures techniques</li>
-            <li>Reconnaissance préalable à une intrusion</li>
+            <li><strong>Images (EXIF) :</strong> GPS, date/heure, modèle d'appareil, logiciel utilisé</li>
+            <li><strong>Documents Office :</strong> Auteur, entreprise, historique de révisions</li>
+            <li><strong>PDFs :</strong> Créateur, date de création, outils utilisés</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">📸 Exemple de métadonnées EXIF</span>
+            </div>
+            <pre><code>Fichier: photo_vacances.jpg
+GPS Latitude: 48°51'29.9"N
+GPS Longitude: 2°17'40.2"E
+Date: 2024:08:15 14:32:18
+Appareil: iPhone 15 Pro
+Localisation calculée: Paris, Tour Eiffel</code></pre>
+          </div>
+
+          <p><strong>Outils :</strong> ExifTool, Jeffrey's Image Metadata Viewer, FOCA (pour documents)</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Recherche inversée d'images</h3>
+          <p>Retrouvez l'origine d'une photo ou trouvez des variantes :</p>
+          <ul>
+            <li><strong>Google Images :</strong> Téléversez une image pour voir où elle apparaît en ligne</li>
+            <li><strong>TinEye :</strong> Moteur spécialisé dans la recherche inversée</li>
+            <li><strong>Yandex :</strong> Excellente reconnaissance faciale</li>
+          </ul>
+          <p><em>Cas d'usage :</em> Identifier une personne, vérifier l'authenticité d'une photo, trouver la source originale</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Wayback Machine et archives web</h3>
+          <p>Le web n'oublie jamais ! Archive.org conserve des snapshots de milliards de pages :</p>
+          <ul>
+            <li>Consultez d'anciennes versions d'un site web</li>
+            <li>Retrouvez du contenu supprimé</li>
+            <li>Suivez l'évolution d'une organisation</li>
+            <li>Découvrez des informations qui ont été retirées</li>
           </ul>
         </div>
       </div>
 
-      <p>
-        L’OSINT est souvent la première phase d’une attaque.
-        Avant toute intrusion technique, un attaquant collecte des informations.
-      </p>
+      <div class="protection-method">
+        <div class="method-number">5</div>
+        <div class="method-content">
+          <h3>WHOIS et reconnaissance DNS</h3>
+          <p>Chaque nom de domaine est enregistré avec des informations publiques :</p>
+          <ul>
+            <li>Propriétaire du domaine (si non protégé par WHOIS privacy)</li>
+            <li>Date de création et d'expiration</li>
+            <li>Serveurs DNS et hébergeur</li>
+            <li>Sous-domaines associés</li>
+          </ul>
+          <p><strong>Outils :</strong> whois.domaintools.com, dnsdumpster.com, Shodan (pour services exposés)</p>
+        </div>
+      </div>
     </div>
 
-    <!-- SECTION 5 -->
+    <!-- Section 4 -->
     <div class="course-section">
-      <h2>🛡️ Comment se protéger contre l’OSINT</h2>
+      <h2>⚖️ Éthique et légalité de l'OSINT</h2>
+      <p>L'OSINT repose sur des sources <strong>publiques et légales</strong>, mais certaines règles s'appliquent :</p>
+
+      <div class="attack-showcase">
+        <div class="attack-input" style="background: #d4edda; border-color: #c3e6cb;">
+          <label style="color: #155724;">✅ Autorisé :</label>
+          <ul style="margin-top: 0.5rem;">
+            <li>Consulter des sites web publics</li>
+            <li>Utiliser Google et les moteurs de recherche</li>
+            <li>Lire des profils publics sur les réseaux sociaux</li>
+            <li>Analyser des métadonnées de fichiers publics</li>
+          </ul>
+        </div>
+        <div class="attack-input" style="background: #f8d7da; border-color: #f5c6cb;">
+          <label style="color: #721c24;">❌ Interdit :</label>
+          <ul style="margin-top: 0.5rem;">
+            <li>Pirater des comptes ou systèmes</li>
+            <li>Utiliser des identifiants volés</li>
+            <li>Harceler ou menacer des personnes</li>
+            <li>Exploiter des données obtenues illégalement</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+        <div class="info-icon">⚠️</div>
+        <div class="info-content">
+          <strong>Important :</strong>
+          <p>Même si une information est publique, son utilisation peut être encadrée par la loi (RGPD en Europe, 
+          protection de la vie privée). Agissez toujours de manière éthique et dans le respect des personnes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="course-section">
+      <h2>🛡️ Se protéger contre l'OSINT</h2>
+      <p>Comment réduire votre empreinte numérique et limiter les informations disponibles sur vous ?</p>
 
       <div class="checklist">
-        <div class="checklist-item"><span class="check">✅</span><span>Supprimer les métadonnées avant publication</span></div>
-        <div class="checklist-item"><span class="check">✅</span><span>Limiter les informations publiques sur les réseaux sociaux</span></div>
-        <div class="checklist-item"><span class="check">✅</span><span>Éviter les commentaires sensibles dans le code source</span></div>
-        <div class="checklist-item"><span class="check">✅</span><span>Configurer correctement les permissions serveur</span></div>
-        <div class="checklist-item"><span class="check">✅</span><span>Sensibiliser les employés aux risques de divulgation</span></div>
-      </div>
-
-      <div class="info-box" style="margin-top:20px;">
-        <div class="info-icon">🔐</div>
-        <div class="info-content">
-          <strong>Principe clé :</strong>
-          <p>
-            Toute information publique peut être analysée.
-            La meilleure protection reste la réduction de surface d’exposition.
-          </p>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Paramétrez vos réseaux sociaux en <strong>profil privé</strong></span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Supprimez les <strong>métadonnées</strong> avant de publier des photos</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilisez des <strong>pseudonymes différents</strong> sur chaque plateforme</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Activez la <strong>protection WHOIS</strong> pour vos noms de domaine</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Révisez régulièrement ce qui est <strong>visible publiquement</strong> sur vous</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Nettoyez les <strong>commentaires dans le code source</strong> avant déploiement</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Limitez les informations personnelles partagées en ligne</span>
         </div>
       </div>
     </div>
 
-    <!-- SECTION 6 -->
+    <!-- Section 6 -->
     <div class="course-section">
-      <h2>🎓 S’entraîner à l’OSINT</h2>
+      <h2>📚 Méthodologie d'une enquête OSINT</h2>
+      <p>Une investigation OSINT réussie suit généralement ces étapes :</p>
 
-      <p>
-        Pour progresser, il faut développer :
-      </p>
-
-      <ul>
-        <li>La rigueur méthodologique</li>
-        <li>L’esprit critique</li>
-        <li>La capacité à recouper des informations</li>
-        <li>La patience et l’observation</li>
-      </ul>
-
-      <div class="example-box">
-        <strong>Exercice d'entraînement :</strong>
-        <code>
-        1. Analyser une image
-        2. Extraire ses métadonnées
-        3. Identifier un lieu
-        4. Rechercher des informations liées à ce lieu
-        5. Recouper les résultats
-        </code>
+      <div class="explanation-box">
+        <h4>Les 5 phases d'une enquête OSINT :</h4>
+        <ol style="margin-left: 1.5rem;">
+          <li><strong>Définir l'objectif :</strong> Que cherche-t-on exactement ?</li>
+          <li><strong>Identifier les sources :</strong> Où trouver ces informations ?</li>
+          <li><strong>Collecter les données :</strong> Rassembler systématiquement les informations</li>
+          <li><strong>Analyser et corréler :</strong> Croiser les sources, vérifier la fiabilité</li>
+          <li><strong>Présenter les résultats :</strong> Synthétiser les découvertes de manière claire</li>
+        </ol>
       </div>
 
-      <p style="margin-top:15px;">
-        L’OSINT n’est pas une question de complexité technique,
-        mais de méthode structurée.
-      </p>
+      <p><strong>Conseil de pro :</strong> Documentez chaque étape et gardez une trace de vos sources. 
+      La traçabilité est essentielle pour valider vos découvertes.</p>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA Challenge -->
     <div class="challenge-cta">
       <div class="cta-content">
-        <h2>🎯 Mise en pratique</h2>
+        <h2>🎯 Prêt à enquêter ?</h2>
         <p>
-          Dans le challenge OSINT, vous devrez collecter,
-          analyser et recouper plusieurs informations
-          afin de reconstituer un renseignement caché.
+          Maintenant que vous maîtrisez les bases de l'OSINT, mettez vos compétences à l'épreuve ! 
+          Explorez les villes de la métropole lilloise et découvrez des secrets cachés dans le code source, 
+          les commentaires HTML et les pages oubliées.
         </p>
         <div class="cta-info">
-          <div class="cta-detail"><span class="cta-icon">⭐</span><span><strong>150 points</strong></span></div>
-          <div class="cta-detail"><span class="cta-icon">⏱️</span><span>10-15 minutes</span></div>
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>100 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau débutant</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>10-20 minutes</span>
+          </div>
         </div>
-        <a href="{{ url_for('challenge_view', challenge_id=4) }}" class="btn challenge-btn-large">
+        <a href="{{ url_for('challenge_view', challenge_id=5) }}" class="btn challenge-btn-large">
           Accéder au challenge OSINT
         </a>
       </div>
     </div>
 
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn') }}" class="nav-btn back">
+        ← Retour à la bibliothèque
+      </a>
+      <a href="{{ url_for('learn_sqli') }}" class="nav-btn next">
+        Cours suivant : Injection SQL →
+      </a>
+    </div>
+
   </div>
+
 </section>
 {% endblock %}
