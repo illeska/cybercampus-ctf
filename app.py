@@ -11,9 +11,14 @@ from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 from core.admin import admin_bp
 
+import os
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
+template_dir = os.path.join(base_dir, 'webapp', 'templates')
+static_dir = os.path.join(base_dir, 'webapp', 'static')
 
 # Création de l'application Flask.
-app = Flask(__name__, template_folder="./webapp/templates", static_folder="./webapp/static")
+app = Flask(__name__, template_folder="template_dir", static_folder="static_dir")
 
 # Chargement de la configuration depuis config.py
 app.config.from_object("config.Config")
