@@ -39,7 +39,7 @@ app.register_blueprint(admin_bp)
 def page_not_found(e):
     # On redirige vers l'accueil ou on affiche une page propre
     # Cela garantit que l'utilisateur reste dans le contexte de l'app
-    return render_template('./webapp/templates/404.html'), 404
+    return render_template('404.html'), 404
 
 # ------------------------------
 # SYSTÈME DE HINTS EN MÉMOIRE
