@@ -10,6 +10,12 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
 </head>
 <body>
+  <div id="beta-banner" class="beta-banner">
+  <div class="beta-content">
+    <span>🚀 <strong>CyberCampus Bêta</strong> : Le site est actuellement en cours de développement. Des bugs peuvent subsister.</span>
+    <button class="close-beta" onclick="closeBanner()">&times;</button>
+  </div>
+</div>
 <nav class="navbar">
   <div class="nav-left">
     <a href="{{ url_for('home') }}" class="brand-link">
@@ -55,7 +61,7 @@
 
 
   <footer>
-    <p>© 2026 CyberCampus CTF - Université Catholique de Lille</p>
+    <p>© 2026 CyberCampus CTF</p>
   </footer>
 </body>
 </html>

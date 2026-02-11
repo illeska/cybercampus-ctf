@@ -1647,3 +1647,35 @@ footer {
   box-shadow: 0 0 25px rgba(251, 191, 36, 0.5);
   transform: translateY(-2px);
 }
+
+.beta-banner {
+    background: linear-gradient(90deg, #ff8c00, #ff4500);
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    position: relative;
+    font-size: 0.9rem;
+    z-index: 1001; /* Pour être au-dessus de la navbar */
+}
+
+.beta-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.close-beta {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+    transition: transform 0.2s;
+}
+
+.close-beta:hover {
+    transform: scale(1.2);
+}

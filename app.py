@@ -25,7 +25,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,  # Empêche le JavaScript de voler le cookie (sécurité anti-XSS)
     SESSION_COOKIE_SAMESITE='Lax', # Permet de garder la session lors de la navigation interne
     SESSION_COOKIE_NAME='cybercampus_session', # Un nom unique pour ton CTF
-    PERMANENT_SESSION_LIFETIME=1800 # Session de 30 minutes
+    PERMANENT_SESSION_LIFETIME=31536000 # Session d'une année
 )
 
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
