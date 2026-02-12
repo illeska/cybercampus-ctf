@@ -60,8 +60,27 @@
 </main>
 
 
-  <footer>
-    <p>© 2026 CyberCampus CTF</p>
-  </footer>
+<footer>
+  <div class="footer-container">
+    <div class="disclaimer-box">
+      <h4>Clause de Non-Responsabilité</h4>
+      <p>
+        Cette plateforme est un environnement pédagogique simulé. 
+        <strong>Toute tentative d’intrusion ou d’attaque en dehors du périmètre défini est strictement interdite et relève du droit pénal.</strong> 
+        L'utilisation des outils et techniques appris ici doit se limiter exclusivement au cadre de ce CTF.
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <a href="{{ url_for('legale') }}">Mentions légales</a>
+      <span class="sep">|</span>
+      <a href="{{ url_for('confidentialite') }}">Politique de confidentialité</a>
+      <span class="sep">|</span>
+      <a href="{{ url_for('cgu') }}">CGU</a>
+    </div>
+
+    <p class="copyright">© 2026 CyberCampus CTF — Propulsé par la passion du hacking éthique</p>
+  </div>
+</footer>
 </body>
 </html>

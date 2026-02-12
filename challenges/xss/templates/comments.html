@@ -2,15 +2,124 @@
 <html>
 <head>
     <title>XSS Challenge - Commentaires</title>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
-        .comment { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px; }
-        .comment-author { font-weight: bold; color: #007bff; }
-        .comment-time { color: #666; font-size: 0.9em; }
-        textarea { width: 100%; padding: 10px; margin: 10px 0; min-height: 80px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
-        .flag { background: #d4edda; color: #155724; padding: 15px; margin: 15px 0; border-radius: 5px; font-weight: bold; }
+<style>
+        /* Palette "Warm Modern" */
+        :root {
+            --primary: #ff7e5f;
+            --secondary: #feb47b;
+            --accent: #ffbc00;
+            --bg: #fffaf5;
+            --text: #4a4a4a;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            max-width: 650px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        h2 { 
+            font-size: 2.2em;
+            color: #2d2d2d;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        p { text-align: center; margin-bottom: 30px; color: #777; }
+
+        /* Formulaire avec encadré prononcé */
+        form { 
+            background: #ffffff; 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 2px solid #fee1d1;
+            box-shadow: 0 10px 20px rgba(255, 126, 95, 0.1);
+            margin-bottom: 40px;
+        }
+
+        input, textarea { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            border: 2px solid #f1f1f1; 
+            border-radius: 10px; 
+            box-sizing: border-box;
+            background: #fafafa;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: #fff;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 126, 95, 0.3);
+            margin-top: 10px;
+        }
+
+        button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255, 126, 95, 0.4); }
+
+        /* Commentaires type "Card" moderne */
+        .comment { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 12px; 
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .comment-author { 
+            font-weight: bold; 
+            color: var(--primary); 
+            font-size: 1.1em;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .comment-time { 
+            display: block;
+            color: #b1b1b1; 
+            font-size: 0.8em; 
+            margin-bottom: 12px;
+        }
+        
+        /* Conteneur du message */
+        .comment div:last-child {
+            background: #fff9f6;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            line-height: 1.6;
+        }
+
+        .flag { 
+            background: #fff3cd; 
+            color: #856404; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 12px; 
+            border-left: 6px solid #ffbc00;
+            font-size: 1.1em;
+        }
+
+        h3 { border-left: 5px solid var(--primary); padding-left: 15px; color: #333; }
     </style>
 </head>
 <body>

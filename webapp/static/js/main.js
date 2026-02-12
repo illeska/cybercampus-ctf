@@ -98,7 +98,6 @@ function dismissFlash(el) {
   setTimeout(() => el.remove(), 300);
 }
 
-// Styles dynamiques Ripple
 const style = document.createElement("style");
 style.textContent = `
   .ripple {
@@ -113,3 +112,39 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+
+function togglePasswordVisibility(fieldId, button) {
+  const passwordInput = document.getElementById(fieldId);
+  const eyeSlash = button.querySelector('.eye-slash');
+  const eyePupil = button.querySelector('.eye-pupil');
+
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeSlash.style.display = 'block';
+    eyePupil.style.opacity = '0.5';
+    button.classList.add('active');
+  } else {
+    passwordInput.type = 'password';
+    eyeSlash.style.display = 'none';
+    eyePupil.style.opacity = '1';
+    button.classList.remove('active');
+  }
+}
+
+function closeBanner() {
+    const banner = document.getElementById('beta-banner');
+    if (banner) {
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-100%)';
+        sessionStorage.setItem('beta-closed', 'true'); // S'en souvient pour la session
+        setTimeout(() => banner.style.display = 'none', 300);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('beta-closed') === 'true') {
+        const banner = document.getElementById('beta-banner');
+        if (banner) banner.style.display = 'none';
+    }
+});

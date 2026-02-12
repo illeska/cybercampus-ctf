@@ -11,7 +11,16 @@
     {% for e in form.email.errors %}<p class="error">{{ e }}</p>{% endfor %}
 
     <label>{{ form.password.label }}</label>
-    {{ form.password(class="input-field") }}
+    <div class="password-container">
+      {{ form.password(class="input-field", id="password-field") }}
+      <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password-field', this)">
+        <svg class="eye-icon" viewBox="0 0 24 24" id="eye-svg">
+          <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle class="eye-pupil" cx="12" cy="12" r="3"></circle>
+          <line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none;"></line>
+        </svg>
+      </button>
+    </div>
     {% for e in form.password.errors %}<p class="error">{{ e }}</p>{% endfor %}
 
     {{ form.submit(class="btn primary-btn") }}

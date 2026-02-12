@@ -2,12 +2,90 @@
 <html>
 <head>
     <title>SQLi Challenge - Login</title>
-    <style>
-        body { font-family: Arial; max-width: 400px; margin: 50px auto; padding: 20px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
-        .message { padding: 10px; margin: 10px 0; background: #f0f0f0; border-radius: 5px; }
-        .flag { background: #d4edda; color: #155724; font-weight: bold; }
+<style>
+        /* Uniquement le style - Thème Warm Crimson & Gold */
+        body { 
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            padding: 80px 20px; 
+            background-color: #2c1a1a; /* Fond brun très chaud */
+            color: #eee;
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #d4af37; /* Or */
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        p { text-align: center; color: #b5a4a4; margin-bottom: 30px; }
+
+        form {
+            background: #3d2b2b; /* Brun chaud plus clair */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border: 1px solid #4d3b3b;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 12px 0; 
+            border: 1px solid #5d4b4b; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            background: #2c1a1a;
+            color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 10px;
+            background: #800020; /* Bordeaux */
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 1em;
+            text-transform: uppercase;
+            transition: background 0.3s;
+        }
+
+        button:hover { 
+            background: #a52a2a; /* Rouge brique au survol */
+        }
+
+        .message { 
+            padding: 15px; 
+            margin: 20px 0; 
+            background: #4d3b3b; 
+            border-radius: 8px; 
+            text-align: center;
+            border: 1px solid #5d4b4b;
+        }
+
+        .flag { 
+            background: #1e3a1e; 
+            color: #b7e4c7; 
+            border: 1px solid #2d6a4f;
+            font-weight: bold; 
+        }
+
+        p[style*="color: #666"] {
+            color: #8c7b7b !important;
+            text-align: center;
+        }
     </style>
 </head>
 <body>

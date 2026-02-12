@@ -211,6 +211,17 @@ def root():
 def home():
     return render_template("index.html")
 
+@app.route('/mentionslegales')
+def legale():
+    return render_template("mentionlegale.html")
+
+@app.route('/politiqueconfidentialite')
+def confidentialite():
+    return render_template("politiqueconfidentialite.html")
+@app.route('/cgu')
+def cgu():
+    return render_template("cgu.html")
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
