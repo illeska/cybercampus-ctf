@@ -342,7 +342,7 @@
             placeholder.style.display = 'none';
 
             try {
-                const response = await fetch('/start', { method: 'POST' });
+                const response = await fetch('start', { method: 'POST' });
                 const data = await response.json();
 
                 if (!data.success) {
@@ -382,7 +382,7 @@
             }
 
             try {
-                await fetch('/stop', { method: 'POST' });
+                await fetch('stop', { method: 'POST' });
                 resetUI();
             } catch (error) {
                 console.error('Erreur:', error);
@@ -443,7 +443,7 @@
         // Vérifier le statut au chargement de la page
         async function checkStatus() {
             try {
-                const response = await fetch('/status');
+                const response = await fetch('status');
                 const data = await response.json();
 
                 if (data.active) {
@@ -468,7 +468,7 @@
         // Rafraîchir le compteur d'instances actives
         setInterval(async () => {
             try {
-                const response = await fetch('/stats');
+                const response = await fetch('stats');
                 const data = await response.json();
                 document.getElementById('activeCount').textContent = data.active_containers;
             } catch (error) {
