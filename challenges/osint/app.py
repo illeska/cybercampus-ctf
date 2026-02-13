@@ -8,27 +8,27 @@ app.secret_key = 'osint_challenge_secret_key_2024'
 def index():
     return redirect('/accueil')
 
-@app.route('/accueil')
+@app.route('/osint/accueil')
 def accueil():
     return render_template('accueil.html')
 
-@app.route('/villes')
+@app.route('/osint/villes')
 def villes():
     return render_template('villes.html')
 
-@app.route('/lille')
+@app.route('/osint/lille')
 def lille():
     return render_template('lille.html')
 
-@app.route('/roubaix')
+@app.route('/osint/roubaix')
 def roubaix():
     return render_template('roubaix.html')
 
-@app.route('/tourcoing')
+@app.route('/osint/tourcoing')
 def tourcoing():
     return render_template('tourcoing.html')
 
-@app.route('/hem', methods=['GET', 'POST'])
+@app.route('/osint/hem', methods=['GET', 'POST'])
 def hem():
     if request.method == 'POST':
         code = request.form.get('code', '').strip()
