@@ -6,29 +6,30 @@ app.secret_key = 'osint_challenge_secret_key_2024'
 
 @app.route('/')
 def index():
-    return redirect('/accueil')
+    # Correction : Redirige vers le chemin complet incluant le préfixe Nginx
+    return redirect('/osint/accueil')
 
-@app.route('/osint/accueil')
+@app.route('/accueil')
 def accueil():
     return render_template('accueil.html')
 
-@app.route('/osint/villes')
+@app.route('/villes')
 def villes():
     return render_template('villes.html')
 
-@app.route('/osint/lille')
+@app.route('/lille')
 def lille():
     return render_template('lille.html')
 
-@app.route('/osint/roubaix')
+@app.route('/roubaix')
 def roubaix():
     return render_template('roubaix.html')
 
-@app.route('/osint/tourcoing')
+@app.route('/tourcoing')
 def tourcoing():
     return render_template('tourcoing.html')
 
-@app.route('/osint/hem', methods=['GET', 'POST'])
+@app.route('/hem', methods=['GET', 'POST'])
 def hem():
     if request.method == 'POST':
         code = request.form.get('code', '').strip()
