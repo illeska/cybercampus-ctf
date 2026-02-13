@@ -134,6 +134,22 @@ HINTS_DATABASE = {
                 "penalty_percent": 30
             }
         ]
+    },
+    6: {  # Challenge Upload
+        "hints": [
+            {
+                "text": "💡 Ce que tu vois côté interface n’est pas toujours représentatif de ce qui se passe côté serveur.",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Intéresse-toi à la manière dont les fichiers sont acceptés et enregistrés.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Les fichiers uploadés sont accessibles via /uploads/. Réfléchis à ce qui pourrait se passer si un fichier particulier était exécuté au lieu d’être simplement affiché.",
+                "penalty_percent": 30
+            }
+        ]
     }
     
 }
@@ -281,6 +297,10 @@ def learn_osint():
     """Cours sur l'OSINT"""
     return render_template("learn/osint.html")
 
+@app.route('/learn/upload')
+def learn_upload():
+    """Cours sur l'Upload"""
+    return render_template("learn/upload.html")
 
 @app.route('/challenges')
 @login_required

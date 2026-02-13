@@ -42,6 +42,14 @@ CHALLENGES_DATA = [
         "points": 50,
         "actif": True,
         "flag_str": "CTF{H3m_s3cr3t_c1ty_0s1nt}"
+    },
+    {
+        "id":6,
+        "titre": "UPLOAD - Point d’Entrée",
+        "description": "Un simple formulaire peut sembler anodin, mais certaines fonctionnalités cachent parfois plus qu’il n’y paraît. Analysez attentivement son fonctionnement et trouvez un moyen d’en tirer parti pour récupérer le flag.",
+        "points": 200,
+        "actif": True,
+        "flag_str": "CTF{Upl04d_PHP_Sh3ll_M4st3r}"
     }
     
 ]
@@ -55,6 +63,7 @@ def sync_challenges():
                 
                 if challenge:
                     print(f"🔄 Mise à jour du challenge : {data['titre']}")
+                    challenge.description = data["titre"]
                     challenge.description = data["description"]
                     challenge.points = data["points"]
                     challenge.actif = data["actif"]

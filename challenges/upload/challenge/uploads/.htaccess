@@ -1,0 +1,11 @@
+# Configuration .htaccess pour le dossier uploads
+# ATTENTION : Configuration volontairement permissive pour le CTF
+
+# Autoriser l'exécution de PHP (VULNÉRABILITÉ INTENTIONNELLE)
+# Match tout fichier contenant .php dans le nom (y compris shell.php.jpg)
+<FilesMatch "\.php">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+# Autoriser l'accès aux fichiers
+Options +Indexes

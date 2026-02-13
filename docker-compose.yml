@@ -70,5 +70,29 @@ services:
       - "127.0.0.1:5003:5003"
     restart: always
 
+  osint-challenge:
+    build: ./challenges/osint
+    container_name: cybercampus_osint
+    ports:
+      - "127.0.0.1:5005:5005"
+    restart: always 
+
+  upload-challenge-image:
+    build: ./challenges/upload/challenge
+    image: upload-challenge:latest
+    command: "true" 
+    restart: "no"
+
+  upload-challenge:
+    build: ./challenges/upload/launcher
+    container_name: cybercampus_upload
+    ports:
+      - "127.0.0.1:5006:5000"
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - upload-challenge-image
+    restart: unless-stopped
+
 volumes:
   pgdata:

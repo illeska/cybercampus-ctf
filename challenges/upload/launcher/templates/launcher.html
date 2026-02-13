@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Challenge - Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .challenge-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .timer-icon {
+            font-size: 1.5rem;
+        }
+
+        .timer-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timer-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .timer-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-value.warning {
+            color: #ff9800;
+        }
+
+        .timer-value.danger {
+            color: #f44336;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 300px);
+            min-height: 600px;
+            background: #f0f0f0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+        }
+
+        .placeholder-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .placeholder-text {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .timer {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🔓</span>
+                Challenge Upload - Launcher
+            </h1>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Actifs</div>
+                    <div class="stat-value" id="activeCount">{{ active_count }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Max</div>
+                    <div class="stat-value">{{ max_containers }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="challenge-area">
+            <div class="controls">
+                <div class="timer" id="timer" style="display: none;">
+                    <div class="timer-icon">⏱️</div>
+                    <div class="timer-content">
+                        <div class="timer-label">Temps restant</div>
+                        <div class="timer-value" id="timerValue">--:--</div>
+                    </div>
+                </div>
+
+                <div>
+                    <button class="btn btn-primary" id="startBtn" onclick="startChallenge()">
+                        <span>🚀</span>
+                        Démarrer le challenge
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" onclick="stopChallenge()" style="display: none;">
+                        <span>🛑</span>
+                        Arrêter
+                    </button>
+                </div>
+            </div>
+
+            <div class="iframe-container">
+                <div class="placeholder" id="placeholder">
+                    <div class="placeholder-icon">🔐</div>
+                    <div class="placeholder-text">Cliquez sur "Démarrer le challenge" pour lancer votre instance isolée</div>
+                </div>
+                <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                    <div class="spinner"></div>
+                    <div>Création de votre instance...</div>
+                </div>
+                <iframe id="challengeFrame" style="display: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval = null;
+
+        async function startChallenge() {
+            const startBtn = document.getElementById('startBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const placeholder = document.getElementById('placeholder');
+
+            startBtn.disabled = true;
+            loadingOverlay.style.display = 'flex';
+            placeholder.style.display = 'none';
+
+            try {
+                const response = await fetch('/start', { method: 'POST' });
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert('❌ ' + data.error);
+                    loadingOverlay.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    startBtn.disabled = false;
+                    return;
+                }
+
+                // Afficher l'iframe
+                const iframe = document.getElementById('challengeFrame');
+                iframe.src = `https://www.cybercampus-ctf.fr/ctf-instance-${data.port}/`;
+                iframe.style.display = 'block';
+                loadingOverlay.style.display = 'none';
+
+                // Afficher les contrôles
+                document.getElementById('timer').style.display = 'flex';
+                document.getElementById('stopBtn').style.display = 'inline-flex';
+                startBtn.style.display = 'none';
+
+                // Démarrer le compte à rebours
+                startTimer(data.lifetime_seconds);
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur de connexion au serveur');
+                loadingOverlay.style.display = 'none';
+                placeholder.style.display = 'flex';
+                startBtn.disabled = false;
+            }
+        }
+
+        async function stopChallenge() {
+            if (!confirm('Voulez-vous vraiment arrêter votre instance ?')) {
+                return;
+            }
+
+            try {
+                await fetch('/stop', { method: 'POST' });
+                resetUI();
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function startTimer(seconds) {
+            let remaining = seconds;
+
+            timerInterval = setInterval(() => {
+                remaining--;
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('⏰ Temps écoulé ! Votre instance a été arrêtée.');
+                    resetUI();
+                    return;
+                }
+
+                updateTimerDisplay(remaining);
+            }, 1000);
+
+            updateTimerDisplay(remaining);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            const timerValue = document.getElementById('timerValue');
+            timerValue.textContent = display;
+
+            // Changer la couleur selon le temps restant
+            timerValue.className = 'timer-value';
+            if (seconds < 60) {
+                timerValue.classList.add('danger');
+            } else if (seconds < 300) {
+                timerValue.classList.add('warning');
+            }
+        }
+
+        function resetUI() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            document.getElementById('challengeFrame').style.display = 'none';
+            document.getElementById('challengeFrame').src = '';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'inline-flex';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('placeholder').style.display = 'flex';
+        }
+
+        // Vérifier le statut au chargement de la page
+        async function checkStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+
+                if (data.active) {
+                    const iframe = document.getElementById('challengeFrame');
+                    iframe.src = `https://www.cybercampus-ctf.fr/ctf-instance-${data.port}/`;
+                    iframe.style.display = 'block';
+                    document.getElementById('placeholder').style.display = 'none';
+                    document.getElementById('timer').style.display = 'flex';
+                    document.getElementById('stopBtn').style.display = 'inline-flex';
+                    document.getElementById('startBtn').style.display = 'none';
+
+                    startTimer(data.remaining_seconds);
+                }
+            } catch (error) {
+                console.error('Erreur vérification statut:', error);
+            }
+        }
+
+        // Vérifier au chargement
+        checkStatus();
+
+        // Rafraîchir le compteur d'instances actives
+        setInterval(async () => {
+            try {
+                const response = await fetch('/stats');
+                const data = await response.json();
+                document.getElementById('activeCount').textContent = data.active_containers;
+            } catch (error) {
+                console.error('Erreur stats:', error);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

