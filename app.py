@@ -59,15 +59,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les identifiants sont vérifiés avec une requête SQL. Que se passe-t-il si vous entrez des caractères spéciaux dans le champ username ?",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Essayez d'utiliser le caractère guillemet simple (') dans le champ username pour 'casser' la requête SQL. Vous pouvez ajouter des conditions logiques comme OR.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
-                "text": "🔑 Utilisez cette payload dans le champ username : admin' OR '1'='1' -- \n\nLe symbole -- commente le reste de la requête SQL, ce qui ignore la vérification du mot de passe.",
-                "penalty_percent": 30
+                "text": "🔑 Utilisez un payload en SQL dans le champ username.",
+                "penalty_percent": 50
             }
         ]
     },
@@ -75,15 +75,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les commentaires ne sont pas filtrés. Que se passe-t-il si vous injectez du code HTML dans le champ commentaire ?",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Le filtre |safe désactive l'échappement HTML. Essayez d'insérer une balise <script> dans votre commentaire pour exécuter du JavaScript.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
                 "text": "🔑 Tapez exactement ceci dans le champ commentaire : <script>alert('XSS')</script>\n\nVous pouvez aussi essayer avec des attributs comme : <img src=x onerror=alert('XSS')>",
-                "penalty_percent": 30
+                "penalty_percent": 50
             }
         ]
     },
@@ -91,15 +91,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Le code est composé de 4 chiffres (0000 à 9999). Tester manuellement prendrait trop de temps... Pensez à automatiser avec un script !",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Utilisez la bibliothèque requests de Python pour envoyer des requêtes POST automatiquement. Parcourez tous les codes de 0000 à 9999 avec une boucle for.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
                 "text": "🔑 Voici un squelette de script Python :\n\nimport requests\nfor code in range(10000):\n    code_str = str(code).zfill(4)\n    response = requests.post('http://localhost:5004', data={'code': code_str})\n    if 'FLAG' in response.text or 'déverrouillé' in response.text:\n        print(f'Code trouvé: {code_str}')\n        break",
-                "penalty_percent": 30
+                "penalty_percent": 50
             }
         ]
     },
@@ -107,15 +107,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les mots de passe sont hashés avec MD5 sans sel. Les rainbow tables peuvent être utilisées pour craquer ces hash rapidement.",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Utilisez des outils comme 'hashcat' ou des services en ligne pour rechercher les hash MD5. Vous pouvez aussi écrire un script Python pour automatiser la recherche.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
                 "text": "🔑 Par exemple, le hash '5f4dcc3b5aa765d61d8327deb882cf99' correspond au mot de passe 'password'. Essayez de craquer les autres hash de la même manière.",
-                "penalty_percent": 30
+                "penalty_percent": 50
             }
         ]
     },
@@ -123,15 +123,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Certaines informations ne sont pas visibles à l’écran mais restent accessibles publiquement.",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Tous les onglets ne sont pas forcément visibles dans le menu principal.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
                 "text": "🔑 Examinez attentivement le code source de l'une des villes. Certains chemins ou liens peuvent y apparaître sans être affichés à l’écran",
-                "penalty_percent": 30
+                "penalty_percent": 50
             }
         ]
     },
@@ -139,15 +139,15 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Ce que tu vois côté interface n’est pas toujours représentatif de ce qui se passe côté serveur.",
-                "penalty_percent": 10
+                "penalty_percent": 15
             },
             {
                 "text": "🎯 Intéresse-toi à la manière dont les fichiers sont acceptés et enregistrés.",
-                "penalty_percent": 20
+                "penalty_percent": 35
             },
             {
                 "text": "🔑 Les fichiers uploadés sont accessibles via /uploads/. Réfléchis à ce qui pourrait se passer si un fichier particulier était exécuté au lieu d’être simplement affiché.",
-                "penalty_percent": 30
+                "penalty_percent": 50
             }
         ]
     }

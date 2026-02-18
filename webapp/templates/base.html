@@ -34,7 +34,7 @@
   <div class="nav-right">
     {% if current_user.is_authenticated %}
       {% if current_user.role == "admin" %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin">⚙️ Admin</a>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin">⚙️</a>
       {% endif %}
       <a href="{{ url_for('dashboard') }}" class="btn nav-btn dashboard">Tableau de bord</a>
       <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>

