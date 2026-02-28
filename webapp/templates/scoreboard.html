@@ -107,7 +107,6 @@
                       <span class="you-badge">Vous</span>
                     {% endif %}
                   </div>
-                  <div class="player-email">{{ user.email }}</div>
                 </div>
               </div>
             </td>
@@ -542,11 +541,6 @@
   border: 1px solid rgba(0, 136, 255, 0.3);
 }
 
-.player-email {
-  color: #64748b;
-  font-size: 0.85rem;
-}
-
 /* Score */
 .score-value {
   font-family: 'Orbitron', sans-serif;
@@ -632,9 +626,6 @@
     font-size: 1.1rem;
   }
   
-  .player-email {
-    display: none;
-  }
 }
 </style>
 {% endblock %}
