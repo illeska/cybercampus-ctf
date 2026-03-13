@@ -50,8 +50,15 @@ CHALLENGES_DATA = [
         "points": 125,
         "actif": True,
         "flag_str": "CTF{Upl04d_PHP_Sh3ll_M4st3r}"
+    },
+    {
+        "id": 7,
+        "titre": "Stéganographie - Carta Obscura",
+        "description": "Un explorateur a disparu en laissant derrière lui une carte ancienne. Ses collègues affirment qu'il y avait caché un message secret. Les apparences sont trompeuses — regardez entre les lignes… et les pixels.",
+        "points": 150,
+        "actif": True,
+        "flag_str": "CTF{C4rt0_st3g4_ROT13_pwn3d}"
     }
-    
 ]
 
 def sync_challenges():

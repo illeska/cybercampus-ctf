@@ -150,6 +150,22 @@ HINTS_DATABASE = {
                 "penalty_percent": 50
             }
         ]
+    },
+    7: {  # Challenge Stégano
+        "hints": [
+            {
+                "text": "💡 Les données sont cachées dans des pixels précis. La formule : le i-ème caractère se trouve au pixel (i×37 mod W, i×53 mod H). L'index 0 indique la longueur.",
+                "penalty_percent": 15
+            },
+            {
+                "text": "🎯 Chaque pixel cache un caractère dans son canal Rouge (R). char = chr(pixel[x, y][0]). Extrayez le message, mais ne croyez pas encore vos yeux…",
+                "penalty_percent": 35
+            },
+            {
+                "text": "🔑 Le message extrait est chiffré ROT13. python3 -c \"import codecs; print(codecs.decode('MESSAGE', 'rot13'))\"",
+                "penalty_percent": 50
+            }
+        ]
     }
     
 }

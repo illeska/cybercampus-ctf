@@ -92,7 +92,15 @@
               <a href="/challenges/upload/" target="_blank" class="btn env-btn">
                 📤 Ouvrir Challenge Upload
               </a>
-            </div>     
+            </div>
+        {% elif challenge.id == 7 %}
+            <p>Une carte ancienne recèle un secret. Analysez l'image pour y trouver un message caché.</p>
+            <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
+            <div class="env-btn-wrapper">
+              <a href="/challenges/stegano/" target="_blank" class="btn env-btn">
+                🗺️ Ouvrir Challenge Stéganographie
+              </a>
+            </div>         
 
         {% else %}
           <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
