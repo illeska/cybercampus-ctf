@@ -98,7 +98,7 @@ services:
     build: ./challenges/stegano
     container_name: cybercampus_stegano
     ports:
-      - "5007:5007"
+      - "127.0.0.1:5007:5007"
     restart: always  
 
 volumes:

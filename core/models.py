@@ -191,6 +191,19 @@ class Scoreboard(db.Model):
             .order_by(Scoreboard.points_total.desc()).limit(limit).all()
 
 
+class RssFeed(db.Model):
+    __tablename__ = "RssFeed"
+ 
+    id          = db.Column(db.Integer, primary_key=True)
+    nom         = db.Column(db.String(100), nullable=False)
+    url         = db.Column(db.String(500), nullable=False, unique=True)
+    actif       = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=db.func.now())
+ 
+    def __repr__(self):
+        return f"<RssFeed {self.nom}>"
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from functools import wraps
 from core import db
-from core.models import User, Challenge, Submission, Scoreboard, Flag
+from core.models import User, Challenge, Submission, Scoreboard, Flag, RssFeed
 from datetime import datetime, timedelta
 import csv
 import io
@@ -233,6 +233,71 @@ def submissions():
     ).paginate(page=page, per_page=per_page, error_out=False)
     
     return render_template('admin/submissions.html', submissions=submissions_query)
+
+# ── Gestion des flux RSS ──────────────────────────────────────
+ 
+@admin_bp.route('/actualites')
+@login_required
+@admin_required
+def rss_feeds():
+    """Liste et gestion des flux RSS."""
+    feeds = RssFeed.query.order_by(RssFeed.created_at.desc()).all()
+    return render_template('admin/rss_feeds.html', feeds=feeds)
+ 
+ 
+@admin_bp.route('/actualites/add', methods=['POST'])
+@login_required
+@admin_required
+def rss_add():
+    """Ajouter un nouveau flux RSS."""
+    nom = request.form.get('nom', '').strip()
+    url = request.form.get('url', '').strip()
+ 
+    if not nom or not url:
+        flash("❌ Nom et URL sont obligatoires.", "danger")
+        return redirect(url_for('admin.rss_feeds'))
+ 
+    if not url.startswith(('http://', 'https://')):
+        flash("❌ L'URL doit commencer par http:// ou https://", "danger")
+        return redirect(url_for('admin.rss_feeds'))
+ 
+    existing = RssFeed.query.filter_by(url=url).first()
+    if existing:
+        flash("⚠️ Ce flux existe déjà.", "warning")
+        return redirect(url_for('admin.rss_feeds'))
+ 
+    feed = RssFeed(nom=nom, url=url, actif=False)
+    db.session.add(feed)
+    db.session.commit()
+    flash(f"✅ Flux '{nom}' ajouté (désactivé par défaut).", "success")
+    return redirect(url_for('admin.rss_feeds'))
+ 
+ 
+@admin_bp.route('/actualites/<int:feed_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def rss_toggle(feed_id):
+    """Activer / désactiver un flux RSS."""
+    feed = RssFeed.query.get_or_404(feed_id)
+    feed.actif = not feed.actif
+    db.session.commit()
+    status = "activé" if feed.actif else "désactivé"
+    flash(f"✅ Flux '{feed.nom}' {status}.", "success")
+    return redirect(url_for('admin.rss_feeds'))
+ 
+ 
+@admin_bp.route('/actualites/<int:feed_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def rss_delete(feed_id):
+    """Supprimer un flux RSS."""
+    feed = RssFeed.query.get_or_404(feed_id)
+    nom = feed.nom
+    db.session.delete(feed)
+    db.session.commit()
+    flash(f"🗑️ Flux '{nom}' supprimé.", "info")
+    return redirect(url_for('admin.rss_feeds'))
+
 
 # ------------------------------
 # EXPORT SCOREBOARD

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CyberCampus CTF — Carte Mystérieuse</title>
+  <title>CyberCampus CTF - Carta Obscura</title>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English+SC&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     /* ── VARIABLES ── */
@@ -215,129 +215,6 @@
     }
     .map-download:hover { color: var(--sepia); }
 
-    /* ── INDICES ACCORDION ── */
-    .indices-section { margin-bottom: 2rem; }
-    .hint-item {
-      border: 1px solid var(--parch-dark);
-      margin-bottom: 0.5rem;
-      background: rgba(180, 150, 80, 0.04);
-    }
-    .hint-toggle {
-      width: 100%;
-      background: none;
-      border: none;
-      padding: 0.7rem 1rem;
-      text-align: left;
-      cursor: pointer;
-      font-family: 'Courier Prime', monospace;
-      font-size: 0.8rem;
-      color: var(--ink-faded);
-      letter-spacing: 0.1em;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.2s;
-    }
-    .hint-toggle:hover { background: rgba(139,105,20,0.1); }
-    .hint-cost {
-      font-size: 0.7rem;
-      color: var(--crimson);
-      border: 1px solid var(--crimson);
-      padding: 0.1rem 0.4rem;
-    }
-    .hint-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.3s;
-      font-family: 'Courier Prime', monospace;
-      font-size: 0.82rem;
-      color: var(--ink);
-      line-height: 1.6;
-    }
-    .hint-body.open {
-      max-height: 200px;
-      padding: 0.7rem 1rem 0.9rem;
-    }
-    .hint-body code {
-      background: rgba(30,20,5,0.1);
-      padding: 0.1em 0.35em;
-      font-family: 'Courier Prime', monospace;
-      color: var(--sepia);
-    }
-
-    /* ── SUBMIT FORM ── */
-    .submit-section { margin-bottom: 1rem; }
-    .flag-form {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .flag-input {
-      flex: 1;
-      min-width: 220px;
-      background: rgba(30,20,5,0.08);
-      border: 1px solid var(--sepia);
-      border-radius: 0;
-      padding: 0.65rem 1rem;
-      font-family: 'Courier Prime', monospace;
-      font-size: 0.9rem;
-      color: var(--ink);
-      outline: none;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-    .flag-input::placeholder { color: var(--parch-dark); opacity: 0.9; }
-    .flag-input:focus {
-      border-color: var(--sepia-light);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
-    }
-    .flag-btn {
-      background: var(--ink);
-      color: var(--sepia-light);
-      border: 2px solid var(--sepia-light);
-      padding: 0.65rem 1.6rem;
-      font-family: 'IM Fell English SC', serif;
-      font-size: 0.95rem;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.25s, color 0.25s, transform 0.15s;
-    }
-    .flag-btn::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--sepia-light);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-      z-index: 0;
-    }
-    .flag-btn:hover { color: var(--ink); }
-    .flag-btn:hover::after { transform: scaleX(1); }
-    .flag-btn span { position: relative; z-index: 1; }
-    .flag-btn:active { transform: scale(0.97); }
-
-    /* ── MESSAGE FEEDBACK ── */
-    .feedback {
-      margin-top: 1rem;
-      padding: 0.75rem 1.1rem;
-      font-family: 'Courier Prime', monospace;
-      font-size: 0.88rem;
-      border-left: 4px solid;
-      animation: slideIn 0.35s ease-out;
-    }
-    .feedback.success {
-      border-color: #3d7a3d;
-      background: rgba(60,120,60,0.1);
-      color: #2d5a2d;
-    }
-    .feedback.error {
-      border-color: var(--crimson);
-      background: rgba(122,28,28,0.08);
-      color: var(--crimson);
-    }
 
     /* ── TOOLS BOX ── */
     .tools-box {
@@ -412,7 +289,7 @@
     <!-- Meta badges -->
     <div class="challenge-meta">
       <div>
-        <span class="badge badge-points">⬡ 175 pts</span>
+        <span class="badge badge-points">⬡ 150 pts</span>
         &nbsp;
         <span class="badge badge-cat">◈ STÉGANOGRAPHIE</span>
       </div>
@@ -440,72 +317,6 @@
         ↓ Télécharger l'image (PNG original, non modifié)
       </a>
     </div>
-
-    <!-- Indices -->
-    <section class="indices-section">
-      <h2 class="section-title"><span>✦</span>Indices</h2>
-
-      <div class="hint-item">
-        <button class="hint-toggle" onclick="toggleHint(this)">
-          <span>Indice I — Le regard du cartographe</span>
-          <span class="hint-cost">−15 pts</span>
-        </button>
-        <div class="hint-body">
-          Les données sont cachées dans des pixels précis.<br/>
-          La formule est simple : le <strong>i-ème caractère</strong> se trouve
-          au pixel de coordonnées <code>(i×37 mod W, i×53 mod H)</code>.<br/>
-          L'index 0 indique la longueur du message.
-        </div>
-      </div>
-
-      <div class="hint-item">
-        <button class="hint-toggle" onclick="toggleHint(this)">
-          <span>Indice II — Le canal secret</span>
-          <span class="hint-cost">−35 pts</span>
-        </button>
-        <div class="hint-body">
-          Chaque pixel cache un caractère dans son <strong>canal Rouge (R)</strong>.<br/>
-          <code>char = chr(pixel[x, y][0])</code><br/>
-          Extrayez le message, mais ne croyez pas encore vos yeux…
-        </div>
-      </div>
-
-      <div class="hint-item">
-        <button class="hint-toggle" onclick="toggleHint(this)">
-          <span>Indice III — Le chiffre de l'explorateur</span>
-          <span class="hint-cost">−50 pts</span>
-        </button>
-        <div class="hint-body">
-          Le message extrait est chiffré par une méthode vieille de deux millénaires.<br/>
-          Jules César lui-même l'aurait utilisée — mais ici décalée de <strong>13 positions</strong>.<br/>
-          <code>python3 -c "import codecs; print(codecs.decode('MESSAGE', 'rot13'))"</code>
-        </div>
-      </div>
-    </section>
-
-    <!-- Submit -->
-    <section class="submit-section">
-      <h2 class="section-title"><span>✦</span>Soumettre le Flag</h2>
-      <form class="flag-form" action="/submit" method="POST">
-        <input
-          type="text"
-          name="flag"
-          class="flag-input"
-          placeholder="CTF{...}"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button type="submit" class="flag-btn">
-          <span>Valider →</span>
-        </button>
-      </form>
-
-      {% if message %}
-        <div class="feedback {{ 'success' if success else 'error' }}">
-          {{ message }}
-        </div>
-      {% endif %}
-    </section>
 
     <!-- Tools -->
     <div class="tools-box">

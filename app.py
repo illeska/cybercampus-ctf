@@ -4,7 +4,10 @@
 
 from flask import Flask, render_template, url_for, redirect, request, flash, session, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime
+from datetime import datetime, timezone
+import feedparser
+import time
+import re
 
 from core import init_app, db
 from core.models import User, Challenge, Submission, Scoreboard
@@ -59,11 +62,11 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les identifiants sont vérifiés avec une requête SQL. Que se passe-t-il si vous entrez des caractères spéciaux dans le champ username ?",
-                "penalty_percent": 15
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Essayez d'utiliser le caractère guillemet simple (') dans le champ username pour 'casser' la requête SQL. Vous pouvez ajouter des conditions logiques comme OR.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
                 "text": "🔑 Utilisez un payload en SQL dans le champ username.",
@@ -75,11 +78,11 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les commentaires ne sont pas filtrés. Que se passe-t-il si vous injectez du code HTML dans le champ commentaire ?",
-                "penalty_percent": 15
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Le filtre |safe désactive l'échappement HTML. Essayez d'insérer une balise <script> dans votre commentaire pour exécuter du JavaScript.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
                 "text": "🔑 Tapez exactement ceci dans le champ commentaire : <script>alert('XSS')</script>\n\nVous pouvez aussi essayer avec des attributs comme : <img src=x onerror=alert('XSS')>",
@@ -91,11 +94,11 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Le code est composé de 4 chiffres (0000 à 9999). Tester manuellement prendrait trop de temps... Pensez à automatiser avec un script !",
-                "penalty_percent": 15
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Utilisez la bibliothèque requests de Python pour envoyer des requêtes POST automatiquement. Parcourez tous les codes de 0000 à 9999 avec une boucle for.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
                 "text": "🔑 Voici un squelette de script Python :\n\nimport requests\nfor code in range(10000):\n    code_str = str(code).zfill(4)\n    response = requests.post('http://localhost:5004', data={'code': code_str})\n    if 'FLAG' in response.text or 'déverrouillé' in response.text:\n        print(f'Code trouvé: {code_str}')\n        break",
@@ -107,11 +110,11 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les mots de passe sont hashés avec MD5 sans sel. Les rainbow tables peuvent être utilisées pour craquer ces hash rapidement.",
-                "penalty_percent": 15
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Utilisez des outils comme 'hashcat' ou des services en ligne pour rechercher les hash MD5. Vous pouvez aussi écrire un script Python pour automatiser la recherche.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
                 "text": "🔑 Par exemple, le hash '5f4dcc3b5aa765d61d8327deb882cf99' correspond au mot de passe 'password'. Essayez de craquer les autres hash de la même manière.",
@@ -122,15 +125,15 @@ HINTS_DATABASE = {
     5: {  # Challenge OSINT
         "hints": [
             {
-                "text": "💡 Certaines informations ne sont pas visibles à l’écran mais restent accessibles publiquement.",
-                "penalty_percent": 15
+                "text": "💡 Certaines informations ne sont pas visibles à l'écran mais restent accessibles publiquement.",
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Tous les onglets ne sont pas forcément visibles dans le menu principal.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
-                "text": "🔑 Examinez attentivement le code source de l'une des villes. Certains chemins ou liens peuvent y apparaître sans être affichés à l’écran",
+                "text": "🔑 Examinez attentivement le code source de l'une des villes. Certains chemins ou liens peuvent y apparaître sans être affichés à l'écran",
                 "penalty_percent": 50
             }
         ]
@@ -138,15 +141,15 @@ HINTS_DATABASE = {
     6: {  # Challenge Upload
         "hints": [
             {
-                "text": "💡 Ce que tu vois côté interface n’est pas toujours représentatif de ce qui se passe côté serveur.",
-                "penalty_percent": 15
+                "text": "💡 Ce que tu vois côté interface n'est pas toujours représentatif de ce qui se passe côté serveur.",
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Intéresse-toi à la manière dont les fichiers sont acceptés et enregistrés.",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
-                "text": "🔑 Les fichiers uploadés sont accessibles via /uploads/. Réfléchis à ce qui pourrait se passer si un fichier particulier était exécuté au lieu d’être simplement affiché.",
+                "text": "🔑 Les fichiers uploadés sont accessibles via /uploads/. Réfléchis à ce qui pourrait se passer si un fichier particulier était exécuté au lieu d'être simplement affiché.",
                 "penalty_percent": 50
             }
         ]
@@ -155,11 +158,11 @@ HINTS_DATABASE = {
         "hints": [
             {
                 "text": "💡 Les données sont cachées dans des pixels précis. La formule : le i-ème caractère se trouve au pixel (i×37 mod W, i×53 mod H). L'index 0 indique la longueur.",
-                "penalty_percent": 15
+                "penalty_percent": 10
             },
             {
                 "text": "🎯 Chaque pixel cache un caractère dans son canal Rouge (R). char = chr(pixel[x, y][0]). Extrayez le message, mais ne croyez pas encore vos yeux…",
-                "penalty_percent": 35
+                "penalty_percent": 20
             },
             {
                 "text": "🔑 Le message extrait est chiffré ROT13. python3 -c \"import codecs; print(codecs.decode('MESSAGE', 'rot13'))\"",
@@ -231,6 +234,90 @@ def inject_globals():
         'User': User
     }
 
+
+# ------------------------------
+# CACHE RSS
+# ------------------------------
+_rss_cache       = {}
+RSS_CACHE_TTL    = 3600   # 1 heure
+RSS_MAX_ARTICLES = 10
+
+
+def _extract_image(entry) -> str | None:
+    """Tente d'extraire une image depuis une entrée RSS."""
+
+    # 1. media:content ou media:thumbnail
+    if hasattr(entry, 'media_content') and entry.media_content:
+        for m in entry.media_content:
+            if m.get('medium') == 'image' or m.get('url', '').endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                return m.get('url')
+
+    if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+        return entry.media_thumbnail[0].get('url')
+
+    # 2. Enclosure image
+    if hasattr(entry, 'enclosures') and entry.enclosures:
+        for enc in entry.enclosures:
+            if enc.get('type', '').startswith('image/'):
+                return enc.get('href') or enc.get('url')
+
+    # 3. Première <img> dans le summary / content
+    html = ''
+    if hasattr(entry, 'content') and entry.content:
+        html = entry.content[0].get('value', '')
+    elif hasattr(entry, 'summary'):
+        html = entry.summary or ''
+
+    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', html)
+    if match:
+        url = match.group(1)
+        if url.startswith('http'):
+            return url
+
+    return None
+
+
+def _fetch_feed(feed_url: str, feed_lang: str = 'EN') -> list:
+    """Récupère et parse un flux RSS avec cache 1h."""
+    now    = time.time()
+    cached = _rss_cache.get(feed_url)
+
+    if cached and cached['expires'] > now:
+        return cached['articles']
+
+    try:
+        parsed   = feedparser.parse(feed_url)
+        articles = []
+
+        for entry in parsed.entries[:RSS_MAX_ARTICLES]:
+            # Date
+            pub = None
+            if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                try:
+                    pub = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+                except Exception:
+                    pass
+
+            # Résumé nettoyé
+            resume = entry.get('summary', '')
+            resume = re.sub(r'<[^>]+>', '', resume)
+
+            articles.append({
+                'titre':  entry.get('title', 'Sans titre'),
+                'lien':   entry.get('link', '#'),
+                'resume': resume[:300],
+                'date':   pub,
+                'image':  _extract_image(entry),
+                'lang':   feed_lang,
+            })
+
+        _rss_cache[feed_url] = {'articles': articles, 'expires': now + RSS_CACHE_TTL}
+        return articles
+
+    except Exception:
+        return []
+
+
 # ------------------------------
 # Routes
 # ------------------------------
@@ -250,6 +337,7 @@ def legale():
 @app.route('/politiqueconfidentialite')
 def confidentialite():
     return render_template("politiqueconfidentialite.html")
+
 @app.route('/cgu')
 def cgu():
     return render_template("cgu.html")
@@ -281,6 +369,36 @@ def scoreboard():
         classement=classement,
         user_rank=user_rank,
         user_score=user_score
+    )
+
+@app.route('/actualites')
+def actualites():
+    """Page des actualités cyber via flux RSS."""
+    from core.models import RssFeed
+
+    flux_actifs = RssFeed.query.filter_by(actif=True).all()
+
+    all_articles = []
+    for feed in flux_actifs:
+        articles = _fetch_feed(feed.url, feed.langue or 'EN')
+        for art in articles:
+            art['source'] = feed.nom
+        all_articles.extend(articles)
+
+    # Tri par date décroissante
+    all_articles.sort(
+        key=lambda a: a['date'] or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True
+    )
+
+    # Langues disponibles pour les filtres
+    langues_actives = sorted({f.langue for f in flux_actifs if f.langue})
+
+    return render_template(
+        "actualites.html",
+        articles=all_articles,
+        flux_actifs=flux_actifs,
+        langues_actives=langues_actives,
     )
 
 @app.route('/learn')
