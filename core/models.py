@@ -194,11 +194,12 @@ class Scoreboard(db.Model):
 class RssFeed(db.Model):
     __tablename__ = "RssFeed"
  
-    id          = db.Column(db.Integer, primary_key=True)
-    nom         = db.Column(db.String(100), nullable=False)
-    url         = db.Column(db.String(500), nullable=False, unique=True)
-    actif       = db.Column(db.Boolean, default=False)
-    created_at  = db.Column(db.DateTime, default=db.func.now())
+    id         = db.Column(db.Integer, primary_key=True)
+    nom        = db.Column(db.String(100), nullable=False)
+    url        = db.Column(db.String(500), nullable=False, unique=True)
+    actif      = db.Column(db.Boolean, default=False)
+    langue     = db.Column(db.String(5), default='EN')
+    created_at = db.Column(db.DateTime, default=db.func.now())
  
     def __repr__(self):
         return f"<RssFeed {self.nom}>"

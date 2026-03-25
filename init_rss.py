@@ -3,29 +3,32 @@
 Script à lancer UNE FOIS après migration pour pré-configurer les flux RSS.
 Usage : python3 init_rss.py
 """
- 
+
 from app import app
 from core import db
 from core.models import RssFeed
- 
+
 DEFAULT_FEEDS = [
     {
         "nom": "CERT-FR",
         "url": "https://www.cert.ssi.gouv.fr/feed/",
         "actif": False,
+        "langue": "FR",
     },
     {
         "nom": "The Hacker News",
         "url": "https://feeds.feedburner.com/TheHackersNews",
         "actif": False,
+        "langue": "EN",
     },
     {
         "nom": "Krebs on Security",
         "url": "https://krebsonsecurity.com/feed/",
         "actif": False,
+        "langue": "EN",
     },
 ]
- 
+
 def init_rss():
     with app.app_context():
         db.create_all()
@@ -40,6 +43,6 @@ def init_rss():
         db.session.commit()
         print("\n✅ Initialisation des flux RSS terminée.")
         print("   Activez-les depuis /admin/actualites")
- 
+
 if __name__ == "__main__":
     init_rss()

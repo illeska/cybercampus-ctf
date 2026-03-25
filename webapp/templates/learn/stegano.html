@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+{% block title %}Cours : Stéganographie - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Stéganographie</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">🖼️</div>
+    <div class="course-header-content">
+      <h1>Stéganographie</h1>
+      <p class="course-subtitle">L'art de cacher un message là où personne ne regarde</p>
+      <div class="course-badges">
+        <span class="badge-high">Élevé</span>
+        <span class="badge-time">📖 20 min</span>
+        <span class="badge-level">⚡ Intermédiaire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 : Définition -->
+    <div class="course-section">
+      <h2>🔍 Qu'est-ce que la stéganographie ?</h2>
+      <p>
+        La <strong>stéganographie</strong> est l'art de dissimuler un message à l'intérieur d'un autre fichier — image, 
+        son, vidéo ou texte — de façon à ce que personne ne soupçonne même l'existence du message secret.
+      </p>
+      <p>
+        Elle se distingue fondamentalement de la <strong>cryptographie</strong> : là où la crypto rend un message 
+        illisible, la stéganographie le rend <em>invisible</em>. Un message chiffré attire l'attention ; 
+        un message caché dans une photo de vacances ne la retient pas.
+      </p>
+
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Étymologie :</strong>
+          <p>Du grec <em>steganos</em> (couvert, caché) et <em>graphein</em> (écrire). 
+          Littéralement : « écriture couverte ». La pratique remonte à l'Antiquité — 
+          Hérodote raconte qu'un espion grec tatoua un message sur le crâne rasé d'un esclave, 
+          puis attendit que ses cheveux repoussent avant de l'envoyer.</p>
+        </div>
+      </div>
+
+      <h3>Stéganographie vs Cryptographie</h3>
+      <div class="transformation-box">
+        <div class="transform-before">
+          <strong>🔐 Cryptographie</strong>
+          <code>Message visible mais illisible :
+k7$xP#2mQz9@Lw...</code>
+          <p style="color:#94a3b8;font-size:0.82rem;margin-top:8px;">L'ennemi sait qu'un message existe</p>
+        </div>
+        <div class="transform-arrow">≠</div>
+        <div class="transform-after">
+          <strong>🖼️ Stéganographie</strong>
+          <code>Message invisible dans une image :
+[photo anodine de paysage]</code>
+          <p style="color:#94a3b8;font-size:0.82rem;margin-top:8px;">L'ennemi ne soupçonne rien</p>
+        </div>
+      </div>
+
+      <p style="margin-top:1rem;">
+        En pratique, les deux techniques sont souvent <strong>combinées</strong> : on cache un message chiffré 
+        dans une image. Même si quelqu'un découvre qu'un message est caché, il ne peut pas le lire.
+      </p>
+    </div>
+
+    <!-- Section 2 : Techniques -->
+    <div class="course-section">
+      <h2>🛠️ Les principales techniques</h2>
+
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🖼️ LSB (Least Significant Bit)</h4>
+          <p>Technique la plus courante. Modifie le bit de poids faible de chaque pixel — imperceptible à l'œil.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>📐 Grille mathématique</h4>
+          <p>Cache les données dans des pixels à des coordonnées calculées par une formule secrète.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🎵 Audio stéganographie</h4>
+          <p>Insère des données dans les fréquences inaudibles ou les bits de poids faible d'un fichier audio.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>📄 Stéganographie textuelle</h4>
+          <p>Cache un message dans les espaces, la ponctuation ou les premières lettres de chaque mot.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🎨 Canaux de couleur</h4>
+          <p>Exploite les canaux R, G, B ou Alpha d'une image pour stocker des données dans l'un d'eux.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>📦 Métadonnées EXIF</h4>
+          <p>Dissimule des informations dans les métadonnées d'un fichier image (champs author, comment…).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : LSB en détail -->
+    <div class="course-section">
+      <h2>⚙️ La technique LSB en détail</h2>
+      <p>
+        LSB (<em>Least Significant Bit</em>) est la technique de stéganographie d'image la plus répandue. 
+        Elle repose sur une propriété des pixels : chaque canal de couleur (Rouge, Vert, Bleu) est codé 
+        sur 8 bits, soit une valeur entre 0 et 255.
+      </p>
+      <p>
+        Modifier le dernier bit d'un canal change la valeur d'au maximum 1 — 
+        ce qui est <strong>totalement imperceptible</strong> pour l'œil humain.
+      </p>
+
+      <h3>Principe bit par bit</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">📌 Exemple visuel</span>
+          <span class="code-lang">Binaire</span>
+        </div>
+        <pre><code># Pixel original (R=200, G=150, B=100)
+R: 11001000   G: 10010110   B: 01100100
+
+# On veut cacher le bit "1" dans le canal R
+# On remplace le dernier bit par 1
+R: 11001001   ← bit modifié (200 → 201, différence invisible)
+
+# On veut cacher le bit "0" dans le canal G
+G: 10010110   ← pas de changement (déjà 0)
+
+# On peut stocker 1 bit par canal, soit 3 bits par pixel
+# Une image 800x600 = 480 000 pixels → 180 000 octets cachables</code></pre>
+      </div>
+
+      <h3>Implémentation Python</h3>
+      <div class="code-block vulnerable">
+        <div class="code-header">
+          <span class="code-status">🔴 Encoder un message (LSB)</span>
+          <span class="code-lang">Python / Pillow</span>
+        </div>
+        <pre><code>from PIL import Image
+
+def encode_lsb(image_path, message, output_path):
+    img = Image.open(image_path)
+    pixels = img.load()
+    W, H = img.size
+
+    # Convertir le message en bits
+    bits = ''.join(format(ord(c), '08b') for c in message)
+    bits += '00000000'  # Marqueur de fin (octet nul)
+
+    idx = 0
+    for y in range(H):
+        for x in range(W):
+            if idx >= len(bits):
+                break
+            r, g, b = pixels[x, y][:3]
+
+            # Modifier le LSB du canal Rouge
+            r = (r & 0b11111110) | int(bits[idx])
+            idx += 1
+
+            pixels[x, y] = (r, g, b)
+
+    img.save(output_path)
+    print(f"✅ Message encodé dans {output_path}")</code></pre>
+      </div>
+
+      <div class="code-block safe">
+        <div class="code-header">
+          <span class="code-status">🟢 Décoder un message (LSB)</span>
+          <span class="code-lang">Python / Pillow</span>
+        </div>
+        <pre><code>from PIL import Image
+
+def decode_lsb(image_path):
+    img = Image.open(image_path)
+    pixels = img.load()
+    W, H = img.size
+
+    bits = ''
+    for y in range(H):
+        for x in range(W):
+            r = pixels[x, y][0]
+            bits += str(r & 1)  # Extraire le LSB du canal Rouge
+
+    # Reconvertir les bits en caractères
+    message = ''
+    for i in range(0, len(bits), 8):
+        byte = bits[i:i+8]
+        if byte == '00000000':  # Fin du message
+            break
+        message += chr(int(byte, 2))
+
+    return message</code></pre>
+      </div>
+    </div>
+
+    <!-- Section 4 : Grille mathématique -->
+    <div class="course-section">
+      <h2>📐 La technique par grille mathématique</h2>
+      <p>
+        Au lieu de parcourir les pixels séquentiellement, on utilise une <strong>formule mathématique</strong> 
+        pour calculer les coordonnées des pixels porteurs de données. 
+        Seul celui qui connaît la formule peut extraire le message.
+      </p>
+
+      <div class="explanation-box">
+        <h4>Exemple de formule :</h4>
+        <p>
+          Le <strong>i-ème caractère</strong> est stocké dans le pixel de coordonnées :<br/>
+          <code>x = (i × 37) mod largeur</code><br/>
+          <code>y = (i × 53) mod hauteur</code>
+        </p>
+        <p style="margin-top:0.8rem;">
+          Les nombres 37 et 53 sont des <strong>clés secrètes</strong>. 
+          Sans elles, il faudrait tester toutes les combinaisons possibles — 
+          ce qui est computationnellement prohibitif.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-status">📌 Extraction par grille</span>
+          <span class="code-lang">Python</span>
+        </div>
+        <pre><code>from PIL import Image
+
+def decode_grid(image_path):
+    img = Image.open(image_path)
+    pixels = img.load()
+    W, H = img.size
+
+    # Pixel index 0 → longueur du message stockée dans le canal R
+    length = pixels[(0 * 37) % W, (0 * 53) % H][0]
+
+    message = ''
+    for i in range(1, length + 1):
+        px = (i * 37) % W
+        py = (i * 53) % H
+        # Le caractère est stocké dans le canal Rouge (valeur ASCII)
+        message += chr(pixels[px, py][0])
+
+    return message</code></pre>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">🔑</div>
+        <div class="info-content">
+          <strong>Pourquoi cette technique est plus robuste que LSB ?</strong>
+          <p>
+            Les outils automatiques de détection LSB (comme StegSolve ou zsteg) ne détecteront rien 
+            car les pixels modifiés sont éparpillés de façon pseudo-aléatoire dans l'image. 
+            Un analyste doit connaître la formule pour savoir où chercher.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 : Détection -->
+    <div class="course-section">
+      <h2>🔬 Détecter la stéganographie</h2>
+      <p>
+        L'<strong>analyse stéganalytique</strong> est la discipline inverse : détecter qu'une image contient 
+        un message caché, voire l'extraire. Voici les principales méthodes :
+      </p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Analyse visuelle des canaux</h3>
+          <p>
+            Isoler chaque canal de couleur (R, G, B) et amplifier les variations permet parfois 
+            de visualiser les zones modifiées. L'outil <strong>StegSolve</strong> est conçu pour ça.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔍 Avec StegSolve</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Télécharger et lancer StegSolve
+java -jar StegSolve.jar
+
+# Naviguer entre les plans de bits (Bit Plane 0 = LSB)</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Analyse statistique (histogramme)</h3>
+          <p>
+            Un fichier image normal a une distribution statistique régulière des valeurs de pixels. 
+            L'insertion de données LSB introduit des anomalies détectables — notamment une sur-représentation 
+            des valeurs paires ou impaires selon le message caché.
+          </p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Outils automatiques</h3>
+          <ul>
+            <li><strong>zsteg</strong> — détection LSB dans les PNG/BMP</li>
+            <li><strong>steghide</strong> — cache et extrait des données (JPEG, BMP, WAV)</li>
+            <li><strong>exiftool</strong> — analyse les métadonnées EXIF</li>
+            <li><strong>strings</strong> — cherche des chaînes lisibles dans un fichier binaire</li>
+            <li><strong>binwalk</strong> — détecte des fichiers cachés dans d'autres fichiers</li>
+          </ul>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🛠️ Commandes utiles</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Analyser les métadonnées
+exiftool image.png
+
+# Chercher du texte caché dans les bits
+zsteg image.png
+
+# Extraire un fichier caché avec steghide
+steghide extract -sf image.jpg
+
+# Chercher des signatures de fichiers cachés
+binwalk image.png
+
+# Chercher des strings lisibles
+strings image.png | grep -i ctf</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Comparaison avec l'original</h3>
+          <p>
+            Si vous avez accès à l'image originale (avant insertion), une simple différence pixel par pixel 
+            révèle exactement quels pixels ont été modifiés.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔍 Différence d'images</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>from PIL import Image, ImageChops
+
+original  = Image.open("original.png")
+suspecte  = Image.open("suspecte.png")
+
+diff = ImageChops.difference(original, suspecte)
+diff.save("difference.png")
+# Les pixels modifiés apparaissent en blanc sur fond noir</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6 : Usages -->
+    <div class="course-section">
+      <h2>🌍 Usages réels de la stéganographie</h2>
+
+      <div class="attack-types">
+        <div class="attack-type-card">
+          <h4>🕵️ Renseignement</h4>
+          <p>Les services secrets utilisent la stéganographie pour transmettre des ordres dissimulés dans des images anodines publiées en ligne.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🦠 Malwares</h4>
+          <p>Des malwares récents (Sunburst, etc.) cachent leurs commandes C2 dans des images PNG pour échapper aux antivirus.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>💰 Watermarking</h4>
+          <p>Les studios hollywoodiens cachent un identifiant unique dans chaque copie distribuée pour tracer les fuites.</p>
+        </div>
+        <div class="attack-type-card">
+          <h4>🔒 Whistleblowers</h4>
+          <p>Des lanceurs d'alerte utilisent la stéganographie pour exfiltrer des documents sans déclencher les systèmes DLP.</p>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:1.5rem;">
+        <div class="info-icon">⚠️</div>
+        <div class="info-content">
+          <strong>Dans les CTF :</strong>
+          <p>
+            La stéganographie est un classique des CTF. Les défis vont du simple <code>strings</code> 
+            sur un fichier jusqu'à des techniques avancées combinant chiffrement, grilles mathématiques 
+            et encodage custom. Ayez toujours exiftool, zsteg, steghide et StegSolve dans votre arsenal.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7 : Résumé -->
+    <div class="course-section">
+      <h2>📝 Résumé des bonnes pratiques CTF</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Commencez toujours par <code>exiftool</code> pour analyser les métadonnées</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Lancez <code>strings</code> pour chercher du texte lisible caché dans le binaire</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilisez <code>zsteg</code> pour détecter automatiquement les techniques LSB courantes</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ouvrez l'image dans <strong>StegSolve</strong> et parcourez les plans de bits</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Essayez <code>binwalk</code> — il peut y avoir un fichier ZIP ou PNG caché dans l'image</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Regardez les canaux R, G, B séparément — le message peut être dans un seul canal</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Si vous trouvez un message, pensez à tester ROT13, Base64, ou d'autres encodages</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Lisez l'énoncé attentivement — il contient souvent des indices sur la méthode utilisée</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Maintenant que vous maîtrisez les bases de la stéganographie, testez vos compétences sur notre challenge ! 
+          Une carte ancienne cache un message secret dans ses pixels. À vous de le trouver.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>150 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau intermédiaire</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>20-40 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=7) }}" class="btn challenge-btn-large">
+          Accéder au challenge Stéganographie
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn_upload') }}" class="nav-btn back">
+        ← Cours précédent : Upload
+      </a>
+      <a href="{{ url_for('learn') }}" class="nav-btn next">
+        Retour à la bibliothèque →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

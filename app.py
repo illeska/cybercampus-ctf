@@ -436,6 +436,11 @@ def learn_upload():
     """Cours sur l'Upload"""
     return render_template("learn/upload.html")
 
+@app.route('/learn/stegano')
+def learn_stegano():
+    """Cours sur la Stéganographie"""
+    return render_template("learn/stegano.html")
+
 @app.route('/challenges')
 @login_required
 def challenges_list():
