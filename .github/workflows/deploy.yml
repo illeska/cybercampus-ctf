@@ -1,0 +1,35 @@
+name: Deploy CyberCampus CTF
+ 
+on:
+  push:
+    branches:
+      - main
+ 
+jobs:
+  deploy:
+    name: Deploy to VM
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+ 
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/cybercampus-ctf
+ 
+            echo "📥 Pull des dernières modifications..."
+            git pull origin main
+ 
+            echo "🛑 Arrêt des conteneurs..."
+            docker-compose down
+ 
+            echo "🚀 Rebuild et relance..."
+            docker-compose up --build -d
+ 
+            echo "✅ Déploiement terminé !"
