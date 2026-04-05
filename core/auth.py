@@ -283,7 +283,7 @@ def request_delete_account():
     # Envoyer l'email de confirmation
     try:
         msg = Message(
-            subject="⚠️ Confirmation de suppression de compte - CyberCampus CTF",
+            subject="Confirmation de suppression de compte - CyberCampus CTF ⚠️",
             recipients=[user.email],
             html=f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;
@@ -415,6 +415,223 @@ def account_deleted():
     """Page affichée après suppression du compte"""
     return render_template("account_deleted.html")
  
+
+
+# ------------------------------
+# Routes de modification de profil
+# ------------------------------
+
+from datetime import datetime as dt
+
+@auth_bp.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    """Page de modification du profil"""
+
+    if request.method == "POST":
+        action = request.form.get("action")
+
+        # ------------------------------
+        # Action : Infos personnelles
+        # ------------------------------
+        if action == "personal_info":
+            birth_year = request.form.get("birth_year", "").strip()
+            country = request.form.get("country", "").strip()
+            gender = request.form.get("gender", "").strip()
+
+            # Validation année de naissance
+            if birth_year:
+                try:
+                    birth_year_int = int(birth_year)
+                    current_year = dt.utcnow().year
+                    age = current_year - birth_year_int
+                    if age < 16:
+                        flash("❌ Vous devez avoir au moins 16 ans.", "danger")
+                        return redirect(url_for("auth.edit_profile"))
+                    if birth_year_int < 1900 or birth_year_int > current_year:
+                        flash("❌ Année de naissance invalide.", "danger")
+                        return redirect(url_for("auth.edit_profile"))
+                    current_user.birth_year = birth_year_int
+                except ValueError:
+                    flash("❌ Année de naissance invalide.", "danger")
+                    return redirect(url_for("auth.edit_profile"))
+            else:
+                current_user.birth_year = None
+
+            current_user.country = country if country else None
+            current_user.gender = gender if gender else None
+            db.session.commit()
+            flash("✅ Informations personnelles mises à jour.", "success")
+            return redirect(url_for("auth.edit_profile"))
+
+        # ------------------------------
+        # Action : Changer le pseudo
+        # ------------------------------
+        if action == "change_pseudo":
+            new_pseudo = request.form.get("pseudo", "").strip()
+
+            if not new_pseudo:
+                flash("❌ Le pseudo ne peut pas être vide.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if len(new_pseudo) < 3 or len(new_pseudo) > 50:
+                flash("❌ Le pseudo doit contenir entre 3 et 50 caractères.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if new_pseudo == current_user.pseudo:
+                flash("⚠️ C'est déjà votre pseudo actuel.", "warning")
+                return redirect(url_for("auth.edit_profile"))
+
+            existing = User.query.filter_by(pseudo=new_pseudo).first()
+            if existing:
+                flash("❌ Ce pseudo est déjà pris.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            current_user.pseudo = new_pseudo
+            db.session.commit()
+            flash("✅ Pseudo mis à jour avec succès.", "success")
+            return redirect(url_for("auth.edit_profile"))
+
+        # ------------------------------
+        # Action : Changer l'email
+        # ------------------------------
+        if action == "change_email":
+            new_email = request.form.get("new_email", "").strip().lower()
+
+            if not new_email:
+                flash("❌ L'email ne peut pas être vide.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if new_email == current_user.email:
+                flash("⚠️ C'est déjà votre email actuel.", "warning")
+                return redirect(url_for("auth.edit_profile"))
+
+            existing = User.query.filter_by(email=new_email).first()
+            if existing:
+                flash("❌ Cet email est déjà utilisé.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            # Stocker le nouvel email en attente
+            current_user.new_email_pending = new_email
+            db.session.commit()
+
+            # Générer le token et envoyer l'email de confirmation
+            s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+            token = s.dumps(
+                {"user_id": current_user.id, "new_email": new_email},
+                salt='change-email'
+            )
+            confirm_url = url_for('auth.confirm_change_email', token=token, _external=True)
+
+            try:
+                msg = Message(
+                    subject="✉️ Confirmez votre nouvel email - CyberCampus CTF",
+                    recipients=[new_email],
+                    html=f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;
+                                background: #050a10; color: #fff; padding: 40px; border-radius: 10px;">
+                        <h1 style="color: #00f5c0; text-align: center;">CyberCampus CTF</h1>
+                        <h2 style="text-align: center;">Confirmation de votre nouvel email</h2>
+                        <p>Bonjour <strong style="color: #00f5c0;">{current_user.pseudo}</strong>,</p>
+                        <p>
+                            Vous avez demandé à changer votre adresse email sur CyberCampus CTF.
+                            Cliquez sur le bouton ci-dessous pour confirmer votre nouvel email :
+                        </p>
+                        <div style="text-align: center; margin: 35px 0;">
+                            <a href="{confirm_url}"
+                               style="background: #00f5c0; color: #050a10; padding: 15px 35px;
+                                      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.05rem;">
+                                ✅ Confirmer mon nouvel email
+                            </a>
+                        </div>
+                        <p style="color: #94a3b8; font-size: 0.9rem; text-align: center;">
+                            Ce lien expire dans <strong style="color: #fff;">1 heure</strong>.
+                            Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+                        </p>
+                        <hr style="border-color: #1e293b; margin: 30px 0;">
+                        <p style="color: #64748b; font-size: 0.8rem; text-align: center;">
+                            © 2026 CyberCampus CTF — no-reply@cybercampus-ctf.fr
+                        </p>
+                    </div>
+                    """
+                )
+                mail.send(msg)
+                flash(f"📧 Un email de confirmation a été envoyé à {new_email}. Vérifiez votre boîte mail.", "info")
+            except Exception:
+                flash("❌ Erreur d'envoi du mail. Réessayez plus tard.", "danger")
+
+            return redirect(url_for("auth.edit_profile"))
+
+        # ------------------------------
+        # Action : Changer le mot de passe
+        # ------------------------------
+        if action == "change_password":
+            old_password = request.form.get("old_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not current_user.check_password(old_password):
+                flash("❌ Mot de passe actuel incorrect.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if len(new_password) < 8:
+                flash("❌ Le nouveau mot de passe doit contenir au moins 8 caractères.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            import re
+            if not re.search(r'\d', new_password):
+                flash("❌ Le nouveau mot de passe doit contenir au moins un chiffre.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if not re.search(r'[!@#$%^&*(),.?\":{}|<>_\-+=\[\]\\\/~`]', new_password):
+                flash("❌ Le nouveau mot de passe doit contenir au moins un caractère spécial.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            if new_password != confirm_password:
+                flash("❌ Les mots de passe ne correspondent pas.", "danger")
+                return redirect(url_for("auth.edit_profile"))
+
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash("✅ Mot de passe mis à jour avec succès.", "success")
+            return redirect(url_for("auth.edit_profile"))
+
+    return render_template("edit_profile.html", user=current_user)
+
+
+@auth_bp.route("/profile/email/confirm/<token>")
+@login_required
+def confirm_change_email(token):
+    """Confirme le changement d'email via le lien reçu"""
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        data = s.loads(token, salt='change-email', max_age=3600)
+    except (SignatureExpired, BadSignature):
+        flash("❌ Le lien de confirmation est invalide ou expiré.", "danger")
+        return redirect(url_for("auth.edit_profile"))
+
+    user_id = data.get("user_id")
+    new_email = data.get("new_email")
+
+    if user_id != current_user.id:
+        flash("❌ Ce lien ne vous appartient pas.", "danger")
+        return redirect(url_for("auth.edit_profile"))
+
+    # Vérifier que l'email n'est pas déjà pris
+    existing = User.query.filter_by(email=new_email).first()
+    if existing and existing.id != current_user.id:
+        flash("❌ Cet email est déjà utilisé par un autre compte.", "danger")
+        return redirect(url_for("auth.edit_profile"))
+
+    # Appliquer le changement
+    current_user.email = new_email
+    current_user.new_email_pending = None
+    db.session.commit()
+
+    flash("✅ Votre email a été mis à jour avec succès.", "success")
+    return redirect(url_for("auth.edit_profile"))
+
+
 # ------------------------------
 # Fin du fichier auth.py
 # ------------------------------

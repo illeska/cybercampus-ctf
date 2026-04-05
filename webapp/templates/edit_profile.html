@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block title %}Modifier mon profil - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper">
+
+  <div class="back-btn-container">
+    <a href="{{ url_for('dashboard') }}" class="back-btn-modern">
+      <span>&#8592;</span> Retour au tableau de bord
+    </a>
+  </div>
+
+  <h2 class="animated-title">⚙️ Modifier mon profil</h2>
+  <p>Gérez vos informations personnelles et vos identifiants de connexion.</p>
+
+  <div class="profile-edit-grid">
+
+    <!-- ── SECTION 1 : Infos personnelles ── -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <h3>👤 Informations personnelles</h3>
+        <p>Ces informations sont facultatives et restent privées.</p>
+      </div>
+
+      <form method="POST" class="profile-form">
+        <input type="hidden" name="action" value="personal_info">
+
+        <!-- Année de naissance -->
+        <div class="form-group">
+          <label class="form-label">Année de naissance <span class="optional-badge">Facultatif</span></label>
+          <input type="number"
+                 name="birth_year"
+                 class="input-field"
+                 placeholder="Ex : 2001"
+                 min="1900"
+                 max="{{ now().year - 16 }}"
+                 value="{{ user.birth_year or '' }}" />
+          <p class="form-hint">Vous devez avoir au moins 16 ans.</p>
+        </div>
+
+        <!-- Pays -->
+        <div class="form-group">
+          <label class="form-label">Pays <span class="optional-badge">Facultatif</span></label>
+          <select name="country" class="input-field select-field">
+            <option value="">— Sélectionnez votre pays —</option>
+            {% set countries = [
+              "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre",
+              "Angola", "Antigua-et-Barbuda", "Arabie saoudite", "Argentine", "Arménie",
+              "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn", "Bangladesh",
+              "Barbade", "Belgique", "Belize", "Bénin", "Bhoutan", "Biélorussie", "Birmanie",
+              "Bolivie", "Bosnie-Herzégovine", "Botswana", "Brésil", "Brunei", "Bulgarie",
+              "Burkina Faso", "Burundi", "Cabo Verde", "Cambodge", "Cameroun", "Canada",
+              "Centrafrique", "Chili", "Chine", "Chypre", "Colombie", "Comores", "Congo",
+              "Corée du Nord", "Corée du Sud", "Costa Rica", "Côte d'Ivoire", "Croatie", "Cuba",
+              "Danemark", "Djibouti", "Dominique", "Égypte", "Émirats arabes unis", "Équateur",
+              "Érythrée", "Espagne", "Estonie", "Eswatini", "États-Unis", "Éthiopie", "Fidji",
+              "Finlande", "France", "Gabon", "Gambie", "Géorgie", "Ghana", "Grèce", "Grenade",
+              "Guatemala", "Guinée", "Guinée-Bissau", "Guinée équatoriale", "Guyana", "Haïti",
+              "Honduras", "Hongrie", "Inde", "Indonésie", "Irak", "Iran", "Irlande", "Islande",
+              "Israël", "Italie", "Jamaïque", "Japon", "Jordanie", "Kazakhstan", "Kenya",
+              "Kirghizistan", "Kiribati", "Kosovo", "Koweït", "Laos", "Lesotho", "Lettonie",
+              "Liban", "Libéria", "Libye", "Liechtenstein", "Lituanie", "Luxembourg",
+              "Madagascar", "Malaisie", "Malawi", "Maldives", "Mali", "Malte", "Maroc",
+              "Marshall", "Mauritanie", "Maurice", "Mexique", "Micronésie", "Moldavie",
+              "Monaco", "Mongolie", "Monténégro", "Mozambique", "Namibie", "Nauru", "Népal",
+              "Nicaragua", "Niger", "Nigéria", "Norvège", "Nouvelle-Zélande", "Oman",
+              "Ouganda", "Ouzbékistan", "Pakistan", "Palaos", "Palestine", "Panama",
+              "Papouasie-Nouvelle-Guinée", "Paraguay", "Pays-Bas", "Pérou", "Philippines",
+              "Pologne", "Portugal", "Qatar", "République démocratique du Congo",
+              "République dominicaine", "République tchèque", "Roumanie", "Royaume-Uni",
+              "Russie", "Rwanda", "Saint-Kitts-et-Nevis", "Saint-Marin", "Saint-Vincent-et-les-Grenadines",
+              "Sainte-Lucie", "Salomon", "Salvador", "Samoa", "São Tomé-et-Príncipe",
+              "Sénégal", "Serbie", "Seychelles", "Sierra Leone", "Singapour", "Slovaquie",
+              "Slovénie", "Somalie", "Soudan", "Soudan du Sud", "Sri Lanka", "Suède", "Suisse",
+              "Suriname", "Syrie", "Tadjikistan", "Tanzanie", "Tchad", "Thaïlande",
+              "Timor oriental", "Togo", "Tonga", "Trinité-et-Tobago", "Tunisie", "Turkménistan",
+              "Turquie", "Tuvalu", "Ukraine", "Uruguay", "Vanuatu", "Vatican", "Venezuela",
+              "Vietnam", "Yémen", "Zambie", "Zimbabwe"
+            ] %}
+            {% for country in countries %}
+              <option value="{{ country }}" {% if user.country == country %}selected{% endif %}>
+                {{ country }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Sexe -->
+        <div class="form-group">
+          <label class="form-label">Genre <span class="optional-badge">Facultatif</span></label>
+          <div class="gender-options">
+            <label class="gender-option {% if user.gender == 'Homme' %}active{% endif %}">
+              <input type="radio" name="gender" value="Homme" {% if user.gender == 'Homme' %}checked{% endif %} />
+              <span>👨 Homme</span>
+            </label>
+            <label class="gender-option {% if user.gender == 'Femme' %}active{% endif %}">
+              <input type="radio" name="gender" value="Femme" {% if user.gender == 'Femme' %}checked{% endif %} />
+              <span>👩 Femme</span>
+            </label>
+            <label class="gender-option {% if user.gender == 'Autre' %}active{% endif %}">
+              <input type="radio" name="gender" value="Autre" {% if user.gender == 'Autre' %}checked{% endif %} />
+              <span>🧑 Autre</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn profile-save-btn">💾 Sauvegarder</button>
+      </form>
+    </div>
+
+    <!-- ── SECTION 2 : Changer le pseudo ── -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <h3>🏷️ Changer de pseudo</h3>
+        <p>Votre pseudo actuel : <strong style="color: #00f5c0;">{{ user.pseudo }}</strong></p>
+      </div>
+
+      <form method="POST" class="profile-form">
+        <input type="hidden" name="action" value="change_pseudo">
+
+        <div class="form-group">
+          <label class="form-label">Nouveau pseudo</label>
+          <input type="text"
+                 name="pseudo"
+                 class="input-field"
+                 placeholder="Entrez votre nouveau pseudo"
+                 minlength="3"
+                 maxlength="50"
+                 required />
+          <p class="form-hint">Entre 3 et 50 caractères.</p>
+        </div>
+
+        <button type="submit" class="btn profile-save-btn">💾 Changer le pseudo</button>
+      </form>
+    </div>
+
+    <!-- ── SECTION 3 : Changer l'email ── -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <h3>✉️ Changer d'email</h3>
+        <p>Email actuel : <strong style="color: #00f5c0;">{{ user.email }}</strong></p>
+        {% if user.new_email_pending %}
+          <div class="pending-badge">
+            ⏳ En attente de confirmation : <strong>{{ user.new_email_pending }}</strong>
+          </div>
+        {% endif %}
+      </div>
+
+      <form method="POST" class="profile-form">
+        <input type="hidden" name="action" value="change_email">
+
+        <div class="form-group">
+          <label class="form-label">Nouvel email</label>
+          <input type="email"
+                 name="new_email"
+                 class="input-field"
+                 placeholder="nouveau@exemple.com"
+                 required />
+          <p class="form-hint">Un email de confirmation sera envoyé à cette adresse.</p>
+        </div>
+
+        <button type="submit" class="btn profile-save-btn">📧 Envoyer la confirmation</button>
+      </form>
+    </div>
+
+    <!-- ── SECTION 4 : Changer le mot de passe ── -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <h3>🔐 Changer de mot de passe</h3>
+        <p>Choisissez un mot de passe fort et unique.</p>
+      </div>
+
+      <form method="POST" class="profile-form">
+        <input type="hidden" name="action" value="change_password">
+
+        <div class="form-group">
+          <label class="form-label">Mot de passe actuel</label>
+          <div class="password-container">
+            <input type="password" name="old_password" id="old-pass" class="input-field" required placeholder="Votre mot de passe actuel" />
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('old-pass', this)">
+              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nouveau mot de passe</label>
+          <div class="password-container">
+            <input type="password" name="new_password" id="new-pass" class="input-field" required placeholder="Minimum 8 caractères" />
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('new-pass', this)">
+              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
+            </button>
+          </div>
+          <p class="form-hint">🔒 Minimum 8 caractères, 1 chiffre et 1 caractère spécial.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirmer le nouveau mot de passe</label>
+          <div class="password-container">
+            <input type="password" name="confirm_password" id="conf-pass" class="input-field" required placeholder="Confirmez le nouveau mot de passe" />
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('conf-pass', this)">
+              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn profile-save-btn">🔐 Changer le mot de passe</button>
+      </form>
+    </div>
+
+  </div>
+
+</section>
+
+<style>
+/* ── GRID ── */
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+@media (max-width: 900px) {
+  .profile-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── SECTION CARD ── */
+.profile-section {
+  background: rgba(15, 23, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-section-header h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #00f5c0;
+  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+}
+
+.profile-section-header p {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ── FORM ── */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-hint {
+  color: #475569;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.optional-badge {
+  background: rgba(100, 116, 139, 0.2);
+  color: #64748b;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* ── SELECT ── */
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.select-field option {
+  background: #0a0f1a;
+  color: #fff;
+}
+
+/* ── GENDER OPTIONS ── */
+.gender-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gender-option {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.88rem;
+  color: #94a3b8;
+}
+
+.gender-option input[type="radio"] {
+  display: none;
+}
+
+.gender-option:hover {
+  border-color: rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+}
+
+.gender-option.active,
+.gender-option:has(input:checked) {
+  background: rgba(0, 245, 192, 0.1);
+  border-color: rgba(0, 245, 192, 0.4);
+  color: #00f5c0;
+}
+
+/* ── SAVE BUTTON ── */
+.profile-save-btn {
+  background: linear-gradient(90deg, rgba(0, 245, 192, 0.1), rgba(0, 136, 255, 0.1));
+  border: 1px solid rgba(0, 245, 192, 0.3);
+  color: #00f5c0;
+  padding: 12px;
+  margin-top: 5px;
+}
+
+.profile-save-btn:hover {
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
+  color: #050a10;
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(0, 245, 192, 0.3);
+}
+
+/* ── PENDING EMAIL ── */
+.pending-badge {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  color: #f59e0b;
+  font-size: 0.82rem;
+}
+</style>
+
+<script>
+/* Gestion visuelle des boutons genre */
+document.querySelectorAll('.gender-option').forEach(label => {
+  label.addEventListener('click', () => {
+    document.querySelectorAll('.gender-option').forEach(l => l.classList.remove('active'));
+    label.classList.add('active');
+  });
+});
+</script>
+
+{% endblock %}
