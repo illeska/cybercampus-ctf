@@ -5,69 +5,110 @@
 <section class="page-wrapper">
 
 <h1>Politique de confidentialité</h1>
+<p style="color: #64748b; font-size: 0.9rem;">Dernière mise à jour : avril 2026</p>
 
 <h2>1. Responsable du traitement</h2>
 <p>
-Administrateur du site<br>
-Contact : contact@cybercampus-ctf.fr
+Identifiant public : <a href="https://github.com/illeska" target="_blank" style="color: #00f5c0;">github.com/illeska</a><br>
+Contact : <a href="mailto:contact@cybercampus-ctf.fr" style="color: #00f5c0;">contact@cybercampus-ctf.fr</a>
 </p>
 
 <h2>2. Données collectées</h2>
+<p>Dans le cadre de l'utilisation de la plateforme, nous collectons les données suivantes :</p>
 <ul>
-<li>Nom d’utilisateur</li>
+<li>Nom d'utilisateur (pseudo)</li>
 <li>Adresse email</li>
-<li>Mot de passe stocké sous forme hashée</li>
+<li>Mot de passe stocké sous forme hashée (bcrypt)</li>
 <li>Adresse IP et données techniques de connexion</li>
-<li>Données de progression dans les challenges</li>
+<li>Données de progression dans les challenges (soumissions, scores)</li>
+<li>Date et heure de connexion</li>
 </ul>
+<p>Aucune donnée bancaire ou sensible au sens du RGPD n'est collectée.</p>
 
-<h2>3. Finalité du traitement</h2>
+<h2>3. Base légale du traitement</h2>
 <ul>
-<li>Gestion des comptes utilisateurs</li>
-<li>Fonctionnement pédagogique du CTF</li>
-<li>Sécurisation de la plateforme</li>
-<li>Prévention des abus</li>
+<li><strong>Consentement</strong> (article 6.1.a RGPD) : collecte de l'email et du pseudo lors de l'inscription</li>
+<li><strong>Intérêt légitime</strong> (article 6.1.f RGPD) : journalisation des accès à des fins de sécurité et de prévention des abus</li>
+<li><strong>Exécution du contrat</strong> (article 6.1.b RGPD) : traitement des données nécessaires au fonctionnement du service</li>
 </ul>
-<p>
-Aucune donnée n’est utilisée à des fins commerciales.
-</p>
 
-<h2>4. Durée de conservation</h2>
-<p>
-Les données sont conservées pendant la durée d’existence du compte.
-Une demande de suppression peut être effectuée à tout moment.
-</p>
-
-<h2>5. Sécurité</h2>
-<p>
-Des mesures techniques raisonnables sont mises en œuvre :
-</p>
+<h2>4. Finalité du traitement</h2>
 <ul>
-<li>Hashage sécurisé des mots de passe</li>
-<li>Journalisation des accès</li>
-<li>Limitation d’accès aux données</li>
+<li>Gestion des comptes utilisateurs et authentification</li>
+<li>Fonctionnement pédagogique du CTF (suivi de progression, classement)</li>
+<li>Sécurisation de la plateforme et prévention des abus</li>
+<li>Envoi d'emails transactionnels (vérification de compte)</li>
+</ul>
+<p>Aucune donnée n'est utilisée à des fins commerciales ou publicitaires.</p>
+
+<h2>5. Durée de conservation</h2>
+<p>
+Les données personnelles sont conservées pendant la durée d'existence du compte, puis supprimées
+automatiquement <strong>2 ans après la dernière connexion de l'utilisateur</strong>, conformément
+aux recommandations de la CNIL en matière de conservation des données.
+</p>
+<p>
+Les données peuvent être supprimées à tout moment sur simple demande à
+<a href="mailto:contact@cybercampus-ctf.fr" style="color: #00f5c0;">contact@cybercampus-ctf.fr</a>.
+</p>
+
+<h2>6. Destinataires des données</h2>
+<p>
+Les données ne sont pas transmises à des tiers. Elles sont hébergées sur des serveurs Microsoft Azure
+situés en Europe, dans le respect du RGPD.
+</p>
+
+<h2>7. Sécurité</h2>
+<p>Les mesures techniques suivantes sont mises en œuvre pour protéger vos données :</p>
+<ul>
+<li>Chiffrement des communications via HTTPS (TLS)</li>
+<li>Hashage sécurisé des mots de passe (Werkzeug/bcrypt)</li>
+<li>Vérification de l'adresse email à l'inscription</li>
+<li>Journalisation des accès et détection des comportements suspects</li>
+<li>Isolation des environnements vulnérables via Docker</li>
 </ul>
 
-<h2>6. Cookies</h2>
+<h2>8. Cookies</h2>
 <p>
 Le site utilise uniquement des cookies strictement nécessaires au maintien de la session utilisateur.
-Aucun cookie publicitaire ou de suivi n’est utilisé.
+Ces cookies ne nécessitent pas de consentement préalable car ils sont indispensables au fonctionnement du service.
 </p>
-
-<h2>7. Droits des utilisateurs</h2>
 <ul>
-<li>Droit d’accès</li>
-<li>Droit de rectification</li>
-<li>Droit de suppression</li>
-<li>Droit à la limitation du traitement</li>
+<li><strong>cybercampus_session</strong> : cookie de session Flask, durée 1 an, HttpOnly, Secure</li>
+</ul>
+<p>Aucun cookie publicitaire, analytique ou de suivi tiers n'est utilisé.</p>
+
+<h2>9. Droits des utilisateurs</h2>
+<p>Conformément au RGPD, vous disposez des droits suivants :</p>
+<ul>
+<li><strong>Droit d'accès</strong> : obtenir une copie de vos données personnelles</li>
+<li><strong>Droit de rectification</strong> : corriger des données inexactes</li>
+<li><strong>Droit à l'effacement</strong> : demander la suppression de votre compte et de vos données</li>
+<li><strong>Droit à la limitation du traitement</strong> : limiter l'utilisation de vos données</li>
+<li><strong>Droit à la portabilité</strong> : recevoir vos données dans un format lisible</li>
+<li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données</li>
 </ul>
 <p>
-Toute demande peut être adressée à contact@cybercampus-ctf.fr
+Pour exercer ces droits, contactez-nous à :
+<a href="mailto:contact@cybercampus-ctf.fr" style="color: #00f5c0;">contact@cybercampus-ctf.fr</a>
+</p>
+<p>Nous nous engageons à répondre dans un délai maximum de <strong>30 jours</strong>.</p>
+
+<h2>10. Droit de réclamation</h2>
+<p>
+Si vous estimez que vos droits ne sont pas respectés, vous avez le droit d'introduire une réclamation
+auprès de la <strong>Commission Nationale de l'Informatique et des Libertés (CNIL)</strong> :
+</p>
+<p>
+<a href="https://www.cnil.fr/fr/plaintes" target="_blank" style="color: #00f5c0;">www.cnil.fr/fr/plaintes</a><br>
+3 Place de Fontenoy — TSA 80715 — 75334 PARIS CEDEX 07<br>
+Tél : 01 53 73 22 22
 </p>
 
-<h2>8. Droit applicable</h2>
+<h2>11. Droit applicable</h2>
 <p>
-La présente politique est régie par le droit français.
+La présente politique est régie par le droit français et le Règlement Général sur la Protection
+des Données (RGPD — Règlement UE 2016/679).
 </p>
 
 </section>

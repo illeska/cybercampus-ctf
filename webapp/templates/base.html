@@ -10,77 +10,254 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
 </head>
 <body>
+
+  <!-- ── BANNIÈRE BETA ── -->
   <div id="beta-banner" class="beta-banner">
-  <div class="beta-content">
-    <span>🚀 <strong>CyberCampus Bêta</strong> : Le site est actuellement en cours de développement. Des bugs peuvent subsister.</span>
-    <button class="close-beta" onclick="closeBanner()">&times;</button>
-  </div>
-</div>
-<nav class="navbar">
-  <div class="nav-left">
-    <a href="{{ url_for('home') }}" class="brand-link">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="CyberCampus Logo" class="logo" />
-      <h1 class="title">CyberCampus CTF</h1>
-    </a>
+    <div class="beta-content">
+      <span>🚀 <strong>CyberCampus Bêta</strong> : Le site est actuellement en cours de développement. Des bugs peuvent subsister.</span>
+      <button class="close-beta" onclick="closeBanner()">&times;</button>
+    </div>
   </div>
 
-  <div class="nav-center">
-    <a href="{{ url_for('learn') }}" class="nav-cat">Apprendre</a>
-    <a href="{{ url_for('challenges_list') }}" class="nav-cat">S'exercer</a>
-    <a href="{{ url_for('scoreboard') }}" class="nav-cat">Classement</a>
-    <a href="{{ url_for('actualites') }}" class="nav-cat">Actualités</a>
-  </div>
-
-  <div class="nav-right">
-    {% if current_user.is_authenticated %}
-      {% if current_user.role == "admin" %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin">⚙️</a>
-      {% endif %}
-      <a href="{{ url_for('dashboard') }}" class="btn nav-btn dashboard">Tableau de bord</a>
-      <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}" class="btn nav-btn orange">Se connecter</a>
-      <a href="{{ url_for('auth.register') }}" class="btn nav-btn cyan">S'inscrire</a>
-    {% endif %}
-  </div>
-</nav>
-
-
-<main>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-container top">
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
+  <!-- ── BANNIÈRE COOKIES ── -->
+  <div id="cookie-banner" class="cookie-banner" style="display: none;">
+    <div class="cookie-content">
+      <div class="cookie-text">
+        <span class="cookie-icon">🍪</span>
+        <div>
+          <strong>Ce site utilise des cookies</strong>
+          <p>
+            Nous utilisons uniquement des cookies strictement nécessaires au fonctionnement du service (session utilisateur).
+            Aucun cookie publicitaire ou de suivi n'est utilisé.
+            <a href="{{ url_for('confidentialite') }}" class="cookie-link">En savoir plus</a>
+          </p>
+        </div>
       </div>
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</main>
-
-
-<footer>
-  <div class="footer-container">
-    <div class="disclaimer-box">
-      <h4>Clause de Non-Responsabilité</h4>
-      <p>
-        Cette plateforme est un environnement pédagogique simulé. 
-        <strong>Toute tentative d’intrusion ou d’attaque en dehors du périmètre défini est strictement interdite et relève du droit pénal.</strong> 
-        L'utilisation des outils et techniques appris ici doit se limiter exclusivement au cadre de ce CTF.
-      </p>
+      <div class="cookie-actions">
+        <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accepter</button>
+        <button class="cookie-btn cookie-decline" onclick="declineCookies()">Refuser</button>
+      </div>
     </div>
-
-    <div class="footer-links">
-      <a href="{{ url_for('legale') }}">Mentions légales</a>
-      <span class="sep">|</span>
-      <a href="{{ url_for('confidentialite') }}">Politique de confidentialité</a>
-      <span class="sep">|</span>
-      <a href="{{ url_for('cgu') }}">CGU</a>
-    </div>
-
-    <p class="copyright">© 2026 CyberCampus CTF — Propulsé par la passion du hacking éthique</p>
   </div>
-</footer>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="{{ url_for('home') }}" class="brand-link">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="CyberCampus Logo" class="logo" />
+        <h1 class="title">CyberCampus CTF</h1>
+      </a>
+    </div>
+
+    <div class="nav-center">
+      <a href="{{ url_for('learn') }}" class="nav-cat">Apprendre</a>
+      <a href="{{ url_for('challenges_list') }}" class="nav-cat">S'exercer</a>
+      <a href="{{ url_for('scoreboard') }}" class="nav-cat">Classement</a>
+      <a href="{{ url_for('actualites') }}" class="nav-cat">Actualités</a>
+    </div>
+
+    <div class="nav-right">
+      {% if current_user.is_authenticated %}
+        {% if current_user.role == "admin" %}
+          <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin">⚙️</a>
+        {% endif %}
+        <a href="{{ url_for('dashboard') }}" class="btn nav-btn dashboard">Tableau de bord</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn nav-btn orange">Se connecter</a>
+        <a href="{{ url_for('auth.register') }}" class="btn nav-btn cyan">S'inscrire</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- ── FLASH MESSAGES ── -->
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container top">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-container">
+      <div class="disclaimer-box">
+        <h4>Clause de Non-Responsabilité</h4>
+        <p>
+          Cette plateforme est un environnement pédagogique simulé.
+          <strong>Toute tentative d'intrusion ou d'attaque en dehors du périmètre défini est strictement interdite et relève du droit pénal.</strong>
+          L'utilisation des outils et techniques appris ici doit se limiter exclusivement au cadre de ce CTF.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <a href="{{ url_for('legale') }}">Mentions légales</a>
+        <span class="sep">|</span>
+        <a href="{{ url_for('confidentialite') }}">Politique de confidentialité</a>
+        <span class="sep">|</span>
+        <a href="{{ url_for('cgu') }}">CGU</a>
+      </div>
+
+      <p class="copyright">© 2026 CyberCampus CTF — Propulsé par la passion du hacking éthique</p>
+    </div>
+  </footer>
+
+  <!-- ── STYLES BANNIÈRE COOKIES ── -->
+  <style>
+    .cookie-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 900px;
+      background: rgba(10, 15, 25, 0.97);
+      border: 1px solid rgba(0, 245, 192, 0.25);
+      border-radius: 16px;
+      padding: 20px 25px;
+      z-index: 9999;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .cookie-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cookie-text {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      flex: 1;
+    }
+
+    .cookie-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .cookie-text strong {
+      display: block;
+      color: #fff;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .cookie-text p {
+      color: #94a3b8;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .cookie-link {
+      color: #00f5c0;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .cookie-link:hover {
+      text-decoration: underline;
+    }
+
+    .cookie-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .cookie-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .cookie-accept {
+      background: linear-gradient(90deg, #00f5c0, #0088ff);
+      color: #050a10;
+    }
+
+    .cookie-accept:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 245, 192, 0.4);
+    }
+
+    .cookie-decline {
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cookie-decline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+
+    @media (max-width: 768px) {
+      .cookie-content {
+        flex-direction: column;
+      }
+      .cookie-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+      .cookie-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  </style>
+
+  <!-- ── SCRIPT BANNIÈRE COOKIES ── -->
+  <script>
+    // Afficher la bannière si pas encore de choix
+    document.addEventListener('DOMContentLoaded', function () {
+      const cookieChoice = localStorage.getItem('cybercampus_cookie_choice');
+      if (!cookieChoice) {
+        document.getElementById('cookie-banner').style.display = 'block';
+      }
+    });
+
+    function acceptCookies() {
+      localStorage.setItem('cybercampus_cookie_choice', 'accepted');
+      hideCookieBanner();
+    }
+
+    function declineCookies() {
+      localStorage.setItem('cybercampus_cookie_choice', 'declined');
+      hideCookieBanner();
+    }
+
+    function hideCookieBanner() {
+      const banner = document.getElementById('cookie-banner');
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateX(-50%) translateY(20px)';
+      banner.style.transition = 'all 0.3s ease';
+      setTimeout(() => banner.style.display = 'none', 300);
+    }
+  </script>
+
 </body>
 </html>
