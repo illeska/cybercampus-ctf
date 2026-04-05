@@ -206,6 +206,26 @@ class RssFeed(db.Model):
         return f"<RssFeed {self.nom}>"
 
 
+class EmailVerification(db.Model):
+    __tablename__ = "email_verification"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    used = db.Column(db.Boolean, default=False)
+
+    user = db.relationship("User", backref="verification_codes")
+
+    def is_expired(self):
+        """Vérifie si le code a expiré (15 minutes)"""
+        return (datetime.utcnow() - self.created_at).total_seconds() > 900
+
+    def is_valid(self):
+        """Vérifie si le code est valide (non expiré et non utilisé)"""
+        return not self.used and not self.is_expired()
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
