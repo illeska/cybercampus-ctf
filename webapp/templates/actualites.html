@@ -37,7 +37,7 @@
           <button class="pill active" data-filter="lang" data-value="all">Toutes</button>
           {% for lang in langues_actives %}
             <button class="pill" data-filter="lang" data-value="{{ lang }}">
-              {% if lang == 'FR' %}🇫🇷 Français{% elif lang == 'EN' %}🇬🇧 English{% else %}{{ lang }}{% endif %}
+              {% if lang == 'FR' %}FR Français{% elif lang == 'EN' %}EN English{% else %}{{ lang }}{% endif %}
             </button>
           {% endfor %}
         </div>
@@ -90,7 +90,7 @@
           <div class="news-card-header">
             <span class="news-source">{{ article.source }}</span>
             <span class="news-lang-badge {% if article.lang == 'FR' %}lang-fr{% else %}lang-en{% endif %}">
-              {% if article.lang == 'FR' %}🇫🇷{% else %}🇬🇧{% endif %}
+              {% if article.lang == 'FR' %}FR{% else %}EN{% endif %}
             </span>
             <span class="news-date" data-iso="{{ article.date.isoformat() if article.date else '' }}">
               {% if article.date %}
