@@ -36,11 +36,38 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    # Gardé ouvert pour ton accès admin (à sécuriser via Firewall Cloud)
     ports:
       - "5050:80"
     depends_on:
       - db
+
+  # ── UMAMI Analytics ──────────────────────────────────────
+  umami-db:
+    image: postgres:15
+    container_name: cybercampus_umami_db
+    restart: always
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: ${UMAMI_DB_USER}
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    expose:
+      - "5432"
+    volumes:
+      - umami_pgdata:/var/lib/postgresql/data
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: cybercampus_umami
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER}:${UMAMI_DB_PASSWORD}@umami-db:5432/umami
+      APP_SECRET: ${UMAMI_SECRET}
+    depends_on:
+      - umami-db
+
+  # ── CHALLENGES ───────────────────────────────────────────
 
   sqli-challenge:
     build: ./challenges/sqli
@@ -103,3 +130,4 @@ services:
 
 volumes:
   pgdata:
+  umami_pgdata:
