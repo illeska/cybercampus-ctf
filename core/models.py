@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(UserMixin, db.Model):
-    __tablename__ = "User"
+    __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
     pseudo = db.Column(db.String(50), unique=True, nullable=False)
@@ -80,7 +80,7 @@ class User(UserMixin, db.Model):
 
 
 class Challenge(db.Model):
-    __tablename__ = "Challenge"
+    __tablename__ = "challenge"
 
     id = db.Column(db.Integer, primary_key=True)
     titre = db.Column(db.String(150), nullable=False)
@@ -101,10 +101,10 @@ class Challenge(db.Model):
 
 
 class Flag(db.Model):
-    __tablename__ = "Flag"
+    __tablename__ = "flag"
 
     id = db.Column(db.Integer, primary_key=True)
-    challenge_id = db.Column(db.Integer, db.ForeignKey("Challenge.id"), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey("challenge.id"), nullable=False)
     flag_hash = db.Column(db.String(255), nullable=False)
 
     @staticmethod
@@ -119,11 +119,11 @@ class Flag(db.Model):
 
 
 class Submission(db.Model):
-    __tablename__ = "Submission"
+    __tablename__ = "submission"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("User.id"), nullable=False)
-    challenge_id = db.Column(db.Integer, db.ForeignKey("Challenge.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey("challenge.id"), nullable=False)
     flag_soumis = db.Column(db.String(255), nullable=False)
     correct = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -163,10 +163,10 @@ class Submission(db.Model):
 
 
 class Scoreboard(db.Model):
-    __tablename__ = "Scoreboard"
+    __tablename__ = "scoreboard"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("User.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     points_total = db.Column(db.Integer, default=0)
 
     @staticmethod
@@ -192,7 +192,7 @@ class Scoreboard(db.Model):
 
 
 class RssFeed(db.Model):
-    __tablename__ = "RssFeed"
+    __tablename__ = "rssfeed"
  
     id         = db.Column(db.Integer, primary_key=True)
     nom        = db.Column(db.String(100), nullable=False)
