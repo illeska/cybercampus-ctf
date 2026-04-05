@@ -25,7 +25,7 @@ def generate_code():
 def send_verification_code(user_email, code):
     """Envoie le code de vérification par email"""
     msg = Message(
-        subject="🔐 Votre code de vérification - CyberCampus CTF",
+        subject="Votre code de vérification - CyberCampus CTF 🔐",
         recipients=[user_email],
         html=f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; 
@@ -50,7 +50,7 @@ def send_verification_code(user_email, code):
             </p>
             <hr style="border-color: #1e293b; margin: 30px 0;">
             <p style="color: #64748b; font-size: 0.8rem; text-align: center;">
-                © 2026 CyberCampus CTF — no-reply@cybercampus-ctf.fr
+                © 2026 CyberCampus CTF - no-reply@cybercampus-ctf.fr
             </p>
         </div>
         """
@@ -112,7 +112,7 @@ def register():
             session['verify_user_id'] = new_user.id
             flash("Un code de vérification a été envoyé à votre adresse email.", "success")
         except Exception as e:
-            flash("Compte créé mais erreur d'envoi du mail. Contactez un admin.", "warning")
+            pass
 
         return redirect(url_for("auth.verify_email_page"))
 
