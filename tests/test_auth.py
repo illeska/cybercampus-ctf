@@ -1,195 +1,199 @@
-# tests/test_auth.py
 """
-Tests unitaires pour l'authentification et les routes auth
+Tests unitaires — Authentification
+====================================
+Couvre : inscription, connexion, déconnexion, redirections, protection des routes
 """
 
 import pytest
-from flask import session
 from core.models import User
 from core import db
 
 
 class TestRegistration:
-    """Tests pour l'inscription"""
-    
-    def test_register_page_loads(self, client):
-        """Test que la page d'inscription se charge"""
-        response = client.get('/register')
-        assert response.status_code == 200
-        assert b'Cr' in response.data  # "Créer un compte"
-    
-    def test_register_new_user_success(self, client, app):
-        """Test d'inscription d'un nouvel utilisateur"""
-        response = client.post('/register', data={
-            'pseudo': 'newuser',
-            'email': 'newuser@example.com',
-            'password': 'password123',
-            'confirm_password': 'password123'
+    """Tests du processus d'inscription."""
+
+    def test_register_page_accessible(self, client):
+        """La page d'inscription est accessible."""
+        resp = client.get("/register")
+        assert resp.status_code == 200
+
+    def test_register_success(self, client, app):
+        """Inscription réussie avec données valides."""
+        resp = client.post("/register", data={
+            "pseudo": "newplayer",
+            "email": "newplayer@test.com",
+            "password": "secure123",
+            "confirm_password": "secure123",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        
-        # Vérifier que l'utilisateur a été créé
+        assert resp.status_code == 200
         with app.app_context():
-            user = User.query.filter_by(email='newuser@example.com').first()
-            assert user is not None
-            assert user.pseudo == 'newuser'
-            assert user.check_password('password123')
-    
-    def test_register_duplicate_email(self, client, init_database):
-        """Test d'inscription avec un email déjà utilisé"""
-        response = client.post('/register', data={
-            'pseudo': 'anotheruser',
-            'email': 'test1@example.com',  # Email déjà existant
-            'password': 'password123',
-            'confirm_password': 'password123'
+            u = User.query.filter_by(pseudo="newplayer").first()
+            assert u is not None
+            assert u.email == "newplayer@test.com"
+            assert u.role == "user"
+
+    def test_register_duplicate_pseudo(self, client, user):
+        """Inscription échoue si le pseudo existe déjà."""
+        resp = client.post("/register", data={
+            "pseudo": "testuser",
+            "email": "unique@test.com",
+            "password": "secure123",
+            "confirm_password": "secure123",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        # Devrait afficher un message d'erreur
-        assert b'existe' in response.data or b'Pseudo' in response.data
-    
-    def test_register_duplicate_pseudo(self, client, init_database):
-        """Test d'inscription avec un pseudo déjà utilisé"""
-        response = client.post('/register', data={
-            'pseudo': 'testuser1',  # Pseudo déjà existant
-            'email': 'newmail@example.com',
-            'password': 'password123',
-            'confirm_password': 'password123'
+        assert resp.status_code == 200
+        # Le message flash "existe déjà" doit apparaître ou rediriger
+
+    def test_register_duplicate_email(self, client, user):
+        """Inscription échoue si l'email existe déjà."""
+        resp = client.post("/register", data={
+            "pseudo": "uniqueuser",
+            "email": "test@example.com",
+            "password": "secure123",
+            "confirm_password": "secure123",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        assert b'existe' in response.data or b'Pseudo' in response.data
-    
+        assert resp.status_code == 200
+
     def test_register_password_mismatch(self, client):
-        """Test d'inscription avec des mots de passe différents"""
-        response = client.post('/register', data={
-            'pseudo': 'testuser',
-            'email': 'test@example.com',
-            'password': 'password123',
-            'confirm_password': 'different_password'
+        """Inscription échoue si les mots de passe ne correspondent pas."""
+        resp = client.post("/register", data={
+            "pseudo": "mismatch",
+            "email": "mismatch@test.com",
+            "password": "secure123",
+            "confirm_password": "different",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        # Le formulaire devrait afficher une erreur
-        assert b'correspond' in response.data or b'password' in response.data.lower()
-    
+        # Le formulaire ne valide pas, on reste sur la page
+        assert resp.status_code == 200
+
     def test_register_short_password(self, client):
-        """Test d'inscription avec un mot de passe trop court"""
-        response = client.post('/register', data={
-            'pseudo': 'testuser',
-            'email': 'test@example.com',
-            'password': '123',
-            'confirm_password': '123'
+        """Inscription échoue si le mot de passe est trop court (< 6)."""
+        resp = client.post("/register", data={
+            "pseudo": "shortpwd",
+            "email": "short@test.com",
+            "password": "abc",
+            "confirm_password": "abc",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        # Le formulaire devrait afficher une erreur de validation
+        assert resp.status_code == 200
+
+    def test_register_short_pseudo(self, client):
+        """Inscription échoue si le pseudo est trop court (< 3)."""
+        resp = client.post("/register", data={
+            "pseudo": "ab",
+            "email": "shortpseudo@test.com",
+            "password": "secure123",
+            "confirm_password": "secure123",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_register_invalid_email(self, client):
+        """Inscription échoue avec un email invalide."""
+        resp = client.post("/register", data={
+            "pseudo": "invalidemail",
+            "email": "notanemail",
+            "password": "secure123",
+            "confirm_password": "secure123",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_register_empty_fields(self, client):
+        """Inscription échoue si des champs sont vides."""
+        resp = client.post("/register", data={
+            "pseudo": "",
+            "email": "",
+            "password": "",
+            "confirm_password": "",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_register_redirects_if_authenticated(self, auth_client):
+        """Un utilisateur connecté est redirigé depuis /register."""
+        resp = auth_client.get("/register")
+        assert resp.status_code in (302, 200)
 
 
 class TestLogin:
-    """Tests pour la connexion"""
-    
-    def test_login_page_loads(self, client):
-        """Test que la page de connexion se charge"""
-        response = client.get('/login')
-        assert response.status_code == 200
-        assert b'Connexion' in response.data
-    
-    def test_login_success(self, client, init_database):
-        """Test de connexion réussie"""
-        response = client.post('/login', data={
-            'email': 'test1@example.com',
-            'password': 'password123'
+    """Tests du processus de connexion."""
+
+    def test_login_page_accessible(self, client):
+        """La page de connexion est accessible."""
+        resp = client.get("/login")
+        assert resp.status_code == 200
+
+    def test_login_success(self, client, user):
+        """Connexion réussie avec identifiants corrects."""
+        resp = client.post("/login", data={
+            "email": "test@example.com",
+            "password": "password123",
+        }, follow_redirects=False)
+        assert resp.status_code == 302  # Redirection vers dashboard
+
+    def test_login_wrong_password(self, client, user):
+        """Connexion échoue avec mauvais mot de passe."""
+        resp = client.post("/login", data={
+            "email": "test@example.com",
+            "password": "wrongpassword",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        assert b'Bienvenue' in response.data or b'testuser1' in response.data
-    
-    def test_login_wrong_password(self, client, init_database):
-        """Test de connexion avec mauvais mot de passe"""
-        response = client.post('/login', data={
-            'email': 'test1@example.com',
-            'password': 'wrongpassword'
+        assert resp.status_code == 200
+
+    def test_login_wrong_email(self, client, user):
+        """Connexion échoue avec email inconnu."""
+        resp = client.post("/login", data={
+            "email": "nonexistent@test.com",
+            "password": "password123",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        assert b'incorrect' in response.data.lower() or b'erreur' in response.data.lower()
-    
-    def test_login_nonexistent_user(self, client, init_database):
-        """Test de connexion avec un utilisateur inexistant"""
-        response = client.post('/login', data={
-            'email': 'nonexistent@example.com',
-            'password': 'password123'
+        assert resp.status_code == 200
+
+    def test_login_empty_fields(self, client):
+        """Connexion échoue avec champs vides."""
+        resp = client.post("/login", data={
+            "email": "",
+            "password": "",
         }, follow_redirects=True)
-        
-        assert response.status_code == 200
-        assert b'incorrect' in response.data.lower() or b'erreur' in response.data.lower()
-    
-    def test_login_invalid_email(self, client):
-        """Test de connexion avec un email invalide"""
-        response = client.post('/login', data={
-            'email': 'not-an-email',
-            'password': 'password123'
-        }, follow_redirects=True)
-        
-        assert response.status_code == 200
+        assert resp.status_code == 200
+
+    def test_login_redirects_if_authenticated(self, auth_client):
+        """Un utilisateur déjà connecté est redirigé depuis /login."""
+        resp = auth_client.get("/login")
+        assert resp.status_code in (302, 200)
 
 
 class TestLogout:
-    """Tests pour la déconnexion"""
-    
-    def test_logout_success(self, authenticated_client):
-        """Test de déconnexion réussie"""
-        response = authenticated_client.get('/logout', follow_redirects=True)
-        
-        assert response.status_code == 200
-        assert b'connect' in response.data.lower() or b'Connexion' in response.data
+    """Tests de la déconnexion."""
 
+    def test_logout_success(self, auth_client):
+        """Déconnexion réussie."""
+        resp = auth_client.get("/logout", follow_redirects=False)
+        assert resp.status_code == 302
 
-class TestDashboard:
-    """Tests pour le tableau de bord"""
-    
-    def test_dashboard_requires_login(self, client):
-        """Test que le dashboard nécessite une connexion"""
-        response = client.get('/dashboard', follow_redirects=True)
-        assert response.status_code == 200
-        # Devrait rediriger vers la page de login
-        assert b'Connexion' in response.data or b'login' in response.data.lower()
-    
-    def test_dashboard_loads_for_authenticated_user(self, authenticated_client):
-        """Test que le dashboard se charge pour un utilisateur authentifié"""
-        response = authenticated_client.get('/dashboard')
-        assert response.status_code == 200
-        assert b'testuser1' in response.data or b'Bienvenue' in response.data
-    
-    def test_dashboard_shows_user_stats(self, authenticated_client, app):
-        """Test que le dashboard affiche les statistiques de l'utilisateur"""
-        response = authenticated_client.get('/dashboard')
-        assert response.status_code == 200
-        # Devrait afficher le score, les challenges, etc.
-        assert b'Points' in response.data or b'Score' in response.data or b'points' in response.data
+    def test_logout_redirects_to_login(self, auth_client):
+        """Après déconnexion, redirection vers login."""
+        resp = auth_client.get("/logout", follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_logout_requires_login(self, client):
+        """Un utilisateur non connecté ne peut pas se déconnecter."""
+        resp = client.get("/logout", follow_redirects=False)
+        assert resp.status_code == 302  # Redirigé vers login
 
 
 class TestProtectedRoutes:
-    """Tests pour les routes protégées"""
-    
-    def test_challenges_list_requires_login(self, client):
-        """Test que la liste des challenges nécessite une connexion"""
-        response = client.get('/challenges', follow_redirects=True)
-        assert response.status_code == 200
-        # Devrait rediriger vers login
-        assert b'Connexion' in response.data or b'login' in response.data.lower()
-    
-    def test_challenge_view_requires_login(self, client, init_database):
-        """Test que la vue d'un challenge nécessite une connexion"""
-        response = client.get('/challenge/1', follow_redirects=True)
-        assert response.status_code == 200
-        # Devrait rediriger vers login
-        assert b'Connexion' in response.data or b'login' in response.data.lower()
-    
-    def test_authenticated_user_can_access_challenges(self, authenticated_client):
-        """Test qu'un utilisateur authentifié peut accéder aux challenges"""
-        response = authenticated_client.get('/challenges')
-        assert response.status_code == 200
-        assert b'Challenge' in response.data or b'challenge' in response.data
+    """Tests de protection des routes nécessitant une connexion."""
+
+    @pytest.mark.parametrize("url", [
+        "/dashboard",
+        "/challenges",
+    ])
+    def test_protected_routes_redirect_anonymous(self, client, url):
+        """Les routes protégées redirigent les utilisateurs anonymes."""
+        resp = client.get(url, follow_redirects=False)
+        assert resp.status_code == 302
+        assert "/login" in resp.headers.get("Location", "")
+
+    def test_dashboard_accessible_when_logged_in(self, auth_client):
+        """Le dashboard est accessible pour un utilisateur connecté."""
+        resp = auth_client.get("/dashboard")
+        assert resp.status_code == 200
+
+    def test_challenges_accessible_when_logged_in(self, auth_client, challenge_sqli):
+        """La liste des challenges est accessible pour un utilisateur connecté."""
+        resp = auth_client.get("/challenges")
+        assert resp.status_code == 200

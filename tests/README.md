@@ -1,0 +1,1 @@
+### Pour lancer les tests, faites tout simplement : pytest tests/ -v --tb=short

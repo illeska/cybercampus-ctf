@@ -1,153 +1,221 @@
-# tests/conftest.py
 """
-Configuration pytest pour les tests unitaires
-Gestion de la base de données temporaire et des fixtures
+CyberCampus CTF — Fixtures de test centralisées
+=================================================
+Ce fichier fournit toutes les fixtures réutilisables pour la suite de tests :
+- Application Flask configurée pour les tests (SQLite en mémoire)
+- Client HTTP de test
+- Utilisateurs (normal, admin, banni)
+- Challenges avec flags
+- Soumissions et scoreboard
 """
 
 import pytest
-import tempfile
 import os
+import sys
+
+# Ajouter le répertoire racine au path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app import app as flask_app
-from core import db
-from core.models import User, Challenge, Flag, Submission, Scoreboard
+from core import db as _db
+from core.models import User, Challenge, Flag, Submission, Scoreboard, RssFeed
 
 
-@pytest.fixture(scope='function')
+# ─────────────────────────────────────────────
+# APPLICATION & BASE DE DONNÉES
+# ─────────────────────────────────────────────
+
+@pytest.fixture(scope="session")
 def app():
-    """
-    Fixture pour l'application Flask avec base de données temporaire
-    Scope 'function' = nouvelle BDD pour chaque test (isolation complète)
-    """
-    # Créer un fichier de base de données temporaire
-    db_fd, db_path = tempfile.mkstemp(suffix='.db')
-    
-    # Configuration de test
+    """Application Flask configurée pour les tests."""
     flask_app.config.update({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path}',
-        'WTF_CSRF_ENABLED': False,  # Désactiver CSRF pour les tests
-        'SECRET_KEY': 'test-secret-key',
-        'SERVER_NAME': 'localhost.localdomain'  # Pour url_for dans les tests
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        "WTF_CSRF_ENABLED": False,
+        "SECRET_KEY": "test-secret-key-very-secure",
+        "SERVER_NAME": "localhost",
+        "LOGIN_DISABLED": False,
     })
-    
-    # Créer les tables
     with flask_app.app_context():
-        db.create_all()
-        yield flask_app
-        
-        # Nettoyage après le test
-        db.session.remove()
-        db.drop_all()
-    
-    # Fermer et supprimer le fichier temporaire
-    os.close(db_fd)
-    os.unlink(db_path)
+        _db.create_all()
+    yield flask_app
+    with flask_app.app_context():
+        _db.drop_all()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(autouse=True)
+def clean_db(app):
+    """Nettoie la base de données entre chaque test."""
+    with app.app_context():
+        # Supprimer dans l'ordre pour respecter les FK
+        Submission.query.delete()
+        Scoreboard.query.delete()
+        Flag.query.delete()
+        Challenge.query.delete()
+        RssFeed.query.delete()
+        User.query.delete()
+        _db.session.commit()
+    yield
+
+
+@pytest.fixture()
 def client(app):
-    """Client de test Flask"""
+    """Client HTTP de test Flask."""
     return app.test_client()
 
 
-@pytest.fixture(scope='function')
-def runner(app):
-    """Runner CLI de test"""
-    return app.test_cli_runner()
-
-
-@pytest.fixture(scope='function')
-def init_database(app):
-    """
-    Initialise la base de données avec des données de test
-    """
+@pytest.fixture()
+def db_session(app):
+    """Session SQLAlchemy utilisable dans les tests."""
     with app.app_context():
-        # Créer des utilisateurs de test
-        user1 = User(pseudo="testuser1", email="test1@example.com")
-        user1.set_password("password123")
-        
-        user2 = User(pseudo="testuser2", email="test2@example.com")
-        user2.set_password("password456")
-        
-        admin_user = User(pseudo="admin", email="admin@example.com", role="admin")
-        admin_user.set_password("adminpass")
-        
-        db.session.add_all([user1, user2, admin_user])
-        db.session.flush()
-        
-        # Créer des challenges de test
-        challenge1 = Challenge(
-            titre="Test SQL Injection",
-            description="Challenge de test pour SQLi",
-            points=100,
-            actif=True
-        )
-        
-        challenge2 = Challenge(
-            titre="Test XSS",
-            description="Challenge de test pour XSS",
-            points=150,
-            actif=True
-        )
-        
-        challenge3 = Challenge(
-            titre="Challenge Inactif",
-            description="Challenge désactivé",
-            points=200,
-            actif=False
-        )
-        
-        db.session.add_all([challenge1, challenge2, challenge3])
-        db.session.flush()
-        
-        # Créer des flags pour les challenges
-        flag1 = Flag(challenge_id=challenge1.id)
-        flag1.setFlag("CTF{test_flag_1}")
-        
-        flag2 = Flag(challenge_id=challenge2.id)
-        flag2.setFlag("CTF{test_flag_2}")
-        
-        flag3 = Flag(challenge_id=challenge3.id)
-        flag3.setFlag("CTF{test_flag_3}")
-        
-        db.session.add_all([flag1, flag2, flag3])
-        
-        # Créer des scoreboards
-        scoreboard1 = Scoreboard(user_id=user1.id, points_total=0)
-        scoreboard2 = Scoreboard(user_id=user2.id, points_total=0)
-        
-        db.session.add_all([scoreboard1, scoreboard2])
-        
-        db.session.commit()
-        
-        return {
-            'user1': user1,
-            'user2': user2,
-            'admin': admin_user,
-            'challenge1': challenge1,
-            'challenge2': challenge2,
-            'challenge3': challenge3,
-            'flag1': flag1,
-            'flag2': flag2,
-            'flag3': flag3
-        }
+        yield _db.session
 
 
-@pytest.fixture
-def authenticated_client(client, init_database):
-    """Client authentifié en tant qu'utilisateur normal"""
-    client.post('/login', data={
-        'email': 'test1@example.com',
-        'password': 'password123'
-    }, follow_redirects=True)
+# ─────────────────────────────────────────────
+# UTILISATEURS
+# ─────────────────────────────────────────────
+
+@pytest.fixture()
+def user(app):
+    """Utilisateur standard."""
+    with app.app_context():
+        u = User(pseudo="testuser", email="test@example.com", role="user")
+        u.set_password("password123")
+        _db.session.add(u)
+        _db.session.commit()
+        _db.session.refresh(u)
+        return u
+
+
+@pytest.fixture()
+def admin_user(app):
+    """Utilisateur administrateur."""
+    with app.app_context():
+        u = User(pseudo="adminuser", email="admin@example.com", role="admin")
+        u.set_password("adminpass123")
+        _db.session.add(u)
+        _db.session.commit()
+        _db.session.refresh(u)
+        return u
+
+
+@pytest.fixture()
+def banned_user(app):
+    """Utilisateur banni."""
+    with app.app_context():
+        u = User(pseudo="banneduser", email="banned@example.com", role="banned")
+        u.set_password("bannedpass123")
+        _db.session.add(u)
+        _db.session.commit()
+        _db.session.refresh(u)
+        return u
+
+
+# ─────────────────────────────────────────────
+# CHALLENGES & FLAGS
+# ─────────────────────────────────────────────
+
+@pytest.fixture()
+def challenge_sqli(app):
+    """Challenge SQL Injection avec flag."""
+    with app.app_context():
+        c = Challenge(id=1, titre="SQL Injection", description="Exploitez la faille SQLi",
+                      points=25, actif=True)
+        _db.session.add(c)
+        _db.session.flush()
+        f = Flag(challenge_id=c.id)
+        f.setFlag("CTF{SQL_1nj3ct10n_m4st3r}")
+        _db.session.add(f)
+        _db.session.commit()
+        _db.session.refresh(c)
+        return c
+
+
+@pytest.fixture()
+def challenge_xss(app):
+    """Challenge XSS avec flag."""
+    with app.app_context():
+        c = Challenge(id=2, titre="XSS Reflected", description="Exploitez le XSS",
+                      points=25, actif=True)
+        _db.session.add(c)
+        _db.session.flush()
+        f = Flag(challenge_id=c.id)
+        f.setFlag("CTF{XSS_r3fl3ct3d_pwn3d}")
+        _db.session.add(f)
+        _db.session.commit()
+        _db.session.refresh(c)
+        return c
+
+
+@pytest.fixture()
+def challenge_bruteforce(app):
+    """Challenge Bruteforce avec flag."""
+    with app.app_context():
+        c = Challenge(id=3, titre="Bruteforce", description="Trouvez le code",
+                      points=175, actif=True)
+        _db.session.add(c)
+        _db.session.flush()
+        f = Flag(challenge_id=c.id)
+        f.setFlag("CTF{Brut3F0rc3_M4st3r_7394}")
+        _db.session.add(f)
+        _db.session.commit()
+        _db.session.refresh(c)
+        return c
+
+
+@pytest.fixture()
+def challenge_inactive(app):
+    """Challenge désactivé."""
+    with app.app_context():
+        c = Challenge(id=99, titre="Inactif", description="Pas encore dispo",
+                      points=50, actif=False)
+        _db.session.add(c)
+        _db.session.flush()
+        f = Flag(challenge_id=c.id)
+        f.setFlag("CTF{inactive}")
+        _db.session.add(f)
+        _db.session.commit()
+        _db.session.refresh(c)
+        return c
+
+
+@pytest.fixture()
+def all_challenges(challenge_sqli, challenge_xss, challenge_bruteforce):
+    """Les 3 challenges principaux."""
+    return [challenge_sqli, challenge_xss, challenge_bruteforce]
+
+
+# ─────────────────────────────────────────────
+# RSS FEEDS
+# ─────────────────────────────────────────────
+
+@pytest.fixture()
+def rss_feed(app):
+    """Flux RSS de test."""
+    with app.app_context():
+        feed = RssFeed(nom="CERT-FR Test", url="https://example.com/feed/",
+                       actif=True, langue="FR")
+        _db.session.add(feed)
+        _db.session.commit()
+        _db.session.refresh(feed)
+        return feed
+
+
+# ─────────────────────────────────────────────
+# HELPERS DE CONNEXION
+# ─────────────────────────────────────────────
+
+@pytest.fixture()
+def auth_client(client, user):
+    """Client connecté en tant qu'utilisateur standard."""
+    client.post("/login", data={"email": "test@example.com", "password": "password123"},
+                follow_redirects=True)
     return client
 
 
-@pytest.fixture
-def admin_client(client, init_database):
-    """Client authentifié en tant qu'admin"""
-    client.post('/login', data={
-        'email': 'admin@example.com',
-        'password': 'adminpass'
-    }, follow_redirects=True)
+@pytest.fixture()
+def admin_client(client, admin_user):
+    """Client connecté en tant qu'administrateur."""
+    client.post("/login", data={"email": "admin@example.com", "password": "adminpass123"},
+                follow_redirects=True)
     return client

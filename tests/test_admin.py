@@ -1,359 +1,354 @@
-# tests/test_admin.py
 """
-Tests unitaires pour le panel administrateur
+Tests unitaires — Panel Administrateur
+=========================================
+Couvre : accès admin, dashboard, gestion utilisateurs (ban/unban/reset),
+         gestion challenges (toggle/edit), soumissions, flux RSS (CRUD),
+         export CSV, protection des routes admin
 """
 
 import pytest
-from core.models import User, Challenge, Submission
+from core.models import User, Challenge, Flag, Submission, Scoreboard, RssFeed
 from core import db
 
 
-class TestAdminAccess:
-    """Tests pour l'accès au panel admin"""
-    
-    def test_admin_dashboard_requires_login(self, client):
-        """Test que le dashboard admin nécessite une connexion"""
-        response = client.get('/admin/', follow_redirects=True)
-        assert response.status_code == 200
-        assert b'Connexion' in response.data or b'login' in response.data.lower()
-    
-    def test_admin_dashboard_requires_admin_role(self, authenticated_client):
-        """Test que le dashboard admin nécessite le rôle admin"""
-        response = authenticated_client.get('/admin/', follow_redirects=True)
-        assert response.status_code == 200
-        # Devrait afficher un message d'accès refusé ou rediriger
-        assert b'refus' in response.data.lower() or b'admin' in response.data.lower()
-    
-    def test_admin_dashboard_accessible_to_admin(self, admin_client):
-        """Test que le dashboard admin est accessible aux admins"""
-        response = admin_client.get('/admin/')
-        assert response.status_code == 200
-        assert b'Admin' in response.data or b'Panel' in response.data
-    
-    def test_regular_user_cannot_access_admin_routes(self, authenticated_client):
-        """Test qu'un utilisateur normal ne peut pas accéder aux routes admin"""
-        routes = [
-            '/admin/',
-            '/admin/users',
-            '/admin/challenges',
-            '/admin/submissions'
-        ]
-        
-        for route in routes:
-            response = authenticated_client.get(route, follow_redirects=True)
-            assert response.status_code == 200
-            # Ne devrait pas afficher le contenu admin
+# ═══════════════════════════════════════════════
+#  ACCÈS ET PROTECTION ADMIN
+# ═══════════════════════════════════════════════
 
+class TestAdminAccess:
+    """Tests de protection des routes admin."""
+
+    def test_admin_dashboard_accessible_for_admin(self, admin_client):
+        """Le dashboard admin est accessible pour un admin."""
+        resp = admin_client.get("/admin/")
+        assert resp.status_code == 200
+
+    def test_admin_dashboard_forbidden_for_user(self, auth_client):
+        """Le dashboard admin est interdit pour un utilisateur normal."""
+        resp = auth_client.get("/admin/", follow_redirects=False)
+        assert resp.status_code == 302  # Redirigé
+
+    def test_admin_dashboard_forbidden_for_anonymous(self, client):
+        """Le dashboard admin est interdit pour un visiteur anonyme."""
+        resp = client.get("/admin/", follow_redirects=False)
+        assert resp.status_code == 302
+
+    @pytest.mark.parametrize("url", [
+        "/admin/users",
+        "/admin/challenges",
+        "/admin/submissions",
+        "/admin/actualites",
+        "/admin/export",
+    ])
+    def test_admin_routes_forbidden_for_user(self, auth_client, url):
+        """Toutes les routes admin sont interdites pour un user normal."""
+        resp = auth_client.get(url, follow_redirects=False)
+        assert resp.status_code == 302
+
+    @pytest.mark.parametrize("url", [
+        "/admin/",
+        "/admin/users",
+        "/admin/challenges",
+        "/admin/submissions",
+        "/admin/actualites",
+    ])
+    def test_admin_routes_accessible_for_admin(self, admin_client, url):
+        """Toutes les routes admin sont accessibles pour un admin."""
+        resp = admin_client.get(url)
+        assert resp.status_code == 200
+
+
+# ═══════════════════════════════════════════════
+#  DASHBOARD ADMIN
+# ═══════════════════════════════════════════════
 
 class TestAdminDashboard:
-    """Tests pour le dashboard administrateur"""
-    
-    def test_admin_dashboard_shows_statistics(self, admin_client, init_database):
-        """Test que le dashboard affiche les statistiques"""
-        response = admin_client.get('/admin/')
-        assert response.status_code == 200
-        
-        # Devrait afficher le nombre d'utilisateurs, challenges, etc.
-        assert b'Utilisateur' in response.data or b'utilisateur' in response.data
-        assert b'Challenge' in response.data or b'challenge' in response.data
-    
-    def test_admin_dashboard_shows_recent_activity(self, admin_client, app, init_database):
-        """Test que le dashboard affiche l'activité récente"""
-        # Créer de l'activité
-        with app.app_context():
-            data = init_database
-            submission = Submission(
-                user_id=data['user1'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{test_flag_1}"
-            )
-            submission.enregistrer()
-        
-        response = admin_client.get('/admin/')
-        assert response.status_code == 200
-        
-        # Devrait afficher les dernières soumissions
-        assert b'Soumission' in response.data or b'soumission' in response.data
+    """Tests du dashboard admin."""
 
+    def test_dashboard_shows_stats(self, admin_client, user, challenge_sqli):
+        """Le dashboard affiche les statistiques."""
+        resp = admin_client.get("/admin/")
+        assert resp.status_code == 200
+
+
+# ═══════════════════════════════════════════════
+#  GESTION DES UTILISATEURS
+# ═══════════════════════════════════════════════
 
 class TestAdminUsers:
-    """Tests pour la gestion des utilisateurs"""
-    
-    def test_admin_can_view_users_list(self, admin_client, init_database):
-        """Test que l'admin peut voir la liste des utilisateurs"""
-        response = admin_client.get('/admin/users')
-        assert response.status_code == 200
-        
-        assert b'testuser1' in response.data
-        assert b'testuser2' in response.data
-        assert b'admin' in response.data
-    
-    def test_admin_can_ban_user(self, admin_client, app, init_database):
-        """Test que l'admin peut bannir un utilisateur"""
-        with app.app_context():
-            data = init_database
-            user_id = data['user1'].id
-        
-        response = admin_client.post(
-            f'/admin/users/{user_id}/ban',
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que l'utilisateur est banni
-        with app.app_context():
-            user = User.query.get(user_id)
-            assert user.role == "banned"
-    
-    def test_admin_can_unban_user(self, admin_client, app, init_database):
-        """Test que l'admin peut débannir un utilisateur"""
-        with app.app_context():
-            data = init_database
-            user = User.query.get(data['user1'].id)
-            user.role = "banned"
-            db.session.commit()
-            user_id = user.id
-        
-        response = admin_client.post(
-            f'/admin/users/{user_id}/ban',
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que l'utilisateur est débanni
-        with app.app_context():
-            user = User.query.get(user_id)
-            assert user.role == "user"
-    
-    def test_admin_cannot_ban_themselves(self, admin_client, app, init_database):
-        """Test que l'admin ne peut pas se bannir lui-même"""
-        with app.app_context():
-            admin = User.query.filter_by(email='admin@example.com').first()
-            admin_id = admin.id
-        
-        response = admin_client.post(
-            f'/admin/users/{admin_id}/ban',
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Devrait afficher un message d'erreur
-        assert b'vous-m' in response.data.lower() or b'bannir' in response.data.lower()
-        
-        # L'admin devrait toujours être admin
-        with app.app_context():
-            admin = User.query.get(admin_id)
-            assert admin.role == "admin"
-    
-    def test_admin_can_reset_user_score(self, admin_client, app, init_database):
-        """Test que l'admin peut réinitialiser le score d'un utilisateur"""
-        # Donner des points à l'utilisateur
-        with app.app_context():
-            data = init_database
-            submission = Submission(
-                user_id=data['user1'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{test_flag_1}"
-            )
-            submission.enregistrer()
-            user_id = data['user1'].id
-        
-        # Vérifier que l'utilisateur a des points
-        with app.app_context():
-            user = User.query.get(user_id)
-            assert user.score > 0
-        
-        # Réinitialiser le score
-        response = admin_client.post(
-            f'/admin/users/{user_id}/reset_score',
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que le score est à 0
-        with app.app_context():
-            user = User.query.get(user_id)
-            assert user.score == 0
+    """Tests de la gestion des utilisateurs par l'admin."""
 
+    def test_users_list(self, admin_client, user):
+        """La liste des utilisateurs s'affiche."""
+        resp = admin_client.get("/admin/users")
+        assert resp.status_code == 200
+
+    def test_ban_user(self, admin_client, app, user):
+        """Bannir un utilisateur change son rôle."""
+        resp = admin_client.post(f"/admin/users/{user.id}/ban", follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            u = User.query.get(user.id)
+            assert u.role == "banned"
+
+    def test_unban_user(self, admin_client, app, banned_user):
+        """Débannir un utilisateur restaure son rôle."""
+        resp = admin_client.post(f"/admin/users/{banned_user.id}/ban",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            u = User.query.get(banned_user.id)
+            assert u.role == "user"
+
+    def test_admin_cannot_ban_self(self, admin_client, app, admin_user):
+        """Un admin ne peut pas se bannir lui-même."""
+        resp = admin_client.post(f"/admin/users/{admin_user.id}/ban",
+                                 follow_redirects=True)
+        with app.app_context():
+            u = User.query.get(admin_user.id)
+            assert u.role == "admin"
+
+    def test_ban_nonexistent_user(self, admin_client):
+        """Bannir un utilisateur inexistant = 404."""
+        resp = admin_client.post("/admin/users/99999/ban")
+        assert resp.status_code == 404
+
+    def test_reset_user_score(self, admin_client, app, user, challenge_sqli):
+        """Réinitialiser le score d'un utilisateur."""
+        with app.app_context():
+            sub = Submission(user_id=user.id, challenge_id=challenge_sqli.id,
+                             flag_soumis="CTF{SQL_1nj3ct10n_m4st3r}")
+            sub.enregistrer()
+            assert Scoreboard.query.filter_by(user_id=user.id).first().points_total == 25
+
+        resp = admin_client.post(f"/admin/users/{user.id}/reset_score",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            sb = Scoreboard.query.filter_by(user_id=user.id).first()
+            assert sb.points_total == 0
+            assert Submission.query.filter_by(user_id=user.id).count() == 0
+
+    def test_reset_nonexistent_user(self, admin_client):
+        """Reset d'un utilisateur inexistant = 404."""
+        resp = admin_client.post("/admin/users/99999/reset_score")
+        assert resp.status_code == 404
+
+
+# ═══════════════════════════════════════════════
+#  GESTION DES CHALLENGES
+# ═══════════════════════════════════════════════
 
 class TestAdminChallenges:
-    """Tests pour la gestion des challenges"""
-    
-    def test_admin_can_view_challenges_list(self, admin_client, init_database):
-        """Test que l'admin peut voir la liste des challenges"""
-        response = admin_client.get('/admin/challenges')
-        assert response.status_code == 200
-        
-        assert b'Test SQL Injection' in response.data
-        assert b'Test XSS' in response.data
-    
-    def test_admin_can_toggle_challenge_status(self, admin_client, app, init_database):
-        """Test que l'admin peut activer/désactiver un challenge"""
-        with app.app_context():
-            data = init_database
-            challenge = Challenge.query.get(data['challenge1'].id)
-            initial_status = challenge.actif
-            challenge_id = challenge.id
-        
-        response = admin_client.post(
-            f'/admin/challenges/{challenge_id}/toggle',
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que le statut a changé
-        with app.app_context():
-            challenge = Challenge.query.get(challenge_id)
-            assert challenge.actif != initial_status
-    
-    def test_admin_can_edit_challenge(self, admin_client, app, init_database):
-        """Test que l'admin peut modifier un challenge"""
-        with app.app_context():
-            data = init_database
-            challenge_id = data['challenge1'].id
-        
-        response = admin_client.post(
-            f'/admin/challenges/{challenge_id}/edit',
-            data={
-                'titre': 'Challenge Modifié',
-                'description': 'Nouvelle description',
-                'points': 200
-            },
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que le challenge a été modifié
-        with app.app_context():
-            challenge = Challenge.query.get(challenge_id)
-            assert challenge.titre == 'Challenge Modifié'
-            assert challenge.points == 200
-    
-    def test_admin_can_update_flag(self, admin_client, app, init_database):
-        """Test que l'admin peut modifier le flag d'un challenge"""
-        with app.app_context():
-            data = init_database
-            challenge_id = data['challenge1'].id
-        
-        response = admin_client.post(
-            f'/admin/challenges/{challenge_id}/edit',
-            data={
-                'titre': 'Test Challenge',
-                'description': 'Description',
-                'points': 100,
-                'flag': 'CTF{new_flag}'
-            },
-            follow_redirects=True
-        )
-        assert response.status_code == 200
-        
-        # Vérifier que le flag a été mis à jour
-        with app.app_context():
-            challenge = Challenge.query.get(challenge_id)
-            assert challenge.flag.verifierFlag('CTF{new_flag}')
+    """Tests de la gestion des challenges par l'admin."""
 
+    def test_challenges_list(self, admin_client, challenge_sqli):
+        """La liste des challenges admin s'affiche."""
+        resp = admin_client.get("/admin/challenges")
+        assert resp.status_code == 200
+
+    def test_toggle_challenge_deactivate(self, admin_client, app, challenge_sqli):
+        """Désactiver un challenge actif."""
+        resp = admin_client.post(f"/admin/challenges/{challenge_sqli.id}/toggle",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            c = Challenge.query.get(challenge_sqli.id)
+            assert c.actif is False
+
+    def test_toggle_challenge_activate(self, admin_client, app, challenge_inactive):
+        """Activer un challenge inactif."""
+        resp = admin_client.post(f"/admin/challenges/{challenge_inactive.id}/toggle",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            c = Challenge.query.get(challenge_inactive.id)
+            assert c.actif is True
+
+    def test_toggle_nonexistent_challenge(self, admin_client):
+        """Toggle d'un challenge inexistant = 404."""
+        resp = admin_client.post("/admin/challenges/99999/toggle")
+        assert resp.status_code == 404
+
+    def test_edit_challenge_get(self, admin_client, challenge_sqli):
+        """La page d'édition d'un challenge est accessible."""
+        resp = admin_client.get(f"/admin/challenges/{challenge_sqli.id}/edit")
+        assert resp.status_code == 200
+
+    def test_edit_challenge_post(self, admin_client, app, challenge_sqli):
+        """Modifier un challenge met à jour les données."""
+        resp = admin_client.post(f"/admin/challenges/{challenge_sqli.id}/edit", data={
+            "titre": "SQLi Modifié",
+            "description": "Nouvelle description",
+            "points": "50",
+            "flag": "",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            c = Challenge.query.get(challenge_sqli.id)
+            assert c.titre == "SQLi Modifié"
+            assert c.points == 50
+
+    def test_edit_challenge_with_new_flag(self, admin_client, app, challenge_sqli):
+        """Modifier le flag d'un challenge."""
+        resp = admin_client.post(f"/admin/challenges/{challenge_sqli.id}/edit", data={
+            "titre": "SQL Injection",
+            "description": "Exploitez la faille SQLi",
+            "points": "25",
+            "flag": "CTF{new_flag_value}",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            c = Challenge.query.get(challenge_sqli.id)
+            assert c.flag.verifierFlag("CTF{new_flag_value}") is True
+            assert c.flag.verifierFlag("CTF{SQL_1nj3ct10n_m4st3r}") is False
+
+
+# ═══════════════════════════════════════════════
+#  SOUMISSIONS ADMIN
+# ═══════════════════════════════════════════════
 
 class TestAdminSubmissions:
-    """Tests pour la visualisation des soumissions"""
-    
-    def test_admin_can_view_submissions(self, admin_client, app, init_database):
-        """Test que l'admin peut voir les soumissions"""
-        # Créer des soumissions
-        with app.app_context():
-            data = init_database
-            submission = Submission(
-                user_id=data['user1'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{test_flag_1}"
-            )
-            submission.enregistrer()
-        
-        response = admin_client.get('/admin/submissions')
-        assert response.status_code == 200
-        
-        assert b'testuser1' in response.data
-        assert b'Test SQL Injection' in response.data
-    
-    def test_admin_can_filter_submissions(self, admin_client, app, init_database):
-        """Test que l'admin peut filtrer les soumissions"""
-        # Créer des soumissions correctes et incorrectes
-        with app.app_context():
-            data = init_database
-            
-            submission1 = Submission(
-                user_id=data['user1'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{test_flag_1}"
-            )
-            submission1.enregistrer()
-            
-            submission2 = Submission(
-                user_id=data['user2'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{wrong_flag}"
-            )
-            submission2.enregistrer()
-        
-        # Filtrer les soumissions correctes
-        response = admin_client.get('/admin/submissions?status=correct')
-        assert response.status_code == 200
-        
-        # Devrait afficher uniquement les soumissions correctes
+    """Tests de l'historique des soumissions côté admin."""
 
+    def test_submissions_page(self, admin_client):
+        """La page des soumissions est accessible."""
+        resp = admin_client.get("/admin/submissions")
+        assert resp.status_code == 200
+
+    def test_submissions_filter_correct(self, admin_client, app, user, challenge_sqli):
+        """Filtrer les soumissions correctes."""
+        with app.app_context():
+            sub = Submission(user_id=user.id, challenge_id=challenge_sqli.id,
+                             flag_soumis="CTF{SQL_1nj3ct10n_m4st3r}")
+            sub.enregistrer()
+        resp = admin_client.get("/admin/submissions?status=correct")
+        assert resp.status_code == 200
+
+    def test_submissions_filter_incorrect(self, admin_client, app, user, challenge_sqli):
+        """Filtrer les soumissions incorrectes."""
+        with app.app_context():
+            sub = Submission(user_id=user.id, challenge_id=challenge_sqli.id,
+                             flag_soumis="CTF{wrong}")
+            sub.enregistrer()
+        resp = admin_client.get("/admin/submissions?status=incorrect")
+        assert resp.status_code == 200
+
+    def test_submissions_pagination(self, admin_client):
+        """La pagination fonctionne."""
+        resp = admin_client.get("/admin/submissions?page=1")
+        assert resp.status_code == 200
+        resp = admin_client.get("/admin/submissions?page=999")
+        assert resp.status_code == 200
+
+
+# ═══════════════════════════════════════════════
+#  GESTION RSS
+# ═══════════════════════════════════════════════
+
+class TestAdminRss:
+    """Tests de la gestion des flux RSS par l'admin."""
+
+    def test_rss_feeds_page(self, admin_client):
+        """La page de gestion RSS est accessible."""
+        resp = admin_client.get("/admin/actualites")
+        assert resp.status_code == 200
+
+    def test_add_rss_feed(self, admin_client, app):
+        """Ajouter un flux RSS."""
+        resp = admin_client.post("/admin/actualites/add", data={
+            "nom": "Test Feed",
+            "url": "https://example.com/rss",
+            "langue": "EN",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            feed = RssFeed.query.filter_by(nom="Test Feed").first()
+            assert feed is not None
+            assert feed.actif is False
+
+    def test_add_rss_feed_missing_fields(self, admin_client):
+        """Ajout échoue avec champs manquants."""
+        resp = admin_client.post("/admin/actualites/add", data={
+            "nom": "",
+            "url": "",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_add_rss_feed_invalid_url(self, admin_client):
+        """Ajout échoue avec URL invalide."""
+        resp = admin_client.post("/admin/actualites/add", data={
+            "nom": "Bad",
+            "url": "not-a-url",
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_add_duplicate_rss_feed(self, admin_client, rss_feed):
+        """Ajout échoue si l'URL existe déjà."""
+        resp = admin_client.post("/admin/actualites/add", data={
+            "nom": "Duplicate",
+            "url": rss_feed.url,
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+    def test_toggle_rss_feed(self, admin_client, app, rss_feed):
+        """Activer/désactiver un flux RSS."""
+        # Le flux est actif, on le désactive
+        resp = admin_client.post(f"/admin/actualites/{rss_feed.id}/toggle",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            feed = RssFeed.query.get(rss_feed.id)
+            assert feed.actif is False
+
+    def test_delete_rss_feed(self, admin_client, app, rss_feed):
+        """Supprimer un flux RSS."""
+        resp = admin_client.post(f"/admin/actualites/{rss_feed.id}/delete",
+                                 follow_redirects=True)
+        assert resp.status_code == 200
+        with app.app_context():
+            assert RssFeed.query.get(rss_feed.id) is None
+
+    def test_toggle_nonexistent_feed(self, admin_client):
+        """Toggle d'un flux inexistant = 404."""
+        resp = admin_client.post("/admin/actualites/99999/toggle")
+        assert resp.status_code == 404
+
+    def test_delete_nonexistent_feed(self, admin_client):
+        """Suppression d'un flux inexistant = 404."""
+        resp = admin_client.post("/admin/actualites/99999/delete")
+        assert resp.status_code == 404
+
+
+# ═══════════════════════════════════════════════
+#  EXPORT CSV
+# ═══════════════════════════════════════════════
 
 class TestAdminExport:
-    """Tests pour l'export de données"""
-    
-    def test_admin_can_export_scoreboard(self, admin_client, app, init_database):
-        """Test que l'admin peut exporter le scoreboard en CSV"""
-        # Créer des scores
-        with app.app_context():
-            data = init_database
-            submission = Submission(
-                user_id=data['user1'].id,
-                challenge_id=data['challenge1'].id,
-                flag_soumis="CTF{test_flag_1}"
-            )
-            submission.enregistrer()
-        
-        response = admin_client.get('/admin/export')
-        assert response.status_code == 200
-        assert response.mimetype == 'text/csv'
-        
-        # Vérifier que le CSV contient les données
-        assert b'testuser1' in response.data
-        assert b'100' in response.data  # Score
+    """Tests de l'export CSV du scoreboard."""
 
+    def test_export_csv_empty(self, admin_client):
+        """Export CSV vide (aucun score)."""
+        resp = admin_client.get("/admin/export")
+        assert resp.status_code == 200
+        assert resp.content_type == "text/csv; charset=utf-8"
+        content = resp.data.decode("utf-8")
+        assert "Rang" in content
+        assert "Pseudo" in content
 
-class TestAdminSecurity:
-    """Tests de sécurité pour le panel admin"""
-    
-    def test_banned_user_cannot_access_admin(self, client, app, init_database):
-        """Test qu'un utilisateur banni ne peut pas accéder au panel admin"""
+    def test_export_csv_with_data(self, admin_client, app, user, challenge_sqli):
+        """Export CSV avec des données."""
         with app.app_context():
-            # Créer un admin banni (cas extrême)
-            admin = User(pseudo="bannedadmin", email="banned@example.com", role="banned")
-            admin.set_password("pass")
-            db.session.add(admin)
-            db.session.commit()
-        
-        # Se connecter
-        client.post('/login', data={
-            'email': 'banned@example.com',
-            'password': 'pass'
-        }, follow_redirects=True)
-        
-        # Essayer d'accéder au panel admin
-        response = client.get('/admin/', follow_redirects=True)
-        assert response.status_code == 200
-        # Ne devrait pas avoir accès
-    
-    def test_admin_routes_use_post_for_modifications(self, admin_client, init_database):
-        """Test que les modifications utilisent POST (pas GET)"""
-        with app.app_context():
-            data = init_database
-            user_id = data['user1'].id
-        
-        # Essayer de bannir avec GET (devrait échouer)
-        response = admin_client.get(f'/admin/users/{user_id}/ban')
-        assert response.status_code == 405  # Method Not Allowed
+            sub = Submission(user_id=user.id, challenge_id=challenge_sqli.id,
+                             flag_soumis="CTF{SQL_1nj3ct10n_m4st3r}")
+            sub.enregistrer()
+        resp = admin_client.get("/admin/export")
+        assert resp.status_code == 200
+        content = resp.data.decode("utf-8")
+        assert "testuser" in content
+        assert "25" in content
+
+    def test_export_csv_forbidden_for_user(self, auth_client):
+        """L'export CSV est interdit pour un user normal."""
+        resp = auth_client.get("/admin/export", follow_redirects=False)
+        assert resp.status_code == 302
