@@ -199,9 +199,10 @@ class RssFeed(db.Model):
     nom        = db.Column(db.String(100), nullable=False)
     url        = db.Column(db.String(500), nullable=False, unique=True)
     actif      = db.Column(db.Boolean, default=False)
-    langue     = db.Column(db.String(5), default='EN').strip()  # 'EN' ou 'FR'
+    langue     = db.Column(db.String(5), default='EN')  # 'EN' ou 'FR'
     created_at = db.Column(db.DateTime, default=db.func.now())
- 
+
+
     def __repr__(self):
         return f"<RssFeed {self.nom}>"
 

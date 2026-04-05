@@ -252,6 +252,7 @@ def rss_add():
     """Ajouter un nouveau flux RSS."""
     nom = request.form.get('nom', '').strip()
     url = request.form.get('url', '').strip()
+    langue = request.form.get('langue', 'EN').strip()
  
     if not nom or not url:
         flash("❌ Nom et URL sont obligatoires.", "danger")
@@ -266,7 +267,7 @@ def rss_add():
         flash("⚠️ Ce flux existe déjà.", "warning")
         return redirect(url_for('admin.rss_feeds'))
  
-    feed = RssFeed(nom=nom, url=url, actif=False)
+    feed = RssFeed(nom=nom, url=url, actif=False, langue=langue)
     db.session.add(feed)
     db.session.commit()
     flash(f"✅ Flux '{nom}' ajouté (désactivé par défaut).", "success")
