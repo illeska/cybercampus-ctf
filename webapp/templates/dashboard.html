@@ -113,5 +113,219 @@
     </a>
   </div>
 
+  <!-- ── ZONE DANGER ── -->
+  <div class="danger-zone">
+    <div class="danger-zone-header">
+      <h3>⚠️ Zone de danger</h3>
+      <p>Les actions ci-dessous sont irréversibles. Procédez avec précaution.</p>
+    </div>
+    <div class="danger-zone-content">
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <strong>Supprimer mon compte</strong>
+          <p>Toutes vos données (progression, scores, soumissions) seront définitivement supprimées.</p>
+        </div>
+        <button class="btn danger-btn" onclick="showDeleteModal()">
+          🗑️ Supprimer mon compte
+        </button>
+      </div>
+    </div>
+  </div>
+
 </section>
+
+<!-- ── MODALE CONFIRMATION SUPPRESSION ── -->
+<div id="deleteModal" class="delete-modal">
+  <div class="delete-modal-content">
+    <div class="delete-modal-icon">😢</div>
+    <h3>Supprimer votre compte ?</h3>
+    <p>
+      Vous êtes sur le point de supprimer définitivement votre compte
+      <strong style="color: #00f5c0;">{{ user.pseudo }}</strong>.
+    </p>
+    <p style="color: #94a3b8; font-size: 0.88rem;">
+      Toutes vos données (progression, scores, soumissions) seront perdues pour toujours.
+      Un email de confirmation vous sera envoyé à <strong>{{ user.email }}</strong>.
+    </p>
+    <div class="delete-modal-actions">
+      <button class="btn delete-cancel-btn" onclick="hideDeleteModal()">
+        Annuler
+      </button>
+      <form method="POST" action="{{ url_for('auth.request_delete_account') }}" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none;">
+        <button type="submit" class="btn delete-confirm-btn">
+          📧 Envoyer l'email de confirmation
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function hideDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+window.onclick = function(e) {
+  const modal = document.getElementById('deleteModal');
+  if (e.target === modal) hideDeleteModal();
+}
+</script>
+
+<style>
+/* ── ZONE DANGER ── */
+.danger-zone {
+  margin-top: 60px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.danger-zone-header {
+  background: rgba(239, 68, 68, 0.08);
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.danger-zone-header h3 {
+  color: #ef4444;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  margin: 0 0 5px 0;
+}
+
+.danger-zone-header p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.danger-zone-content {
+  padding: 25px 30px;
+  background: rgba(15, 23, 36, 0.4);
+}
+
+.danger-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.danger-item-info strong {
+  display: block;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.danger-item-info p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.danger-btn {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  padding: 10px 20px;
+  white-space: nowrap;
+  width: auto;
+}
+
+.danger-btn:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ── MODALE SUPPRESSION ── */
+.delete-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.delete-modal-content {
+  background: rgba(10, 15, 25, 0.98);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 20px;
+  padding: 45px 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.delete-modal-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.delete-modal-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #ef4444;
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+}
+
+.delete-modal-content p {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.delete-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 12px 25px;
+  width: auto;
+}
+
+.delete-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  color: #fff;
+  padding: 12px 25px;
+  width: auto;
+  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+}
+
+.delete-confirm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+}
+</style>
+
 {% endblock %}
