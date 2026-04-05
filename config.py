@@ -24,3 +24,10 @@ class Config:
 
     # Mode debug : activé par défaut pour le développement
     DEBUG = True
+
+    MAIL_SERVER = 'ssl0.ovh.net'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_USERNAME')

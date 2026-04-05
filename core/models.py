@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default="user")
     created_at = db.Column(db.DateTime, default=db.func.now())
+    email_verified = db.Column(db.Boolean, default=False)
 
     submissions = db.relationship("Submission", backref="user", lazy="dynamic")
     scoreboard = db.relationship("Scoreboard", backref="user", uselist=False)
