@@ -1,177 +1,331 @@
 {% extends "base.html" %}
-{% block title %}Accueil - CyberCampus CTF{% endblock %}
+{% block title %}Tableau de Bord - CyberCampus CTF{% endblock %}
 
 {% block content %}
 <section class="page-wrapper">
-  <h2 class="animated-title">Bienvenue sur CyberCampus CTF 👾</h2>
-  <p>Participez, apprenez et progressez dans la cybersécurité.</p>
+  
+  <h2 class="animated-title">Bienvenue {{ user.pseudo }} 👋</h2>
+  <p>Voici un aperçu de votre progression dans le CyberCampus.</p>
 
-  {% if not current_user.is_authenticated %}
-    <div class="cta">
-      <a href="{{ url_for('auth.login') }}" class="btn primary-btn">Se connecter</a>
-      <a href="{{ url_for('auth.register') }}" class="btn secondary-btn">Créer un compte</a>
+  <div class="stats">
+    <div class="card stat-card">
+      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">💎</div>
+      <h3>{{ user.score }}</h3>
+      <p style="color: #94a3b8; font-weight: 500;">Points Totaux</p>
     </div>
+    
+    <div class="card stat-card">
+      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🏆</div>
+      <h3>{{ user.get_solved_challenges()|length }}</h3>
+      <p style="color: #94a3b8; font-weight: 500;">Challenges Validés</p>
+    </div>
+    
+    <div class="card stat-card">
+      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">📅</div>
+      <h3 style="font-size: 1.5rem;">{{ user.created_at.strftime('%d/%m/%Y') }}</h3>
+      <p style="color: #94a3b8; font-weight: 500;">
+        Inscrit depuis {{ (now() - user.created_at).days }} jours
+      </p>
+    </div>
+  </div>
+
+  <div class="section-large" style="margin-top: 40px; text-align: left;">
+    <h3 style="margin-bottom: 20px;">📊 Progression Globale</h3>
+    
+    {% set total_challenges = Challenge.query.filter_by(actif=True).count() %}
+    {% set solved_count = user.get_solved_challenges()|length %}
+    {% set progress_percent = (solved_count / total_challenges * 100) if total_challenges > 0 else 0 %}
+    
+    <div class="progress-container" style="background: rgba(255,255,255,0.05); border-radius: 50px; padding: 4px; border: 1px solid rgba(255,255,255,0.1);">
+      <div class="progress-fill" style="width: {{ progress_percent }}%; background: linear-gradient(90deg, #00f5c0, #0088ff); height: 12px; border-radius: 50px; box-shadow: 0 0 10px rgba(0, 245, 192, 0.5); transition: width 1s ease;"></div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-top: 10px; color: #cbd5e1; font-size: 0.9rem;">
+      <span><strong>{{ solved_count }}</strong> / {{ total_challenges }} challenges complétés</span>
+      <span style="color: #00f5c0; font-weight: bold;">{{ "%.0f"|format(progress_percent) }}%</span>
+    </div>
+  </div>
+
+  {% set in_progress = user.get_in_progress_challenges() %}
+  {% if in_progress %}
+  <div style="width: 100%; margin-top: 50px;">
+    <h2 class="animated-title" style="font-size: 1.8rem; text-align: left; margin-bottom: 20px;">⚡ Reprendre les challenges</h2>
+    
+    <div class="challenges-grid">
+      {% for challenge in in_progress %}
+        <div class="challenge-card">
+          <div class="challenge-header">
+            <h3>{{ challenge.titre }}</h3>
+            <span class="challenge-points" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+              En cours
+            </span>
+          </div>
+          <p class="challenge-description" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ challenge.description }}
+          </p>
+          <a href="{{ url_for('challenge_view', challenge_id=challenge.id) }}" class="btn challenge-btn">
+            Continuer →
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
   {% endif %}
 
-  <!-- ========================== -->
-  <!-- Blocs de contenu d'accueil -->
-  <!-- ========================== -->
-  <div class="home-containers">
-    <div class="home-block">
-      <h3>Derniers challenges</h3>
-      <p>Affrontez nos derniers scénarios simulant des vulnérabilités web réelles, de l'injection SQL au XSS. 
-        Analysez le code, exploitez les failles et capturez les flags pour valider vos compétences techniques.</p>
-    </div>
-
-    <div class="home-block">
-      <h3>Classement en direct</h3>
-      <p>Suivez l'évolution du Hall of Fame et mesurez votre progression face aux autres hackers de la plateforme. 
-        Chaque flag validé vous rapproche du sommet du classement général en temps réel.</p>
-    </div>
-
-    <div class="home-block">
-    <h3>Actualités Cyber</h3>
-    <p>Restez informé des dernières menaces, vulnérabilités et actualités du monde de la cybersécurité. 
-    Retrouvez chaque jour une sélection d'articles provenant de sources reconnues comme CERT-FR, 
-    The Hacker News et Krebs on Security.</p>
-   </div>
-
-  </div>
-</section>
-
-<!-- Nouvelle section rectangulaire séparée -->
-<section class="section-large">
-  <h3>À propos du CyberCampus CTF</h3>
-  <p>
-    Le CyberCampus CTF est la porte d'entrée idéale pour les débutants souhaitant découvrir la cybersécurité. 
-    À travers des défis interactifs, vous apprendrez à maîtriser les bases de l'informatique et à identifier 
-    les failles web les plus courantes dans un environnement totalement sécurisé.
-  </p>
-  <p>
-    Notre approche pédagogique vous permet de comprendre non seulement comment les vulnérabilités sont exploitées, 
-    mais surtout comment s'en protéger efficacement. En analysant le code et en récupérant les flags, 
-    vous développerez les réflexes essentiels pour bâtir des systèmes plus sûrs et résilients.
-  </p>
-</section>
-
-<!-- Section Comment ça marche -->
-<section class="section-large how-it-works">
-  <h3>🚀 Comment ça marche ?</h3>
-  <div class="steps-container">
-    <div class="step-card">
-      <div class="step-number">1</div>
-      <div class="step-icon">📚</div>
-      <h4>Apprenez</h4>
-      <p>Consultez nos cours détaillés sur les vulnérabilités web : SQL Injection, XSS, CSRF et bien plus encore.</p>
+  {% set recent_submissions = user.submissions.order_by(Submission.timestamp.desc()).limit(5).all() %}
+  {% if recent_submissions %}
+  <div class="section-large" style="margin-top: 50px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+    <div style="padding: 20px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
+      <h3 style="margin: 0; font-size: 1.2rem;">📝 Historique Récent</h3>
     </div>
     
-    <div class="step-card">
-      <div class="step-icon">🎯</div>
-      <div class="step-number">2</div>
-      <h4>Pratiquez</h4>
-      <p>Accédez à des environnements isolés et vulnérables pour tester vos compétences en conditions réelles.</p>
-    </div>
-    
-    <div class="step-card">
-      <div class="step-icon">🏆</div>
-      <div class="step-number">3</div>
-      <h4>Progressez</h4>
-      <p>Validez les challenges, gagnez des points et grimpez dans le classement pour prouver vos compétences.</p>
+    <div class="history-list">
+      {% for sub in recent_submissions %}
+        <div class="history-item" style="display: flex; align-items: center; justify-content: space-between; padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="
+              width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;
+              background: {{ 'rgba(16, 185, 129, 0.2)' if sub.correct else 'rgba(239, 68, 68, 0.2)' }};
+              color: {{ '#10b981' if sub.correct else '#ef4444' }};
+            ">
+              {{ '✓' if sub.correct else '✗' }}
+            </div>
+            
+            <div style="text-align: left;">
+              <div style="color: #fff; font-weight: 600;">{{ sub.challenge.titre }}</div>
+              <div style="color: #64748b; font-size: 0.8rem;">{{ sub.timestamp.strftime('%d/%m/%Y à %H:%M') }}</div>
+            </div>
+          </div>
+
+          <div style="font-weight: 600; color: {{ '#10b981' if sub.correct else '#ef4444' }};">
+            {{ ('+' ~ sub.challenge.points ~ ' pts') if sub.correct else 'Échoué' }}
+          </div>
+        </div>
+      {% endfor %}
     </div>
   </div>
-</section>
+  {% endif %}
 
-<!-- Section Statistiques -->
-<section class="section-large stats-section">
-  <h3>📊 La plateforme en chiffres</h3>
-  <div class="home-stats-grid">
-    <div class="stat-box">
-      <div class="stat-icon">🎓</div>
-      <div class="stat-number">{{ Challenge.query.count() }}</div>
-      <div class="stat-label">Cours disponibles</div>
+  <div style="margin-top: 50px; text-align: center;">
+    <a href="{{ url_for('challenges_list') }}" class="btn primary-btn" style="width: auto; display: inline-flex; padding: 12px 30px;">
+      🎯 Voir tous les challenges
+    </a>
+  </div>
+
+  <!-- ── ZONE DANGER ── -->
+  <div class="danger-zone">
+    <div class="danger-zone-header">
+      <h3>⚠️ Zone de danger</h3>
+      <p>Les actions ci-dessous sont irréversibles. Procédez avec précaution.</p>
     </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">🎯</div>
-      <div class="stat-number">{{ Challenge.query.count() }}</div>
-      <div class="stat-label">Challenges actifs</div>
-    </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">👥</div>
-      <div class="stat-number">{{ User.query.count() }}</div>
-      <div class="stat-label">Étudiants inscrits</div>
-    </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">🔥</div>
-      <div class="stat-number">{{ Submission.query.filter_by(correct=True).count() }}</div>
-      <div class="stat-label">Flags validés</div>
+    <div class="danger-zone-content">
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <strong>Supprimer mon compte</strong>
+          <p>Toutes vos données (progression, scores, soumissions) seront définitivement supprimées.</p>
+        </div>
+        <button class="btn danger-btn" onclick="showDeleteModal()">
+          🗑️ Supprimer mon compte
+        </button>
+      </div>
     </div>
   </div>
+
 </section>
 
-<!-- Section Catégories -->
-<section class="section-large categories-section">
-  <h3>🗂️ Catégories de challenges</h3>
-  <div class="categories-grid">
-    <div class="category-card active">
-      <div class="category-icon">💉</div>
-      <h4>Web Exploitation</h4>
-      <p>SQL Injection, XSS, CSRF, Path Traversal</p>
-      <span class="category-badge available">3 disponibles</span>
-    </div>
-    
-    <div class="category-card active">
-      <div class="category-icon">🗝️</div>
-      <h4>Cryptographie</h4>
-      <p>Chiffrement, hachage, décodage</p>
-      <span class="category-badge available">3 disponibles</span>
-    </div>
-    
-    <div class="category-card active">
-      <div class="category-icon">🔍</div>
-      <h4>OSINT</h4>
-      <p>Recherche d'informations, reconnaissance</p>
-      <span class="category-badge soon">1 disponible</span>
-    </div>
-    
-    <div class="category-card coming-soon">
-      <div class="category-icon">⚙️</div>
-      <h4>Reverse Engineering</h4>
-      <p>Analyse de binaires, décompilation</p>
-      <span class="category-badge soon">Bientôt</span>
-    </div>
-  </div>
-</section>
-
-<!-- Section CTA Final -->
-<section class="section-large final-cta">
-  <div class="cta-content-large">
-    <h3>💻 Prêt à relever le défi ?</h3>
+<!-- ── MODALE CONFIRMATION SUPPRESSION ── -->
+<div id="deleteModal" class="delete-modal">
+  <div class="delete-modal-content">
+    <div class="delete-modal-icon">😢</div>
+    <h3>Supprimer votre compte ?</h3>
     <p>
-      Rejoignez des centaines d'étudiants qui développent leurs compétences en cybersécurité 
-      sur CyberCampus CTF. L'apprentissage commence maintenant !
+      Vous êtes sur le point de supprimer définitivement votre compte
+      <strong style="color: #00f5c0;">{{ user.pseudo }}</strong>.
     </p>
-    <div class="cta-buttons">
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('challenges_list') }}" class="btn cta-btn-primary">
-          🎯 Voir les challenges
-        </a>
-        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
-          📚 Accéder aux cours
-        </a>
-      {% else %}
-        <a href="{{ url_for('auth.register') }}" class="btn cta-btn-primary">
-          🚀 Créer mon compte gratuitement
-        </a>
-        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
-          📚 Découvrir les cours
-        </a>
-      {% endif %}
+    <p style="color: #94a3b8; font-size: 0.88rem;">
+      Toutes vos données (progression, scores, soumissions) seront perdues pour toujours.
+      Un email de confirmation vous sera envoyé à <strong>{{ user.email }}</strong>.
+    </p>
+    <div class="delete-modal-actions">
+      <button class="btn delete-cancel-btn" onclick="hideDeleteModal()">
+        Annuler
+      </button>
+      <form method="POST" action="{{ url_for('auth.request_delete_account') }}" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none;">
+        <button type="submit" class="btn delete-confirm-btn">
+          📧 Envoyer l'email de confirmation
+        </button>
+      </form>
     </div>
   </div>
-</section>
+</div>
+
+<script>
+function showDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function hideDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+window.onclick = function(e) {
+  const modal = document.getElementById('deleteModal');
+  if (e.target === modal) hideDeleteModal();
+}
+</script>
+
+<style>
+/* ── ZONE DANGER ── */
+.danger-zone {
+  margin-top: 60px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.danger-zone-header {
+  background: rgba(239, 68, 68, 0.08);
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.danger-zone-header h3 {
+  color: #ef4444;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  margin: 0 0 5px 0;
+}
+
+.danger-zone-header p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.danger-zone-content {
+  padding: 25px 30px;
+  background: rgba(15, 23, 36, 0.4);
+}
+
+.danger-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.danger-item-info strong {
+  display: block;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.danger-item-info p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.danger-btn {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  padding: 10px 20px;
+  white-space: nowrap;
+  width: auto;
+}
+
+.danger-btn:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ── MODALE SUPPRESSION ── */
+.delete-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.delete-modal-content {
+  background: rgba(10, 15, 25, 0.98);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 20px;
+  padding: 45px 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.delete-modal-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.delete-modal-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #ef4444;
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+}
+
+.delete-modal-content p {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.delete-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 12px 25px;
+  width: auto;
+}
+
+.delete-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  color: #fff;
+  padding: 12px 25px;
+  width: auto;
+  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+}
+
+.delete-confirm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+}
+</style>
 
 {% endblock %}
-

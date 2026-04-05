@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Confirmer la suppression - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="form-wrapper">
+
+  <div class="delete-confirm-card">
+    <div class="delete-confirm-icon">⚠️</div>
+    <h2>Dernière étape</h2>
+    <p class="delete-confirm-desc">
+      Pour confirmer la suppression de votre compte
+      <strong style="color: #00f5c0;">{{ current_user.pseudo }}</strong>,
+      saisissez votre mot de passe ci-dessous.
+    </p>
+    <p style="color: #ef4444; font-size: 0.85rem; margin-bottom: 25px;">
+      ⚠️ Cette action est irréversible. Toutes vos données seront perdues définitivement.
+    </p>
+
+    <form method="POST" style="width: 100%; padding: 0; background: none; border: none; box-shadow: none;">
+
+      <label style="color: #94a3b8; font-size: 0.9rem; display: block; margin-bottom: 6px;">
+        Mot de passe
+      </label>
+      <div class="password-container" style="margin-bottom: 15px;">
+        <input type="password" name="password" id="del-pass" class="input-field" required placeholder="Votre mot de passe actuel" />
+        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('del-pass', this)">
+          <svg class="eye-icon" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line>
+          </svg>
+        </button>
+      </div>
+
+      <label style="color: #94a3b8; font-size: 0.9rem; display: block; margin-bottom: 6px;">
+        Confirmer le mot de passe
+      </label>
+      <div class="password-container" style="margin-bottom: 25px;">
+        <input type="password" name="confirm_password" id="del-conf" class="input-field" required placeholder="Confirmez votre mot de passe" />
+        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('del-conf', this)">
+          <svg class="eye-icon" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{{ url_for('dashboard') }}"
+           style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+                  border-radius: 8px; color: #94a3b8; text-align: center; text-decoration: none;
+                  font-weight: 600; transition: all 0.3s ease;">
+          Annuler
+        </a>
+        <button type="submit"
+                style="flex: 2; padding: 12px; background: linear-gradient(135deg, #ef4444, #dc2626);
+                       border: none; border-radius: 8px; color: #fff; font-weight: 700;
+                       cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(239,68,68,0.3);">
+          🗑️ Supprimer définitivement mon compte
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</section>
+
+<style>
+.delete-confirm-card {
+  background: rgba(15, 23, 36, 0.7);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 20px;
+  padding: 45px 40px;
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+}
+
+.delete-confirm-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+
+.delete-confirm-card h2 {
+  color: #ef4444;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.delete-confirm-desc {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+</style>
+
+{% endblock %}

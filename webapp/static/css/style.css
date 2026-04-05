@@ -1772,6 +1772,12 @@ footer {
   width: 100%;
 }
 
+.password-hint {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin: -10px 0 10px 0;
+}
+
 .password-container .input-field {
   padding-right: 45px; 
 }

@@ -4,7 +4,8 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
+import re
 
 # Formulaire d'inscription
 class RegisterForm(FlaskForm):
@@ -20,8 +21,16 @@ class RegisterForm(FlaskForm):
     
     password = PasswordField("Mot de passe", validators=[
         DataRequired(message="Le mot de passe est obligatoire."),
-        Length(min=6, message="Le mot de passe doit contenir au moins 6 caractères.")
+        Length(min=8, message="Le mot de passe doit contenir au moins 8 caractères.")
     ])
+
+    def validate_password(self, field):
+        """Validation personnalisée du mot de passe"""
+        password = field.data
+        if not re.search(r'\d', password):
+            raise ValidationError("Le mot de passe doit contenir au moins un chiffre.")
+        if not re.search(r'[!@#$%^&*(),.?\":{}|<>_\-+=\[\]\\\/~`]', password):
+            raise ValidationError("Le mot de passe doit contenir au moins un caractère spécial.")
     
     confirm_password = PasswordField("Confirmer le mot de passe", validators=[
         DataRequired(message="Veuillez confirmer votre mot de passe."),

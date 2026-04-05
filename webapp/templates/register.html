@@ -21,6 +21,8 @@
         <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
       </button>
     </div>
+    <p class="password-hint">🔒 Minimum 8 caractères, 1 chiffre et 1 caractère spécial</p>
+    {% for e in form.password.errors %}<p class="error">{{ e }}</p>{% endfor %}
 
     <label>{{ form.confirm_password.label }}</label>
     <div class="password-container">
