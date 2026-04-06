@@ -3,11 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}CyberCampus CTF{% endblock %}</title>
+
+  <!-- ── SEO TITRE & DESCRIPTION ── -->
+  <title>{% block title %}CyberCampus CTF — Plateforme d'entraînement Cybersécurité{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}CyberCampus CTF est une plateforme française gratuite d'entraînement à la cybersécurité. Apprenez le hacking éthique via des challenges CTF : SQL Injection, XSS, Bruteforce, Cryptographie, OSINT et plus encore.{% endblock %}" />
+  <meta name="keywords" content="CTF, Capture The Flag, cybersécurité, hacking éthique, entraînement CTF, SQL injection, XSS, bruteforce, cryptographie, OSINT, stéganographie, cybercampus, plateforme CTF france, apprendre cybersécurité, CTF débutant" />
+  <meta name="author" content="CyberCampus CTF" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://cybercampus-ctf.fr{{ request.path }}" />
+
+  <!-- ── OPEN GRAPH (Facebook, LinkedIn, Discord) ── -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CyberCampus CTF" />
+  <meta property="og:title" content="{% block og_title %}CyberCampus CTF — Plateforme d'entraînement Cybersécurité{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}Plateforme française gratuite d'entraînement CTF. Apprenez le hacking éthique via des challenges interactifs : SQLi, XSS, Bruteforce, Crypto, OSINT, Stéganographie.{% endblock %}" />
+  <meta property="og:url" content="https://cybercampus-ctf.fr{{ request.path }}" />
+  <meta property="og:image" content="https://cybercampus-ctf.fr/static/img/og-banner.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="fr_FR" />
+
+  <!-- ── TWITTER CARD ── -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{% block twitter_title %}CyberCampus CTF — Plateforme d'entraînement Cybersécurité{% endblock %}" />
+  <meta name="twitter:description" content="Plateforme française gratuite d'entraînement CTF. Challenges : SQLi, XSS, Bruteforce, Crypto, OSINT, Stéganographie." />
+  <meta name="twitter:image" content="https://cybercampus-ctf.fr/static/img/og-banner.png" />
+
+  <!-- ── SCHEMA.ORG (Rich Snippets Google) ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "CyberCampus CTF",
+    "url": "https://cybercampus-ctf.fr",
+    "description": "Plateforme française gratuite d'entraînement à la cybersécurité via des challenges CTF.",
+    "inLanguage": "fr-FR",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://cybercampus-ctf.fr/challenges",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- ── FAVICON & ICÔNES ── -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/logo.png') }}" />
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/logo.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo.png') }}" />
+
+  <!-- ── PERFORMANCE ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+  <!-- ── STYLES ── -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+
+  <!-- ── SCRIPTS ── -->
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
 
@@ -41,10 +97,10 @@
   </div>
 
   <!-- ── NAVBAR ── -->
-  <nav class="navbar">
+  <nav class="navbar" role="navigation" aria-label="Navigation principale">
     <div class="nav-left">
-      <a href="{{ url_for('home') }}" class="brand-link">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="CyberCampus Logo" class="logo" />
+      <a href="{{ url_for('home') }}" class="brand-link" aria-label="CyberCampus CTF - Accueil">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="CyberCampus CTF Logo" class="logo" width="42" height="42" />
         <h1 class="title">CyberCampus CTF</h1>
       </a>
     </div>
@@ -59,7 +115,7 @@
     <div class="nav-right">
       {% if current_user.is_authenticated %}
         {% if current_user.role == "admin" %}
-          <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin">⚙️</a>
+          <a href="{{ url_for('admin.dashboard') }}" class="btn nav-btn admin" aria-label="Panel Admin">⚙️</a>
         {% endif %}
         <a href="{{ url_for('dashboard') }}" class="btn nav-btn dashboard">Tableau de bord</a>
         <a href="{{ url_for('auth.logout') }}" class="btn nav-btn logout">Se déconnecter</a>
@@ -71,10 +127,10 @@
   </nav>
 
   <!-- ── FLASH MESSAGES ── -->
-  <main>
+  <main role="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="flash-container top">
+        <div class="flash-container top" role="alert">
           {% for category, message in messages %}
             <div class="flash {{ category }}">{{ message }}</div>
           {% endfor %}
@@ -85,7 +141,7 @@
   </main>
 
   <!-- ── FOOTER ── -->
-  <footer>
+  <footer role="contentinfo">
     <div class="footer-container">
       <div class="disclaimer-box">
         <h4>Clause de Non-Responsabilité</h4>
@@ -140,99 +196,31 @@
       flex-wrap: wrap;
     }
 
-    .cookie-text {
-      display: flex;
-      align-items: flex-start;
-      gap: 15px;
-      flex: 1;
-    }
-
-    .cookie-icon {
-      font-size: 1.8rem;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .cookie-text strong {
-      display: block;
-      color: #fff;
-      font-size: 0.95rem;
-      margin-bottom: 4px;
-    }
-
-    .cookie-text p {
-      color: #94a3b8;
-      font-size: 0.82rem;
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    .cookie-link {
-      color: #00f5c0;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .cookie-link:hover {
-      text-decoration: underline;
-    }
-
-    .cookie-actions {
-      display: flex;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-
+    .cookie-text { display: flex; align-items: flex-start; gap: 15px; flex: 1; }
+    .cookie-icon { font-size: 1.8rem; flex-shrink: 0; margin-top: 2px; }
+    .cookie-text strong { display: block; color: #fff; font-size: 0.95rem; margin-bottom: 4px; }
+    .cookie-text p { color: #94a3b8; font-size: 0.82rem; line-height: 1.5; margin: 0; }
+    .cookie-link { color: #00f5c0; text-decoration: none; font-weight: 600; }
+    .cookie-link:hover { text-decoration: underline; }
+    .cookie-actions { display: flex; gap: 10px; flex-shrink: 0; }
     .cookie-btn {
-      padding: 10px 24px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s ease;
-      white-space: nowrap;
+      padding: 10px 24px; border-radius: 8px; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.3s ease; white-space: nowrap;
     }
-
-    .cookie-accept {
-      background: linear-gradient(90deg, #00f5c0, #0088ff);
-      color: #050a10;
-    }
-
-    .cookie-accept:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(0, 245, 192, 0.4);
-    }
-
-    .cookie-decline {
-      background: rgba(255, 255, 255, 0.05);
-      color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .cookie-decline:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-    }
+    .cookie-accept { background: linear-gradient(90deg, #00f5c0, #0088ff); color: #050a10; }
+    .cookie-accept:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0, 245, 192, 0.4); }
+    .cookie-decline { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .cookie-decline:hover { background: rgba(255, 255, 255, 0.1); color: #cbd5e1; }
 
     @media (max-width: 768px) {
-      .cookie-content {
-        flex-direction: column;
-      }
-      .cookie-actions {
-        width: 100%;
-        justify-content: stretch;
-      }
-      .cookie-btn {
-        flex: 1;
-        text-align: center;
-      }
+      .cookie-content { flex-direction: column; }
+      .cookie-actions { width: 100%; justify-content: stretch; }
+      .cookie-btn { flex: 1; text-align: center; }
     }
   </style>
 
   <!-- ── SCRIPT BANNIÈRE COOKIES ── -->
   <script>
-    // Afficher la bannière si pas encore de choix
     document.addEventListener('DOMContentLoaded', function () {
       const cookieChoice = localStorage.getItem('cybercampus_cookie_choice');
       if (!cookieChoice) {

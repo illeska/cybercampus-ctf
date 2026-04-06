@@ -2,7 +2,7 @@
 # CyberCampus CTF - Application principale avec système de hints
 # ------------------------------
 
-from flask import Flask, render_template, url_for, redirect, request, flash, session, jsonify
+from flask import Flask, render_template, url_for, redirect, request, flash, session, jsonify, Response
 from flask_login import login_required, current_user
 from datetime import datetime, timezone
 import feedparser
@@ -558,6 +558,90 @@ def submit_flag(challenge_id):
         flash("❌ Flag incorrect. Réessayez !", "danger")
     
     return redirect(url_for('challenge_view', challenge_id=challenge_id))
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Génère le sitemap XML pour les moteurs de recherche"""
+    pages = []
+    base_url = "https://cybercampus-ctf.fr"
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+ 
+    # Pages statiques
+    static_pages = [
+        {"url": "/",             "priority": "1.0",  "changefreq": "daily"},
+        {"url": "/home",         "priority": "1.0",  "changefreq": "daily"},
+        {"url": "/challenges",   "priority": "0.9",  "changefreq": "weekly"},
+        {"url": "/learn",        "priority": "0.9",  "changefreq": "weekly"},
+        {"url": "/scoreboard",   "priority": "0.8",  "changefreq": "hourly"},
+        {"url": "/actualites",   "priority": "0.8",  "changefreq": "daily"},
+        {"url": "/learn/sqli",   "priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/learn/xss",    "priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/learn/bruteforce", "priority": "0.7", "changefreq": "monthly"},
+        {"url": "/learn/crypto", "priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/learn/osint",  "priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/learn/upload", "priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/learn/stegano","priority": "0.7",  "changefreq": "monthly"},
+        {"url": "/login",        "priority": "0.5",  "changefreq": "yearly"},
+        {"url": "/register",     "priority": "0.5",  "changefreq": "yearly"},
+        {"url": "/mentionslegales",          "priority": "0.3", "changefreq": "yearly"},
+        {"url": "/politiqueconfidentialite", "priority": "0.3", "changefreq": "yearly"},
+        {"url": "/cgu",          "priority": "0.3",  "changefreq": "yearly"},
+    ]
+ 
+    for page in static_pages:
+        pages.append(f"""
+  <url>
+    <loc>{base_url}{page['url']}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{page['changefreq']}</changefreq>
+    <priority>{page['priority']}</priority>
+  </url>""")
+ 
+    sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{''.join(pages)}
+</urlset>"""
+ 
+    return Response(sitemap_xml, mimetype='application/xml')
+ 
+ 
+@app.route('/robots.txt')
+def robots():
+    """Fichier robots.txt pour les moteurs de recherche"""
+    robots_txt = """User-agent: *
+Allow: /
+Allow: /home
+Allow: /challenges
+Allow: /learn
+Allow: /learn/sqli
+Allow: /learn/xss
+Allow: /learn/bruteforce
+Allow: /learn/crypto
+Allow: /learn/osint
+Allow: /learn/upload
+Allow: /learn/stegano
+Allow: /scoreboard
+Allow: /actualites
+Allow: /register
+Allow: /login
+ 
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /admin/
+Disallow: /challenges/sqli/
+Disallow: /challenges/xss/
+Disallow: /challenges/bruteforce/
+Disallow: /challenges/crypto/
+Disallow: /challenges/osint/
+Disallow: /challenges/upload/
+Disallow: /challenges/stegano/
+Disallow: /verify-email
+Disallow: /account/
+ 
+Sitemap: https://cybercampus-ctf.fr/sitemap.xml
+"""
+    return Response(robots_txt, mimetype='text/plain')
+
 
 # ------------------------------
 # Point d'entrée du programme (mode local)
