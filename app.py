@@ -449,7 +449,6 @@ def learn_stegano():
     return render_template("learn/stegano.html")
 
 @app.route('/challenges')
-@login_required
 def challenges_list():
     """Page listant tous les challenges disponibles"""
     challenges = Challenge.query.filter_by(actif=True).all()
