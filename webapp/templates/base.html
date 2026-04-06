@@ -105,6 +105,14 @@
       </a>
     </div>
 
+    <!-- Bouton hamburger (mobile uniquement) -->
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false" onclick="toggleMobileMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <!-- Menu desktop -->
     <div class="nav-center">
       <a href="{{ url_for('learn') }}" class="nav-cat">Apprendre</a>
       <a href="{{ url_for('challenges_list') }}" class="nav-cat">S'exercer</a>
@@ -125,6 +133,25 @@
       {% endif %}
     </div>
   </nav>
+
+  <!-- Menu mobile déroulant -->
+  <div class="nav-mobile-menu" id="nav-mobile-menu">
+    <a href="{{ url_for('learn') }}" class="nav-mobile-link">📚 Apprendre</a>
+    <a href="{{ url_for('challenges_list') }}" class="nav-mobile-link">🎯 S'exercer</a>
+    <a href="{{ url_for('scoreboard') }}" class="nav-mobile-link">🏆 Classement</a>
+    <a href="{{ url_for('actualites') }}" class="nav-mobile-link">📡 Actualités</a>
+    <div class="nav-mobile-divider"></div>
+    {% if current_user.is_authenticated %}
+      {% if current_user.role == "admin" %}
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-mobile-link">⚙️ Panel Admin</a>
+      {% endif %}
+      <a href="{{ url_for('dashboard') }}" class="nav-mobile-link">📊 Tableau de bord</a>
+      <a href="{{ url_for('auth.logout') }}" class="nav-mobile-link nav-mobile-logout">🚪 Se déconnecter</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="nav-mobile-link">🔑 Se connecter</a>
+      <a href="{{ url_for('auth.register') }}" class="nav-mobile-link nav-mobile-register">✨ S'inscrire</a>
+    {% endif %}
+  </div>
 
   <!-- ── FLASH MESSAGES ── -->
   <main role="main">
@@ -245,6 +272,110 @@
       banner.style.transition = 'all 0.3s ease';
       setTimeout(() => banner.style.display = 'none', 300);
     }
+  </script>
+
+
+  <!-- ── STYLES NAVBAR MOBILE ── -->
+  <style>
+    /* Hamburger — caché sur desktop */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 40px; height: 40px;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 8px;
+      transition: border-color 0.2s;
+    }
+    .nav-hamburger:hover { border-color: rgba(0,245,192,0.4); }
+    .nav-hamburger span {
+      display: block;
+      height: 2px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Menu mobile déroulant */
+    .nav-mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: rgba(8,14,24,0.98);
+      border-bottom: 1px solid rgba(0,245,192,0.1);
+      backdrop-filter: blur(16px);
+      padding: 12px 20px 20px;
+      position: relative;
+      z-index: 998;
+    }
+
+    .nav-mobile-menu.open { display: flex; }
+
+    .nav-mobile-link {
+      padding: 13px 16px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+    .nav-mobile-link:hover {
+      background: rgba(0,245,192,0.07);
+      color: #00f5c0;
+    }
+
+    .nav-mobile-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 8px 0;
+    }
+
+    .nav-mobile-logout { color: #ef4444 !important; }
+    .nav-mobile-logout:hover { background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+    .nav-mobile-register {
+      margin-top: 4px;
+      background: linear-gradient(135deg, rgba(0,245,192,0.1), rgba(0,136,255,0.1));
+      border: 1px solid rgba(0,245,192,0.2);
+      color: #00f5c0 !important;
+    }
+    .nav-mobile-register:hover { background: linear-gradient(135deg, #00f5c0, #0088ff) !important; color: #050a10 !important; }
+
+    /* Sur mobile : afficher hamburger, cacher nav-center et nav-right */
+    @media (max-width: 768px) {
+      .nav-hamburger { display: flex; }
+      .nav-center { display: none !important; }
+      .nav-right   { display: none !important; }
+    }
+  </style>
+
+  <!-- ── SCRIPT MENU MOBILE ── -->
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('nav-mobile-menu');
+      const btn  = document.getElementById('nav-hamburger');
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    }
+
+    // Fermer le menu si on clique en dehors
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('nav-mobile-menu');
+      const btn  = document.getElementById('nav-hamburger');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove('open');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', false);
+      }
+    });
   </script>
 
 </body>
