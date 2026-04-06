@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Actualités Cyber — CyberCampus CTF{% endblock %}
+{% block title %}Actualités Cyber - CyberCampus CTF{% endblock %}
 
 {% block content %}
 
@@ -124,7 +124,7 @@
               {% if article.lang == 'FR' %}FR{% else %}EN{% endif %}
             </span>
             <span class="ac-date" data-iso="{{ article.date.isoformat() if article.date else '' }}">
-              {% if article.date %}{{ article.date.strftime('%d/%m/%y') }}{% else %}—{% endif %}
+              {% if article.date %}{{ article.date.strftime('%d/%m/%y') }}{% else %}-{% endif %}
             </span>
           </div>
 
