@@ -1,101 +1,130 @@
 # CyberCampus CTF — Plateforme Capture The Flag
 
-Ce projet est une plateforme web de type **Capture The Flag (CTF)** permettant aux utilisateurs d'apprendre et de pratiquer différentes techniques de cybersécurité.  
-La plateforme propose des challenges vulnérables isolés (SQLi, XSS, brute force, cryptographie simple, OSINT, etc.) et inclut un système de **soumission de flags**, un **scoreboard**, une **gestion des utilisateurs** et un **panneau d'administration**.
+> Plateforme web pédagogique de type **Capture The Flag** pour apprendre la cybersécurité par la pratique.
+
+---
+
+## 🆕 Ce qui a changé dans cette version
+
+Cette version marque une **refonte complète de l'interface utilisateur**. Toutes les pages ont été redessinées avec une direction artistique cohérente : dark theme, grille de fond animée, typographie Orbitron, palette vert/bleu, cartes avec hover effects, responsive mobile-first sur toutes les pages.
+
+Pages refaites : accueil, bibliothèque de cours, pages de cours individuels, liste des challenges, page challenge, scoreboard, dashboard, actualités, CGU / mentions légales / politique de confidentialité, login et register.
+
+Nouveautés fonctionnelles :
+- **reCAPTCHA v2** sur le login et l'inscription
+- Vérification email par code 6 chiffres à l'inscription
+- Suppression de compte avec confirmation par email
+- Modification de profil complet
+- Système d'indices avec pénalités progressives
+- Agrégateur d'actualités cyber (flux RSS FR/EN avec filtres)
+- CI/CD via GitHub Actions avec self-hosted runner sur Azure
 
 ---
 
 ## 🎯 Objectif du projet
 
-- Proposer un environnement d’apprentissage ludique autour des vulnérabilités courantes.
-- Permettre aux joueurs de résoudre des défis variés et de soumettre des flags.
-- Offrir une plateforme sécurisée avec des environnements vulnérables isolés via **Docker**.
-- Fournir un tableau de bord, un classement dynamique, et une gestion simple des challenges.
+- Proposer un environnement d'apprentissage ludique autour des vulnérabilités web courantes
+- Permettre aux joueurs de résoudre des défis et de soumettre des flags
+- Offrir une plateforme sécurisée avec des environnements vulnérables isolés via Docker
+- Fournir un tableau de bord, un classement dynamique et une gestion complète des utilisateurs
 
 ---
 
-## 🏗️ Fonctionnalités principales
+## 🏗️ Fonctionnalités
 
-### ✔️ Gestion des utilisateurs  
-- Inscription / Connexion  
-- Tableau de bord personnel  
-- Suivi de la progression et des points  
+### Utilisateurs
+- Inscription / Connexion avec reCAPTCHA v2
+- Vérification email obligatoire par code à 6 chiffres
+- Tableau de bord personnel (progression, historique, stats)
+- Modification de profil (pseudo, email, mot de passe, pays, genre, année de naissance)
+- Suppression de compte avec double confirmation
+- Classement global (scoreboard)
 
-### ✔️ Challenges interactifs  
-Chaque challenge comprend :  
-- un énoncé,  
-- un environnement vulnérable,  
-- un flag à récupérer (format `CTF{...}`).  
+### Challenges
 
-Challenges disponibles :
-- **SQL Injection (SQLi)** — Challenge vulnérable simple  
-- **XSS réfléchi** — Champ commentaire vulnérable  
+| Challenge | Difficulté | Points |
+|-----------|-----------|--------|
+| SQL Injection | Débutant | 25 pts |
+| XSS Reflected | Débutant | 25 pts |
+| Bruteforce | Intermédiaire | 175 pts |
+| Cryptographie | Intermédiaire | 75 pts |
+| OSINT | Débutant | 50 pts |
+| Upload de fichiers | Intermédiaire | 125 pts |
+| Stéganographie | Intermédiaire | 150 pts |
 
-### ✔️ Scoreboard  
-- Classement global  
-- Mise à jour automatique après chaque flag validé  
+### Cours
+7 cours gratuits couvrant chaque vulnérabilité, avec théorie, exemples de code et lien vers le challenge.
 
-### ✔️ Administration  
-- Gestion des challenges  
-- Gestion des utilisateurs  
-- Vue d’ensemble des flags soumis  
+### Actualités
+Agrégateur RSS cybersécurité (CERT-FR, Zataz, The Hacker News, Bleeping Computer…) avec filtres source / langue / période.
 
 ---
 
 ## 🗂️ Structure du projet
-
 ```
-/core           → logique interne (auth, modèles, validation des flags)
-/webapp         → routes web, templates, assets
-/challenges     → environnements vulnérables isolés
-/docs           → documentation technique & utilisateur
-/tests          → tests unitaires et d’intégration
+/core              → logique interne (auth, modèles, forms)
+/webapp            → routes web, templates, assets
+/templates       → pages Jinja2
+/static          → CSS, JS, images
+/challenges        → environnements vulnérables isolés
 docker-compose.yml
-README.md
 app.py
+config.py
+requirements.txt
 ```
+---
+
+## 🛠️ Stack technique
+
+| Composant | Technologie |
+|-----------|-------------|
+| Backend | Python / Flask |
+| Base de données | PostgreSQL |
+| Auth | Flask-Login + bcrypt |
+| Email | Flask-Mail (OVH SMTP) |
+| Hébergement | Microsoft Azure (VM Ubuntu) |
+| Reverse proxy | Nginx |
+| Conteneurisation | Docker / Docker Compose |
+| CI/CD | GitHub Actions (self-hosted runner) |
+| CAPTCHA | Google reCAPTCHA v2 |
 
 ---
 
-## 🧪 Tests
+## 📦 Installation locale
 
-Pas encore disponible
-
----
-
-## 🔒 Sécurité
-
-Même si certains environnements sont volontairement vulnérables, **la plateforme principale est sécurisée** :
-
-- Validation systématique des entrées  
-- Échappement des templates  
-- Protection XSS/CSRF/SQLi  
-- Isolation via conteneurs Docker pour les challenges vulnérables  
-
----
-
-
-
-## 📦 Installation
-
-### 1. Cloner le dépôt  
+### 1. Cloner le dépôt
 ```bash
 git clone https://github.com/illeska/cybercampus-ctf
-cd repo
+cd cybercampus-ctf
 ```
 
-### 2. Lancer avec Docker  
+### 2. Configurer les variables d'environnement
+Créer un fichier `.env` à la racine en se basant sur `.env.example`.
+```env
+DATABASE_URL=postgresql://user:password@db:5432/cybercampus
+```
+
+### 3. Lancer avec Docker
 ```bash
 docker-compose up --build
 ```
 
-### 3. Accéder au site  
-```
+### 4. Accéder au site
 http://localhost:5000
-```
+---
+
+## 🔒 Sécurité
+
+- Mots de passe hashés avec bcrypt
+- Vérification email obligatoire
+- reCAPTCHA v2 sur les formulaires d'authentification
+- Protection CSRF (Flask-WTF)
+- Rate limiting sur les routes sensibles
+- Isolation des environnements vulnérables via Docker
+- HTTPS (TLS / Let's Encrypt)
+- Cookies HttpOnly + Secure
 
 ---
 
-## 📚 Documentation
-
-Pas encore disponible
+*Projet académique personnel — non commercial.*  
+*[github.com/illeska](https://github.com/illeska)*

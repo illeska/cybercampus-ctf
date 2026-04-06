@@ -1,177 +1,929 @@
 {% extends "base.html" %}
-{% block title %}Accueil - CyberCampus CTF{% endblock %}
+{% block title %}CyberCampus CTF — Apprends le hacking éthique{% endblock %}
+{% block meta_description %}La plateforme française gratuite pour apprendre la cybersécurité. Challenges CTF interactifs : SQL Injection, XSS, Bruteforce, Cryptographie, OSINT. Commence maintenant.{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
-  <h2 class="animated-title">Bienvenue sur CyberCampus CTF 👾</h2>
-  <p>Participez, apprenez et progressez dans la cybersécurité.</p>
 
-  {% if not current_user.is_authenticated %}
-    <div class="cta">
-      <a href="{{ url_for('auth.login') }}" class="btn primary-btn">Se connecter</a>
-      <a href="{{ url_for('auth.register') }}" class="btn secondary-btn">Créer un compte</a>
-    </div>
-  {% endif %}
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="hero">
 
-  <!-- ========================== -->
-  <!-- Blocs de contenu d'accueil -->
-  <!-- ========================== -->
-  <div class="home-containers">
-    <div class="home-block">
-      <h3>Derniers challenges</h3>
-      <p>Affrontez nos derniers scénarios simulant des vulnérabilités web réelles, de l'injection SQL au XSS. 
-        Analysez le code, exploitez les failles et capturez les flags pour valider vos compétences techniques.</p>
-    </div>
+  <!-- Grille de fond -->
+  <div class="hero-grid" aria-hidden="true"></div>
 
-    <div class="home-block">
-      <h3>Classement en direct</h3>
-      <p>Suivez l'évolution du Hall of Fame et mesurez votre progression face aux autres hackers de la plateforme. 
-        Chaque flag validé vous rapproche du sommet du classement général en temps réel.</p>
-    </div>
-
-    <div class="home-block">
-    <h3>Actualités Cyber</h3>
-    <p>Restez informé des dernières menaces, vulnérabilités et actualités du monde de la cybersécurité. 
-    Retrouvez chaque jour une sélection d'articles provenant de sources reconnues comme CERT-FR, 
-    The Hacker News et Krebs on Security.</p>
-   </div>
-
+  <!-- Particules -->
+  <div class="hero-particles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
   </div>
-</section>
 
-<!-- Nouvelle section rectangulaire séparée -->
-<section class="section-large">
-  <h3>À propos du CyberCampus CTF</h3>
-  <p>
-    Le CyberCampus CTF est la porte d'entrée idéale pour les débutants souhaitant découvrir la cybersécurité. 
-    À travers des défis interactifs, vous apprendrez à maîtriser les bases de l'informatique et à identifier 
-    les failles web les plus courantes dans un environnement totalement sécurisé.
-  </p>
-  <p>
-    Notre approche pédagogique vous permet de comprendre non seulement comment les vulnérabilités sont exploitées, 
-    mais surtout comment s'en protéger efficacement. En analysant le code et en récupérant les flags, 
-    vous développerez les réflexes essentiels pour bâtir des systèmes plus sûrs et résilients.
-  </p>
-</section>
+  <div class="hero-inner">
 
-<!-- Section Comment ça marche -->
-<section class="section-large how-it-works">
-  <h3>🚀 Comment ça marche ?</h3>
-  <div class="steps-container">
-    <div class="step-card">
-      <div class="step-number">1</div>
-      <div class="step-icon">📚</div>
-      <h4>Apprenez</h4>
-      <p>Consultez nos cours détaillés sur les vulnérabilités web : SQL Injection, XSS, CSRF et bien plus encore.</p>
+    <!-- Badge -->
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Plateforme française · Gratuit · Éthique
     </div>
-    
-    <div class="step-card">
-      <div class="step-icon">🎯</div>
-      <div class="step-number">2</div>
-      <h4>Pratiquez</h4>
-      <p>Accédez à des environnements isolés et vulnérables pour tester vos compétences en conditions réelles.</p>
-    </div>
-    
-    <div class="step-card">
-      <div class="step-icon">🏆</div>
-      <div class="step-number">3</div>
-      <h4>Progressez</h4>
-      <p>Validez les challenges, gagnez des points et grimpez dans le classement pour prouver vos compétences.</p>
-    </div>
-  </div>
-</section>
 
-<!-- Section Statistiques -->
-<section class="section-large stats-section">
-  <h3>📊 La plateforme en chiffres</h3>
-  <div class="home-stats-grid">
-    <div class="stat-box">
-      <div class="stat-icon">🎓</div>
-      <div class="stat-number">{{ Challenge.query.count() }}</div>
-      <div class="stat-label">Cours disponibles</div>
-    </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">🎯</div>
-      <div class="stat-number">{{ Challenge.query.count() }}</div>
-      <div class="stat-label">Challenges actifs</div>
-    </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">👥</div>
-      <div class="stat-number">{{ User.query.count() }}</div>
-      <div class="stat-label">Étudiants inscrits</div>
-    </div>
-    
-    <div class="stat-box">
-      <div class="stat-icon">🔥</div>
-      <div class="stat-number">{{ Submission.query.filter_by(correct=True).count() }}</div>
-      <div class="stat-label">Flags validés</div>
-    </div>
-  </div>
-</section>
+    <!-- Titre -->
+    <h1 class="hero-title">
+      Apprends à<br>
+      <span class="hero-title-accent">hacker</span><br>
+      <span class="hero-title-sub">de façon éthique.</span>
+    </h1>
 
-<!-- Section Catégories -->
-<section class="section-large categories-section">
-  <h3>🗂️ Catégories de challenges</h3>
-  <div class="categories-grid">
-    <div class="category-card active">
-      <div class="category-icon">💉</div>
-      <h4>Web Exploitation</h4>
-      <p>SQL Injection, XSS, CSRF, Path Traversal</p>
-      <span class="category-badge available">3 disponibles</span>
-    </div>
-    
-    <div class="category-card active">
-      <div class="category-icon">🗝️</div>
-      <h4>Cryptographie</h4>
-      <p>Chiffrement, hachage, décodage</p>
-      <span class="category-badge available">3 disponibles</span>
-    </div>
-    
-    <div class="category-card active">
-      <div class="category-icon">🔍</div>
-      <h4>OSINT</h4>
-      <p>Recherche d'informations, reconnaissance</p>
-      <span class="category-badge soon">1 disponible</span>
-    </div>
-    
-    <div class="category-card coming-soon">
-      <div class="category-icon">⚙️</div>
-      <h4>Reverse Engineering</h4>
-      <p>Analyse de binaires, décompilation</p>
-      <span class="category-badge soon">Bientôt</span>
-    </div>
-  </div>
-</section>
-
-<!-- Section CTA Final -->
-<section class="section-large final-cta">
-  <div class="cta-content-large">
-    <h3>💻 Prêt à relever le défi ?</h3>
-    <p>
-      Rejoignez des centaines d'étudiants qui développent leurs compétences en cybersécurité 
-      sur CyberCampus CTF. L'apprentissage commence maintenant !
+    <!-- Sous-titre -->
+    <p class="hero-desc">
+      Des challenges réels, une progression concrète.<br>
+      Pas de théorie sans pratique.
     </p>
-    <div class="cta-buttons">
+
+    <!-- CTA -->
+    <div class="hero-cta">
       {% if current_user.is_authenticated %}
-        <a href="{{ url_for('challenges_list') }}" class="btn cta-btn-primary">
-          🎯 Voir les challenges
-        </a>
-        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
-          📚 Accéder aux cours
+        <a href="{{ url_for('challenges_list') }}" class="cta-primary">
+          Voir les challenges
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
       {% else %}
-        <a href="{{ url_for('auth.register') }}" class="btn cta-btn-primary">
-          🚀 Créer mon compte gratuitement
+        <a href="{{ url_for('auth.register') }}" class="cta-primary">
+          Commencer gratuitement
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
-        <a href="{{ url_for('learn') }}" class="btn cta-btn-secondary">
-          📚 Découvrir les cours
-        </a>
+        <a href="{{ url_for('learn') }}" class="cta-secondary">Explorer les cours</a>
       {% endif %}
     </div>
+
+<div class="hero-stats">
+  <div class="hero-stat">
+    <strong>7</strong>
+    <span>Cours gratuits</span>
+  </div>
+  <div class="hero-stat-sep"></div>
+  <div class="hero-stat">
+    <strong>{{ Challenge.query.filter_by(actif=True).count() }}</strong>
+    <span>Challenges</span>
+  </div>
+  <div class="hero-stat-sep"></div>
+  <div class="hero-stat">
+    <strong>{{ User.query.count() }}+</strong>
+    <span>Hackers inscrits</span>
+  </div>
+  <div class="hero-stat-sep"></div>
+  <div class="hero-stat">
+    <strong>{{ Submission.query.filter_by(correct=True).count() }}</strong>
+    <span>Flags capturés</span>
+  </div>
+</div>
+  </div>
+
+  <!-- Terminal flottant -->
+  <div class="hero-terminal" aria-hidden="true">
+    <div class="terminal-bar">
+      <span class="t-dot red"></span>
+      <span class="t-dot yellow"></span>
+      <span class="t-dot green"></span>
+      <span class="t-title">terminal — bash</span>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">nmap -sV cybercampus-ctf.fr</span></div>
+      <div class="t-line t-out">Starting Nmap scan...</div>
+      <div class="t-line t-out">PORT     STATE SERVICE</div>
+      <div class="t-line t-out">80/tcp   open  http</div>
+      <div class="t-line t-out">443/tcp  open  https</div>
+      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqlmap -u "target.com?id=1"</span></div>
+      <div class="t-line t-success">✓ Injectable parameter found: id</div>
+      <div class="t-line t-success">✓ Database: MySQL 8.0</div>
+      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd t-blink">_</span></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════
+     CATEGORIES DE CHALLENGES
+══════════════════════════════════════════ -->
+<section class="section-challenges">
+  <div class="section-inner">
+
+    <div class="section-label">Ce que tu vas apprendre</div>
+    <h2 class="section-title">7 domaines, 1 objectif :<br>maîtriser la cybersécurité</h2>
+
+    <div class="challenges-track">
+
+      <a href="{{ url_for('learn_sqli') }}" class="challenge-tile">
+        <div class="tile-icon">💉</div>
+        <div class="tile-info">
+          <strong>SQL Injection</strong>
+          <span>Exploitez les bases de données</span>
+        </div>
+        <div class="tile-pts">25 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_xss') }}" class="challenge-tile">
+        <div class="tile-icon">🔗</div>
+        <div class="tile-info">
+          <strong>XSS</strong>
+          <span>Injection de code côté client</span>
+        </div>
+        <div class="tile-pts">25 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_bruteforce') }}" class="challenge-tile">
+        <div class="tile-icon">🔨</div>
+        <div class="tile-info">
+          <strong>Bruteforce</strong>
+          <span>Attaques par force brute</span>
+        </div>
+        <div class="tile-pts">175 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_crypto') }}" class="challenge-tile">
+        <div class="tile-icon">🌈</div>
+        <div class="tile-info">
+          <strong>Cryptographie</strong>
+          <span>Craquez les hash MD5</span>
+        </div>
+        <div class="tile-pts">75 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_osint') }}" class="challenge-tile">
+        <div class="tile-icon">🔍</div>
+        <div class="tile-info">
+          <strong>OSINT</strong>
+          <span>Intelligence en sources ouvertes</span>
+        </div>
+        <div class="tile-pts">50 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_upload') }}" class="challenge-tile">
+        <div class="tile-icon">📤</div>
+        <div class="tile-info">
+          <strong>Upload</strong>
+          <span>Webshell & exécution de code</span>
+        </div>
+        <div class="tile-pts">125 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_stegano') }}" class="challenge-tile">
+        <div class="tile-icon">🖼️</div>
+        <div class="tile-info">
+          <strong>Stéganographie</strong>
+          <span>Messages cachés dans les pixels</span>
+        </div>
+        <div class="tile-pts">150 pts</div>
+      </a>
+
+    </div>
+
   </div>
 </section>
 
-{% endblock %}
+<!-- ══════════════════════════════════════════
+     COMMENT ÇA MARCHE
+══════════════════════════════════════════ -->
+<section class="section-how">
+  <div class="section-inner">
 
+    <div class="section-label">Simple comme bonjour</div>
+    <h2 class="section-title">En 3 étapes</h2>
+
+    <div class="how-steps">
+
+      <div class="how-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Lis le cours</h3>
+          <p>Chaque challenge est précédé d'un cours clair qui t'explique la vulnérabilité, son fonctionnement et comment l'exploiter.</p>
+        </div>
+      </div>
+
+      <div class="how-connector"></div>
+
+      <div class="how-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Attaque le challenge</h3>
+          <p>Un environnement vulnérable isolé t'attend. Applique ce que tu as appris, exploite la faille et capture le flag.</p>
+        </div>
+      </div>
+
+      <div class="how-connector"></div>
+
+      <div class="how-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Monte dans le classement</h3>
+          <p>Chaque flag validé t'apporte des points. Compare ta progression avec les autres hackers en temps réel.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CTA FINAL
+══════════════════════════════════════════ -->
+<section class="section-final-cta">
+  <div class="final-cta-inner">
+
+    <div class="final-cta-glow" aria-hidden="true"></div>
+
+    <div class="final-cta-label">Prêt à commencer ?</div>
+    <h2 class="final-cta-title">
+      Rejoins les <strong>{{ User.query.count() }}+</strong> hackers<br>
+      qui s'entraînent sur CyberCampus.
+    </h2>
+    <p class="final-cta-desc">Gratuit. Sans carte bancaire. Pour toujours.</p>
+
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('challenges_list') }}" class="cta-primary large">
+        Accéder aux challenges
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="cta-primary large">
+        Créer mon compte gratuitement
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    {% endif %}
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     STYLES
+══════════════════════════════════════════ -->
+<style>
+
+/* ── VARIABLES ── */
+:root {
+  --accent: #00f5c0;
+  --accent2: #0088ff;
+  --bg: #050a10;
+  --surface: rgba(15, 23, 36, 0.7);
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+}
+
+/* ── RESET GLOBAL ── */
+*, *::before, *::after { box-sizing: border-box; }
+a { text-decoration: none; }
+
+/* ══════════════════════
+   HERO
+══════════════════════ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 40px 80px;  
+  overflow: hidden;
+}
+
+/* Grille de fond */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Particules flottantes */
+.hero-particles span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: drift linear infinite;
+  opacity: 0;
+}
+.hero-particles span:nth-child(1)  { left: 10%; top: 20%; animation-duration: 8s;  animation-delay: 0s; }
+.hero-particles span:nth-child(2)  { left: 25%; top: 60%; animation-duration: 12s; animation-delay: 2s; }
+.hero-particles span:nth-child(3)  { left: 40%; top: 30%; animation-duration: 10s; animation-delay: 1s; }
+.hero-particles span:nth-child(4)  { left: 60%; top: 70%; animation-duration: 9s;  animation-delay: 3s; }
+.hero-particles span:nth-child(5)  { left: 75%; top: 15%; animation-duration: 11s; animation-delay: 0.5s; }
+.hero-particles span:nth-child(6)  { left: 85%; top: 50%; animation-duration: 7s;  animation-delay: 4s; }
+.hero-particles span:nth-child(7)  { left: 15%; top: 80%; animation-duration: 13s; animation-delay: 1.5s; }
+.hero-particles span:nth-child(8)  { left: 55%; top: 90%; animation-duration: 6s;  animation-delay: 2.5s; }
+
+@keyframes drift {
+  0%   { opacity: 0; transform: translateY(0) scale(1); }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+}
+
+/* Contenu hero */
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+  text-align: center;
+  animation: heroIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Badge */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(0,245,192,0.08);
+  border: 1px solid rgba(0,245,192,0.2);
+  border-radius: 100px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 28px;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Titre */
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  color: #fff;
+  margin: 0 0 16px;
+  letter-spacing: -1px;
+}
+
+.hero-title-accent {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title-sub {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: rgba(255,255,255,0.35);
+}
+
+/* Description */
+.hero-desc {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  line-height: 1.7;
+  margin: 0 0 36px;
+}
+
+/* CTA */
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 50px;
+}
+
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #050a10 !important;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 30px rgba(0,245,192,0.2);
+}
+
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 35px rgba(0,245,192,0.4);
+}
+
+.cta-primary.large {
+  padding: 16px 36px;
+  font-size: 1.05rem;
+  border-radius: 14px;
+}
+
+.cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 28px;
+  background: transparent;
+  color: #94a3b8 !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
+}
+
+.cta-secondary:hover {
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Stats */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hero-stat strong {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.hero-stat span {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.hero-stat-sep {
+  width: 1px;
+  height: 30px;
+  background: rgba(255,255,255,0.1);
+}
+
+/* Terminal */
+.hero-terminal {
+  position: absolute;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 340px;
+  background: rgba(5, 10, 16, 0.95);
+  border: 1px solid rgba(0,245,192,0.15);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,245,192,0.05);
+  animation: terminalIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  z-index: 2;
+}
+
+@keyframes terminalIn {
+  from { opacity: 0; transform: translateY(-40%) translateX(20px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.t-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.t-dot.red    { background: #ff5f57; }
+.t-dot.yellow { background: #ffbd2e; }
+.t-dot.green  { background: #28c840; }
+
+.t-title {
+  font-size: 0.75rem;
+  color: #475569;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.terminal-body {
+  padding: 16px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+.t-line { display: flex; gap: 8px; }
+.t-prompt { color: var(--accent); flex-shrink: 0; }
+.t-cmd { color: #e2e8f0; }
+.t-out { color: #475569; padding-left: 16px; display: block; }
+.t-success { color: #10b981; padding-left: 16px; display: block; }
+
+.t-blink {
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ══════════════════════
+   SECTION CHALLENGES
+══════════════════════ */
+.section-challenges {
+  padding: 100px 40px;
+  position: relative;
+}
+
+.section-challenges::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, rgba(0,245,192,0.3));
+}
+
+.section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-label {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  color: #fff;
+  font-weight: 700;
+  margin: 0 0 60px;
+  line-height: 1.3;
+}
+
+/* Piste de challenges */
+.challenges-track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.challenge-tile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.challenge-tile::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.challenge-tile:hover {
+  background: rgba(0,245,192,0.05);
+  border-color: rgba(0,245,192,0.2);
+  transform: translateX(6px);
+}
+
+.challenge-tile:hover::before {
+  opacity: 1;
+}
+
+.tile-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  width: 50px;
+  text-align: center;
+}
+
+.tile-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tile-info strong {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tile-info span {
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.tile-pts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--accent);
+  background: rgba(0,245,192,0.08);
+  border: 1px solid rgba(0,245,192,0.15);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════
+   COMMENT ÇA MARCHE
+══════════════════════ */
+.section-how {
+  padding: 100px 40px;
+  background: rgba(0,0,0,0.2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.how-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.how-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 30px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.how-step:nth-child(1) { animation-delay: 0.1s; }
+.how-step:nth-child(3) { animation-delay: 0.2s; }
+.how-step:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.step-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+.step-content h3 {
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.step-content p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.how-connector {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, rgba(0,245,192,0.3), rgba(0,136,255,0.3));
+  margin-top: 30px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════
+   CTA FINAL
+══════════════════════ */
+.section-final-cta {
+  padding: 120px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.final-cta-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(0,245,192,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.final-cta-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.final-cta-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: #fff;
+  font-weight: 700;
+  margin: 0 0 16px;
+  line-height: 1.3;
+}
+
+.final-cta-title strong {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.final-cta-desc {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 0 0 40px;
+}
+
+/* ══════════════════════
+   RESPONSIVE
+══════════════════════ */
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .hero-terminal { display: none; }
+  .hero-title { font-size: clamp(2.5rem, 7vw, 4rem); }
+  .hero { padding: 40px 30px 80px; } 
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+  /* Hero */
+  .hero {
+    padding: 90px 20px 60px;
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .hero-inner { width: 100%; }
+
+  .hero-badge { font-size: 0.72rem; padding: 5px 12px; }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+    letter-spacing: -0.5px;
+  }
+
+  .hero-title-sub { font-size: clamp(1.4rem, 6vw, 2rem); }
+
+  .hero-desc { font-size: 0.95rem; }
+
+  /* CTA empilés sur mobile */
+  .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+
+  /* Stats en grille 2x2 sur mobile */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .hero-stat-sep { display: none; }
+
+  .hero-stat {
+    background: rgba(15, 23, 36, 0.6);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
+    align-items: flex-start;
+  }
+
+  .hero-stat strong { font-size: 1.5rem; }
+  .hero-stat span { font-size: 0.72rem; }
+
+  /* Sections */
+  .section-challenges,
+  .section-how,
+  .section-final-cta { padding: 60px 20px; }
+
+  .section-title {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+    margin-bottom: 35px;
+  }
+
+  /* Tiles challenges */
+  .challenges-track { gap: 10px; }
+
+  .challenge-tile { padding: 14px 16px; gap: 14px; }
+
+  .tile-icon { font-size: 1.6rem; width: 36px; }
+
+  .tile-info strong { font-size: 0.9rem; }
+  .tile-info span { font-size: 0.78rem; }
+
+  /* Comment ça marche */
+  .how-steps { flex-direction: column; align-items: center; gap: 35px; }
+  .how-connector { display: none; }
+  .how-step { padding: 0; width: 100%; max-width: 320px; }
+  .step-num { font-size: 2.2rem; }
+
+  /* CTA final */
+  .final-cta-title { font-size: clamp(1.4rem, 6vw, 2rem); }
+
+  .cta-primary.large {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Très petit écran (320px) */
+@media (max-width: 380px) {
+  .hero-title { font-size: 1.9rem; }
+  .hero-badge { font-size: 0.65rem; }
+  .challenge-tile { gap: 10px; padding: 12px 14px; }
+  .tile-pts { display: none; }
+}
+
+</style>
+
+{% endblock %}

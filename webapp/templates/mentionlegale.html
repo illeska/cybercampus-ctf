@@ -1,82 +1,228 @@
 {% extends "base.html" %}
-{% block title %}Mentions légales - CyberCampus CTF{% endblock %}
+{% block title %}Mentions légales — CyberCampus CTF{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
 
-<h1>Mentions légales</h1>
-<p style="color: #64748b; font-size: 0.9rem;">Dernière mise à jour : avril 2026</p>
-
-<h2>1. Éditeur du site</h2>
-<p>
-Le présent site constitue un projet universitaire personnel réalisé dans le cadre d'une formation en cybersécurité.
-</p>
-<p>
-Statut : Personne physique — Projet académique individuel non commercial<br>
-Identifiant public : <a href="https://github.com/illeska" target="_blank" style="color: #00f5c0;">github.com/illeska</a><br>
-Responsable de publication : Administrateur du site<br>
-Contact : <a href="mailto:contact@cybercampus-ctf.fr" style="color: #00f5c0;">contact@cybercampus-ctf.fr</a><br>
-Date de création : Février 2026
-</p>
-<p>
-Ce site ne relève d'aucune activité commerciale et ne propose aucune prestation rémunérée.
-</p>
-
-<h2>2. Hébergement</h2>
-<p>
-Le site est hébergé par Microsoft Azure<br>
-Microsoft Corporation<br>
-One Microsoft Way<br>
-Redmond, WA 98052, USA<br>
-Site web : <a href="https://azure.microsoft.com" target="_blank" style="color: #00f5c0;">azure.microsoft.com</a>
-</p>
-<p>
-L'éditeur assure la gestion technique de l'application, tandis que l'infrastructure serveur est fournie par l'hébergeur.
-</p>
-
-<h2>3. Objet du site</h2>
-<p>
-La plateforme CyberCampus CTF est un environnement pédagogique de type Capture The Flag (CTF)
-destiné à l'apprentissage des mécanismes de cybersécurité.
-</p>
-<p>
-Les vulnérabilités présentes sur le site sont volontairement intégrées dans un cadre strictement contrôlé
-à des fins éducatives. Elles ne représentent en aucun cas une négligence de sécurité de la plateforme principale.
-</p>
-
-<h2>4. Responsabilité</h2>
-<p>
-L'utilisateur demeure seul responsable de ses actes et de l'usage des connaissances acquises sur la plateforme.
-L'éditeur ne saurait être tenu responsable d'une utilisation abusive ou illégale effectuée en dehors
-du cadre défini par les CGU.
-</p>
-
-<h2>5. Propriété intellectuelle</h2>
-<p>
-L'ensemble des contenus présents sur le site (code source, architecture, challenges, textes, images)
-est protégé par le droit d'auteur et appartient à l'éditeur.
-Toute reproduction ou diffusion sans autorisation préalable et écrite est strictement interdite.
-</p>
-
-<h2>6. Données personnelles</h2>
-<p>
-La création d'un compte implique la collecte de données d'identification (pseudo, adresse email, mot de passe hashé).
-Pour plus d'informations sur le traitement de vos données, veuillez consulter notre
-<a href="{{ url_for('confidentialite') }}" style="color: #00f5c0;">Politique de confidentialité</a>.
-</p>
-
-<h2>7. Signalement de vulnérabilité</h2>
-<p>
-Si vous découvrez une vulnérabilité sur la plateforme principale (hors environnements de challenge),
-merci de la signaler à <a href="mailto:contact@cybercampus-ctf.fr" style="color: #00f5c0;">contact@cybercampus-ctf.fr</a>
-plutôt que de l'exploiter.
-</p>
-
-<h2>8. Droit applicable</h2>
-<p>
-Le présent site est soumis au droit français. Tout litige relatif à son utilisation sera soumis
-aux juridictions françaises compétentes.
-</p>
-
+<section class="legal-hero">
+  <div class="legal-hero-grid" aria-hidden="true"></div>
+  <div class="legal-hero-inner">
+    <div class="legal-label">Légal</div>
+    <h1 class="legal-title">Mentions légales</h1>
+    <div class="legal-meta">
+      <span class="legal-date">Dernière mise à jour : avril 2026</span>
+      <div class="legal-nav">
+        <a href="{{ url_for('cgu') }}">CGU</a>
+        <span>·</span>
+        <a href="{{ url_for('confidentialite') }}">Confidentialité</a>
+      </div>
+    </div>
+  </div>
 </section>
+
+<section class="legal-body">
+  <div class="legal-content">
+
+    <div class="legal-section">
+      <h2>1. Éditeur du site</h2>
+      <p>Le présent site constitue un projet universitaire personnel réalisé dans le cadre d'une formation en cybersécurité.</p>
+      <p>
+        Statut : Personne physique — Projet académique individuel non commercial<br>
+        Identifiant public : <a href="https://github.com/illeska" target="_blank" rel="noopener">github.com/illeska</a><br>
+        Responsable de publication : Administrateur du site<br>
+        Contact : <a href="mailto:contact@cybercampus-ctf.fr">contact@cybercampus-ctf.fr</a><br>
+        Date de création : Février 2026
+      </p>
+      <p>Ce site ne relève d'aucune activité commerciale et ne propose aucune prestation rémunérée.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>2. Hébergement</h2>
+      <p>
+        Le site est hébergé par <strong>Microsoft Azure</strong><br>
+        Microsoft Corporation — One Microsoft Way — Redmond, WA 98052, USA<br>
+        <a href="https://azure.microsoft.com" target="_blank" rel="noopener">azure.microsoft.com</a>
+      </p>
+      <p>L'éditeur assure la gestion technique de l'application, tandis que l'infrastructure serveur est fournie par l'hébergeur.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>3. Objet du site</h2>
+      <p>La plateforme CyberCampus CTF est un environnement pédagogique de type Capture The Flag (CTF) destiné à l'apprentissage des mécanismes de cybersécurité.</p>
+      <p>Les vulnérabilités présentes sur le site sont volontairement intégrées dans un cadre strictement contrôlé à des fins éducatives. Elles ne représentent en aucun cas une négligence de sécurité de la plateforme principale.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>4. Responsabilité</h2>
+      <p>L'utilisateur demeure seul responsable de ses actes et de l'usage des connaissances acquises sur la plateforme. L'éditeur ne saurait être tenu responsable d'une utilisation abusive ou illégale effectuée en dehors du cadre défini par les CGU.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>5. Propriété intellectuelle</h2>
+      <p>L'ensemble des contenus présents sur le site (code source, architecture, challenges, textes, images) est protégé par le droit d'auteur et appartient à l'éditeur. Toute reproduction ou diffusion sans autorisation préalable et écrite est strictement interdite.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>6. Données personnelles</h2>
+      <p>La création d'un compte implique la collecte de données d'identification (pseudo, adresse email, mot de passe hashé). Pour plus d'informations sur le traitement de vos données, veuillez consulter notre <a href="{{ url_for('confidentialite') }}">Politique de confidentialité</a>.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>7. Signalement de vulnérabilité</h2>
+      <p>Si vous découvrez une vulnérabilité sur la plateforme principale (hors environnements de challenge), merci de la signaler à <a href="mailto:contact@cybercampus-ctf.fr">contact@cybercampus-ctf.fr</a> plutôt que de l'exploiter.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>8. Droit applicable</h2>
+      <p>Le présent site est soumis au droit français. Tout litige relatif à son utilisation sera soumis aux juridictions françaises compétentes.</p>
+    </div>
+
+  </div>
+</section>
+
+<style>
+:root {
+  --acc:  #00f5c0;
+  --acc2: #0088ff;
+  --surf: rgba(15,23,36,0.65);
+  --bord: rgba(255,255,255,0.07);
+  --mut:  #64748b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── HERO ── */
+.legal-hero {
+  position: relative;
+  padding: 64px 40px 52px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--bord);
+}
+
+.legal-hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, black 20%, transparent 100%);
+}
+
+.legal-hero-inner {
+  position: relative; z-index: 2;
+  max-width: 760px; margin: 0 auto;
+}
+
+.legal-label {
+  display: inline-block;
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  color: var(--acc);
+  background: rgba(0,245,192,0.08);
+  border: 1px solid rgba(0,245,192,0.18);
+  padding: 3px 12px; border-radius: 100px;
+  margin-bottom: 18px;
+}
+
+.legal-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 800; color: #fff;
+  margin: 0 0 18px; line-height: 1.2;
+}
+
+.legal-meta {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+
+.legal-date {
+  font-size: 0.8rem; color: var(--mut);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.legal-nav {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.8rem;
+}
+
+.legal-nav a {
+  color: var(--mut); text-decoration: none;
+  transition: color 0.2s;
+}
+
+.legal-nav a:hover { color: var(--acc); }
+.legal-nav span { color: rgba(255,255,255,0.15); }
+
+/* ── BODY ── */
+.legal-body {
+  padding: 60px 40px 100px;
+}
+
+.legal-content {
+  max-width: 760px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 0;
+}
+
+/* ── SECTIONS ── */
+.legal-section {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.legal-section:last-child { border-bottom: none; }
+
+.legal-section h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.88rem; font-weight: 700;
+  color: #fff; margin: 0 0 14px;
+  padding-left: 14px;
+  border-left: 3px solid var(--acc);
+  line-height: 1.4;
+}
+
+.legal-section p {
+  color: #94a3b8; line-height: 1.85;
+  font-size: 0.92rem; margin: 0 0 12px;
+}
+
+.legal-section p:last-child { margin-bottom: 0; }
+
+.legal-section ul {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.legal-section ul li {
+  color: #94a3b8; font-size: 0.9rem;
+  line-height: 1.6;
+  padding-left: 18px; position: relative;
+}
+
+.legal-section ul li::before {
+  content: '▸';
+  position: absolute; left: 0;
+  color: var(--acc); font-size: 0.7rem;
+  top: 4px;
+}
+
+.legal-section a {
+  color: var(--acc); text-decoration: none;
+  border-bottom: 1px solid rgba(0,245,192,0.3);
+  transition: border-color 0.2s;
+}
+
+.legal-section a:hover { border-color: var(--acc); }
+
+.legal-section strong { color: #cbd5e1; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .legal-hero { padding: 50px 20px 36px; }
+  .legal-body  { padding: 40px 20px 70px; }
+  .legal-title { font-size: clamp(1.2rem, 6vw, 1.6rem); }
+  .legal-meta  { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .legal-section h2 { font-size: 0.82rem; }
+}
+</style>
 {% endblock %}

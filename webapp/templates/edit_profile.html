@@ -1,387 +1,391 @@
 {% extends "base.html" %}
-{% block title %}Modifier mon profil - CyberCampus CTF{% endblock %}
+{% block title %}Modifier mon profil — CyberCampus CTF{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
 
-  <div class="back-btn-container">
-    <a href="{{ url_for('dashboard') }}" class="back-btn-modern">
-      <span>&#8592;</span> Retour au tableau de bord
-    </a>
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="ep-hero">
+  <div class="ep-hero-grid" aria-hidden="true"></div>
+  <div class="ep-hero-inner">
+    <a href="{{ url_for('dashboard') }}" class="ep-back">← Retour au dashboard</a>
+    <div class="ep-welcome-badge">
+      <span class="ep-badge-dot"></span>
+      Mon profil
+    </div>
+    <h1 class="ep-hero-title">
+      Gérer mon<br>
+      <span class="ep-accent">compte</span>
+    </h1>
+    <p class="ep-hero-desc">Modifiez vos informations personnelles et vos identifiants de connexion.</p>
   </div>
-
-  <h2 class="animated-title">⚙️ Modifier mon profil</h2>
-  <p>Gérez vos informations personnelles et vos identifiants de connexion.</p>
-
-  <div class="profile-edit-grid">
-
-    <!-- ── SECTION 1 : Infos personnelles ── -->
-    <div class="profile-section">
-      <div class="profile-section-header">
-        <h3>👤 Informations personnelles</h3>
-        <p>Ces informations sont facultatives et restent privées.</p>
-      </div>
-
-      <form method="POST" class="profile-form">
-        <input type="hidden" name="action" value="personal_info">
-
-        <!-- Année de naissance -->
-        <div class="form-group">
-          <label class="form-label">Année de naissance <span class="optional-badge">Facultatif</span></label>
-          <input type="number"
-                 name="birth_year"
-                 class="input-field"
-                 placeholder="Ex : 2001"
-                 min="1900"
-                 max="{{ now().year - 16 }}"
-                 value="{{ user.birth_year or '' }}" />
-          <p class="form-hint">Vous devez avoir au moins 16 ans.</p>
-        </div>
-
-        <!-- Pays -->
-        <div class="form-group">
-          <label class="form-label">Pays <span class="optional-badge">Facultatif</span></label>
-          <select name="country" class="input-field select-field">
-            <option value="">— Sélectionnez votre pays —</option>
-            {% set countries = [
-              "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre",
-              "Angola", "Antigua-et-Barbuda", "Arabie saoudite", "Argentine", "Arménie",
-              "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn", "Bangladesh",
-              "Barbade", "Belgique", "Belize", "Bénin", "Bhoutan", "Biélorussie", "Birmanie",
-              "Bolivie", "Bosnie-Herzégovine", "Botswana", "Brésil", "Brunei", "Bulgarie",
-              "Burkina Faso", "Burundi", "Cabo Verde", "Cambodge", "Cameroun", "Canada",
-              "Centrafrique", "Chili", "Chine", "Chypre", "Colombie", "Comores", "Congo",
-              "Corée du Nord", "Corée du Sud", "Costa Rica", "Côte d'Ivoire", "Croatie", "Cuba",
-              "Danemark", "Djibouti", "Dominique", "Égypte", "Émirats arabes unis", "Équateur",
-              "Érythrée", "Espagne", "Estonie", "Eswatini", "États-Unis", "Éthiopie", "Fidji",
-              "Finlande", "France", "Gabon", "Gambie", "Géorgie", "Ghana", "Grèce", "Grenade",
-              "Guatemala", "Guinée", "Guinée-Bissau", "Guinée équatoriale", "Guyana", "Haïti",
-              "Honduras", "Hongrie", "Inde", "Indonésie", "Irak", "Iran", "Irlande", "Islande",
-              "Israël", "Italie", "Jamaïque", "Japon", "Jordanie", "Kazakhstan", "Kenya",
-              "Kirghizistan", "Kiribati", "Kosovo", "Koweït", "Laos", "Lesotho", "Lettonie",
-              "Liban", "Libéria", "Libye", "Liechtenstein", "Lituanie", "Luxembourg",
-              "Madagascar", "Malaisie", "Malawi", "Maldives", "Mali", "Malte", "Maroc",
-              "Marshall", "Mauritanie", "Maurice", "Mexique", "Micronésie", "Moldavie",
-              "Monaco", "Mongolie", "Monténégro", "Mozambique", "Namibie", "Nauru", "Népal",
-              "Nicaragua", "Niger", "Nigéria", "Norvège", "Nouvelle-Zélande", "Oman",
-              "Ouganda", "Ouzbékistan", "Pakistan", "Palaos", "Palestine", "Panama",
-              "Papouasie-Nouvelle-Guinée", "Paraguay", "Pays-Bas", "Pérou", "Philippines",
-              "Pologne", "Portugal", "Qatar", "République démocratique du Congo",
-              "République dominicaine", "République tchèque", "Roumanie", "Royaume-Uni",
-              "Russie", "Rwanda", "Saint-Kitts-et-Nevis", "Saint-Marin", "Saint-Vincent-et-les-Grenadines",
-              "Sainte-Lucie", "Salomon", "Salvador", "Samoa", "São Tomé-et-Príncipe",
-              "Sénégal", "Serbie", "Seychelles", "Sierra Leone", "Singapour", "Slovaquie",
-              "Slovénie", "Somalie", "Soudan", "Soudan du Sud", "Sri Lanka", "Suède", "Suisse",
-              "Suriname", "Syrie", "Tadjikistan", "Tanzanie", "Tchad", "Thaïlande",
-              "Timor oriental", "Togo", "Tonga", "Trinité-et-Tobago", "Tunisie", "Turkménistan",
-              "Turquie", "Tuvalu", "Ukraine", "Uruguay", "Vanuatu", "Vatican", "Venezuela",
-              "Vietnam", "Yémen", "Zambie", "Zimbabwe"
-            ] %}
-            {% for country in countries %}
-              <option value="{{ country }}" {% if user.country == country %}selected{% endif %}>
-                {{ country }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <!-- Sexe -->
-        <div class="form-group">
-          <label class="form-label">Genre <span class="optional-badge">Facultatif</span></label>
-          <div class="gender-options">
-            <label class="gender-option {% if user.gender == 'Homme' %}active{% endif %}">
-              <input type="radio" name="gender" value="Homme" {% if user.gender == 'Homme' %}checked{% endif %} />
-              <span>👨 Homme</span>
-            </label>
-            <label class="gender-option {% if user.gender == 'Femme' %}active{% endif %}">
-              <input type="radio" name="gender" value="Femme" {% if user.gender == 'Femme' %}checked{% endif %} />
-              <span>👩 Femme</span>
-            </label>
-            <label class="gender-option {% if user.gender == 'Autre' %}active{% endif %}">
-              <input type="radio" name="gender" value="Autre" {% if user.gender == 'Autre' %}checked{% endif %} />
-              <span>🧑 Autre</span>
-            </label>
-          </div>
-        </div>
-
-        <button type="submit" class="btn profile-save-btn">💾 Sauvegarder</button>
-      </form>
-    </div>
-
-    <!-- ── SECTION 2 : Changer le pseudo ── -->
-    <div class="profile-section">
-      <div class="profile-section-header">
-        <h3>🏷️ Changer de pseudo</h3>
-        <p>Votre pseudo actuel : <strong style="color: #00f5c0;">{{ user.pseudo }}</strong></p>
-      </div>
-
-      <form method="POST" class="profile-form">
-        <input type="hidden" name="action" value="change_pseudo">
-
-        <div class="form-group">
-          <label class="form-label">Nouveau pseudo</label>
-          <input type="text"
-                 name="pseudo"
-                 class="input-field"
-                 placeholder="Entrez votre nouveau pseudo"
-                 minlength="3"
-                 maxlength="50"
-                 required />
-          <p class="form-hint">Entre 3 et 50 caractères.</p>
-        </div>
-
-        <button type="submit" class="btn profile-save-btn">💾 Changer le pseudo</button>
-      </form>
-    </div>
-
-    <!-- ── SECTION 3 : Changer l'email ── -->
-    <div class="profile-section">
-      <div class="profile-section-header">
-        <h3>✉️ Changer d'email</h3>
-        <p>Email actuel : <strong style="color: #00f5c0;">{{ user.email }}</strong></p>
-        {% if user.new_email_pending %}
-          <div class="pending-badge">
-            ⏳ En attente de confirmation : <strong>{{ user.new_email_pending }}</strong>
-          </div>
-        {% endif %}
-      </div>
-
-      <form method="POST" class="profile-form">
-        <input type="hidden" name="action" value="change_email">
-
-        <div class="form-group">
-          <label class="form-label">Nouvel email</label>
-          <input type="email"
-                 name="new_email"
-                 class="input-field"
-                 placeholder="nouveau@exemple.com"
-                 required />
-          <p class="form-hint">Un email de confirmation sera envoyé à cette adresse.</p>
-        </div>
-
-        <button type="submit" class="btn profile-save-btn">📧 Envoyer la confirmation</button>
-      </form>
-    </div>
-
-    <!-- ── SECTION 4 : Changer le mot de passe ── -->
-    <div class="profile-section">
-      <div class="profile-section-header">
-        <h3>🔐 Changer de mot de passe</h3>
-        <p>Choisissez un mot de passe fort et unique.</p>
-      </div>
-
-      <form method="POST" class="profile-form">
-        <input type="hidden" name="action" value="change_password">
-
-        <div class="form-group">
-          <label class="form-label">Mot de passe actuel</label>
-          <div class="password-container">
-            <input type="password" name="old_password" id="old-pass" class="input-field" required placeholder="Votre mot de passe actuel" />
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('old-pass', this)">
-              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Nouveau mot de passe</label>
-          <div class="password-container">
-            <input type="password" name="new_password" id="new-pass" class="input-field" required placeholder="Minimum 8 caractères" />
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('new-pass', this)">
-              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
-            </button>
-          </div>
-          <p class="form-hint">🔒 Minimum 8 caractères, 1 chiffre et 1 caractère spécial.</p>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Confirmer le nouveau mot de passe</label>
-          <div class="password-container">
-            <input type="password" name="confirm_password" id="conf-pass" class="input-field" required placeholder="Confirmez le nouveau mot de passe" />
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('conf-pass', this)">
-              <svg class="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none; stroke: #ef4444;"></line></svg>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn profile-save-btn">🔐 Changer le mot de passe</button>
-      </form>
-    </div>
-
-  </div>
-
 </section>
 
+<!-- ══════════════════════════════════════
+     CONTENU
+══════════════════════════════════════ -->
+<section class="ep-main">
+  <div class="ep-inner">
+    <div class="ep-grid">
+
+      <!-- ── Infos personnelles ── -->
+      <div class="ep-card">
+        <div class="ep-card-topbar"></div>
+        <div class="ep-card-body">
+          <div class="ep-card-head">
+            <h2 class="ep-card-title">👤 Informations personnelles</h2>
+            <p class="ep-card-sub">Ces informations sont facultatives et restent privées.</p>
+          </div>
+          <form method="POST" class="ep-form">
+            <input type="hidden" name="action" value="personal_info">
+
+            <div class="ep-field">
+              <label class="ep-label">Année de naissance <span class="ep-optional">Facultatif</span></label>
+              <input type="number" name="birth_year" class="ep-input"
+                     placeholder="Ex : 2001" min="1900" max="{{ now().year - 16 }}"
+                     value="{{ user.birth_year or '' }}" />
+              <p class="ep-hint">Vous devez avoir au moins 16 ans.</p>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">Pays <span class="ep-optional">Facultatif</span></label>
+              <select name="country" class="ep-input ep-select">
+                <option value="">— Sélectionnez votre pays —</option>
+                {% set countries = [
+                  "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre",
+                  "Angola", "Antigua-et-Barbuda", "Arabie saoudite", "Argentine", "Arménie",
+                  "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn", "Bangladesh",
+                  "Barbade", "Belgique", "Belize", "Bénin", "Bhoutan", "Biélorussie", "Birmanie",
+                  "Bolivie", "Bosnie-Herzégovine", "Botswana", "Brésil", "Brunei", "Bulgarie",
+                  "Burkina Faso", "Burundi", "Cabo Verde", "Cambodge", "Cameroun", "Canada",
+                  "Centrafrique", "Chili", "Chine", "Chypre", "Colombie", "Comores", "Congo",
+                  "Corée du Nord", "Corée du Sud", "Costa Rica", "Côte d'Ivoire", "Croatie", "Cuba",
+                  "Danemark", "Djibouti", "Dominique", "Égypte", "Émirats arabes unis", "Équateur",
+                  "Érythrée", "Espagne", "Estonie", "Eswatini", "États-Unis", "Éthiopie", "Fidji",
+                  "Finlande", "France", "Gabon", "Gambie", "Géorgie", "Ghana", "Grèce", "Grenade",
+                  "Guatemala", "Guinée", "Guinée-Bissau", "Guinée équatoriale", "Guyana", "Haïti",
+                  "Honduras", "Hongrie", "Inde", "Indonésie", "Irak", "Iran", "Irlande", "Islande",
+                  "Israël", "Italie", "Jamaïque", "Japon", "Jordanie", "Kazakhstan", "Kenya",
+                  "Kirghizistan", "Kiribati", "Kosovo", "Koweït", "Laos", "Lesotho", "Lettonie",
+                  "Liban", "Libéria", "Libye", "Liechtenstein", "Lituanie", "Luxembourg",
+                  "Madagascar", "Malaisie", "Malawi", "Maldives", "Mali", "Malte", "Maroc",
+                  "Marshall", "Mauritanie", "Maurice", "Mexique", "Micronésie", "Moldavie",
+                  "Monaco", "Mongolie", "Monténégro", "Mozambique", "Namibie", "Nauru", "Népal",
+                  "Nicaragua", "Niger", "Nigéria", "Norvège", "Nouvelle-Zélande", "Oman",
+                  "Ouganda", "Ouzbékistan", "Pakistan", "Palaos", "Palestine", "Panama",
+                  "Papouasie-Nouvelle-Guinée", "Paraguay", "Pays-Bas", "Pérou", "Philippines",
+                  "Pologne", "Portugal", "Qatar", "République démocratique du Congo",
+                  "République dominicaine", "République tchèque", "Roumanie", "Royaume-Uni",
+                  "Russie", "Rwanda", "Saint-Kitts-et-Nevis", "Saint-Marin", "Saint-Vincent-et-les-Grenadines",
+                  "Sainte-Lucie", "Salomon", "Salvador", "Samoa", "São Tomé-et-Príncipe",
+                  "Sénégal", "Serbie", "Seychelles", "Sierra Leone", "Singapour", "Slovaquie",
+                  "Slovénie", "Somalie", "Soudan", "Soudan du Sud", "Sri Lanka", "Suède", "Suisse",
+                  "Suriname", "Syrie", "Tadjikistan", "Tanzanie", "Tchad", "Thaïlande",
+                  "Timor oriental", "Togo", "Tonga", "Trinité-et-Tobago", "Tunisie", "Turkménistan",
+                  "Turquie", "Tuvalu", "Ukraine", "Uruguay", "Vanuatu", "Vatican", "Venezuela",
+                  "Vietnam", "Yémen", "Zambie", "Zimbabwe"
+                ] %}
+                {% for country in countries %}
+                  <option value="{{ country }}" {% if user.country == country %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">Genre <span class="ep-optional">Facultatif</span></label>
+              <div class="ep-gender">
+                <label class="ep-gender-opt {% if user.gender == 'Homme' %}ep-gender-opt--active{% endif %}">
+                  <input type="radio" name="gender" value="Homme" {% if user.gender == 'Homme' %}checked{% endif %} />
+                  <span>👨 Homme</span>
+                </label>
+                <label class="ep-gender-opt {% if user.gender == 'Femme' %}ep-gender-opt--active{% endif %}">
+                  <input type="radio" name="gender" value="Femme" {% if user.gender == 'Femme' %}checked{% endif %} />
+                  <span>👩 Femme</span>
+                </label>
+                <label class="ep-gender-opt {% if user.gender == 'Autre' %}ep-gender-opt--active{% endif %}">
+                  <input type="radio" name="gender" value="Autre" {% if user.gender == 'Autre' %}checked{% endif %} />
+                  <span>🧑 Autre</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="ep-btn">💾 Sauvegarder</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Pseudo ── -->
+      <div class="ep-card">
+        <div class="ep-card-topbar ep-card-topbar--acc"></div>
+        <div class="ep-card-body">
+          <div class="ep-card-head">
+            <h2 class="ep-card-title">🏷️ Changer de pseudo</h2>
+            <p class="ep-card-sub">Pseudo actuel : <span class="ep-current">{{ user.pseudo }}</span></p>
+          </div>
+          <form method="POST" class="ep-form">
+            <input type="hidden" name="action" value="change_pseudo">
+            <div class="ep-field">
+              <label class="ep-label">Nouveau pseudo</label>
+              <input type="text" name="pseudo" class="ep-input"
+                     placeholder="Entrez votre nouveau pseudo"
+                     minlength="3" maxlength="50" required />
+              <p class="ep-hint">Entre 3 et 50 caractères.</p>
+            </div>
+            <button type="submit" class="ep-btn">💾 Changer le pseudo</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Email ── -->
+      <div class="ep-card">
+        <div class="ep-card-topbar ep-card-topbar--acc"></div>
+        <div class="ep-card-body">
+          <div class="ep-card-head">
+            <h2 class="ep-card-title">✉️ Changer d'email</h2>
+            <p class="ep-card-sub">Email actuel : <span class="ep-current">{{ user.email }}</span></p>
+            {% if user.new_email_pending %}
+              <div class="ep-pending">⏳ En attente de confirmation : <strong>{{ user.new_email_pending }}</strong></div>
+            {% endif %}
+          </div>
+          <form method="POST" class="ep-form">
+            <input type="hidden" name="action" value="change_email">
+            <div class="ep-field">
+              <label class="ep-label">Nouvel email</label>
+              <input type="email" name="new_email" class="ep-input"
+                     placeholder="nouveau@exemple.com" required />
+              <p class="ep-hint">Un email de confirmation sera envoyé à cette adresse.</p>
+            </div>
+            <button type="submit" class="ep-btn">📧 Envoyer la confirmation</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Mot de passe ── -->
+      <div class="ep-card">
+        <div class="ep-card-topbar ep-card-topbar--acc"></div>
+        <div class="ep-card-body">
+          <div class="ep-card-head">
+            <h2 class="ep-card-title">🔐 Changer de mot de passe</h2>
+            <p class="ep-card-sub">Choisissez un mot de passe fort et unique.</p>
+          </div>
+          <form method="POST" class="ep-form">
+            <input type="hidden" name="action" value="change_password">
+
+            <div class="ep-field">
+              <label class="ep-label">Mot de passe actuel</label>
+              <div class="ep-pw-wrap">
+                <input type="password" name="old_password" id="old-pass" class="ep-input" required placeholder="Votre mot de passe actuel" />
+                <button type="button" class="ep-eye" onclick="togglePasswordVisibility('old-pass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none"></line></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">Nouveau mot de passe</label>
+              <div class="ep-pw-wrap">
+                <input type="password" name="new_password" id="new-pass" class="ep-input" required placeholder="Minimum 8 caractères" />
+                <button type="button" class="ep-eye" onclick="togglePasswordVisibility('new-pass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none"></line></svg>
+                </button>
+              </div>
+              <p class="ep-hint">🔒 Minimum 8 caractères, 1 chiffre et 1 caractère spécial.</p>
+            </div>
+
+            <div class="ep-field">
+              <label class="ep-label">Confirmer le nouveau mot de passe</label>
+              <div class="ep-pw-wrap">
+                <input type="password" name="confirm_password" id="conf-pass" class="ep-input" required placeholder="Confirmez le nouveau mot de passe" />
+                <button type="button" class="ep-eye" onclick="togglePasswordVisibility('conf-pass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display:none"></line></svg>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="ep-btn">🔐 Changer le mot de passe</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
 <style>
-/* ── GRID ── */
-.profile-edit-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
-  width: 100%;
-  margin-top: 30px;
+:root {
+  --acc:  #00f5c0;
+  --acc2: #0088ff;
+  --surf: rgba(15,23,36,0.65);
+  --bord: rgba(255,255,255,0.07);
+  --mut:  #64748b;
 }
+*, *::before, *::after { box-sizing: border-box; }
+a { text-decoration: none; }
 
-@media (max-width: 900px) {
-  .profile-edit-grid {
-    grid-template-columns: 1fr;
-  }
+/* ── HERO ── */
+.ep-hero {
+  position: relative; padding: 70px 40px 60px; overflow: hidden;
 }
-
-/* ── SECTION CARD ── */
-.profile-section {
-  background: rgba(15, 23, 36, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.ep-hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 100% 100% at 0% 50%, black 20%, transparent 80%);
 }
-
-.profile-section-header h3 {
+.ep-hero-inner {
+  position: relative; z-index: 2;
+  max-width: 1100px; margin: 0 auto;
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.ep-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--acc); font-size: 0.82rem; font-weight: 600;
+  padding: 7px 14px; margin-bottom: 24px;
+  background: rgba(0,245,192,0.06); border: 1px solid rgba(0,245,192,0.15);
+  border-radius: 8px; transition: all 0.2s;
+}
+.ep-back:hover { background: rgba(0,245,192,0.12); border-color: rgba(0,245,192,0.3); }
+.ep-welcome-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px; margin-bottom: 18px;
+  background: rgba(0,245,192,0.08); border: 1px solid rgba(0,245,192,0.18);
+  border-radius: 100px; color: var(--acc);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.ep-badge-dot {
+  width: 6px; height: 6px; background: var(--acc);
+  border-radius: 50%; animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.ep-hero-title {
   font-family: 'Orbitron', sans-serif;
-  color: #00f5c0;
-  font-size: 1.1rem;
-  margin: 0 0 8px 0;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900; color: #fff; margin: 0 0 14px; line-height: 1.15;
 }
+.ep-accent {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.ep-hero-desc { color: #94a3b8; font-size: 0.95rem; margin: 0; line-height: 1.6; }
 
-.profile-section-header p {
-  color: #64748b;
-  font-size: 0.85rem;
-  margin: 0;
+/* ── MAIN ── */
+.ep-main { padding: 0 40px 80px; }
+.ep-inner { max-width: 1100px; margin: 0 auto; }
+
+/* ── GRID ── */
+.ep-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+/* ── CARTES ── */
+.ep-card {
+  background: var(--surf); border: 1px solid var(--bord);
+  border-radius: 16px; overflow: hidden; transition: border-color 0.3s ease;
+}
+.ep-card:hover { border-color: rgba(0,245,192,0.12); }
+.ep-card-topbar { height: 3px; background: var(--bord); }
+.ep-card-topbar--acc { background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.ep-card-body { padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ep-card-head { display: flex; flex-direction: column; gap: 6px; }
+.ep-card-title { font-family: 'Orbitron', sans-serif; font-size: 0.92rem; font-weight: 700; color: #fff; margin: 0; }
+.ep-card-sub { color: var(--mut); font-size: 0.82rem; margin: 0; }
+.ep-current { color: var(--acc); font-weight: 600; }
+.ep-pending {
+  margin-top: 8px; padding: 8px 12px;
+  background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 8px; color: #f59e0b; font-size: 0.8rem;
 }
 
 /* ── FORM ── */
-.profile-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 0;
-  background: none;
-  border: none;
-  box-shadow: none;
-  width: 100%;
+.ep-form { display: flex; flex-direction: column; gap: 14px; background: none; border: none; box-shadow: none; padding: 0; }
+.ep-field { display: flex; flex-direction: column; gap: 6px; }
+.ep-label { color: #94a3b8; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.ep-optional {
+  font-size: 0.68rem; font-weight: 500; color: var(--mut);
+  background: rgba(100,116,139,0.15); border: 1px solid rgba(100,116,139,0.2);
+  padding: 2px 8px; border-radius: 20px;
 }
+.ep-hint { color: #475569; font-size: 0.75rem; margin: 0; }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.ep-input {
+  background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 11px 14px; color: #fff;
+  font-size: 0.9rem; outline: none; width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.ep-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(0,245,192,0.1); }
+.ep-input::placeholder { color: #334155; }
 
-.form-label {
-  color: #94a3b8;
-  font-size: 0.88rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.form-hint {
-  color: #475569;
-  font-size: 0.78rem;
-  margin: 0;
-}
-
-.optional-badge {
-  background: rgba(100, 116, 139, 0.2);
-  color: #64748b;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  border: 1px solid rgba(100, 116, 139, 0.3);
-}
-
-/* ── SELECT ── */
-.select-field {
+.ep-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  cursor: pointer;
+  background-repeat: no-repeat; background-position: right 14px center; cursor: pointer;
+}
+.ep-select option { background: #0a0f1a; color: #fff; }
+
+.ep-gender { display: flex; gap: 10px; flex-wrap: wrap; }
+.ep-gender-opt {
+  flex: 1; min-width: 80px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px 8px; background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.07); border-radius: 10px;
+  cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; color: #94a3b8;
+}
+.ep-gender-opt input { display: none; }
+.ep-gender-opt:hover { border-color: rgba(0,245,192,0.25); color: var(--acc); }
+.ep-gender-opt--active,
+.ep-gender-opt:has(input:checked) {
+  background: rgba(0,245,192,0.08); border-color: rgba(0,245,192,0.35); color: var(--acc);
 }
 
-.select-field option {
-  background: #0a0f1a;
-  color: #fff;
+.ep-pw-wrap { position: relative; display: flex; align-items: center; }
+.ep-pw-wrap .ep-input { padding-right: 44px; }
+.ep-eye {
+  position: absolute; right: 12px;
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: var(--mut); transition: color 0.2s; display: flex; align-items: center;
+}
+.ep-eye:hover { color: var(--acc); }
+.ep-eye svg {
+  width: 18px; height: 18px; fill: none;
+  stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
 }
 
-/* ── GENDER OPTIONS ── */
-.gender-options {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.ep-btn {
+  padding: 11px 20px; margin-top: 4px;
+  background: rgba(0,245,192,0.07); border: 1px solid rgba(0,245,192,0.2);
+  border-radius: 10px; color: var(--acc);
+  font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.25s ease;
+}
+.ep-btn:hover {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  color: #050a10; border-color: transparent;
+  box-shadow: 0 4px 18px rgba(0,245,192,0.25); transform: translateY(-1px);
 }
 
-.gender-option {
-  flex: 1;
-  min-width: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.88rem;
-  color: #94a3b8;
-}
-
-.gender-option input[type="radio"] {
-  display: none;
-}
-
-.gender-option:hover {
-  border-color: rgba(0, 245, 192, 0.3);
-  color: #00f5c0;
-}
-
-.gender-option.active,
-.gender-option:has(input:checked) {
-  background: rgba(0, 245, 192, 0.1);
-  border-color: rgba(0, 245, 192, 0.4);
-  color: #00f5c0;
-}
-
-/* ── SAVE BUTTON ── */
-.profile-save-btn {
-  background: linear-gradient(90deg, rgba(0, 245, 192, 0.1), rgba(0, 136, 255, 0.1));
-  border: 1px solid rgba(0, 245, 192, 0.3);
-  color: #00f5c0;
-  padding: 12px;
-  margin-top: 5px;
-}
-
-.profile-save-btn:hover {
-  background: linear-gradient(90deg, #00f5c0, #0088ff);
-  color: #050a10;
-  border-color: transparent;
-  box-shadow: 0 0 20px rgba(0, 245, 192, 0.3);
-}
-
-/* ── PENDING EMAIL ── */
-.pending-badge {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 8px;
-  color: #f59e0b;
-  font-size: 0.82rem;
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) { .ep-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .ep-hero { padding: 60px 20px 40px; }
+  .ep-hero-title { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+  .ep-main { padding: 0 20px 60px; }
+  .ep-card-body { padding: 20px; }
 }
 </style>
 
 <script>
-/* Gestion visuelle des boutons genre */
-document.querySelectorAll('.gender-option').forEach(label => {
+document.querySelectorAll('.ep-gender-opt').forEach(label => {
   label.addEventListener('click', () => {
-    document.querySelectorAll('.gender-option').forEach(l => l.classList.remove('active'));
-    label.classList.add('active');
+    document.querySelectorAll('.ep-gender-opt').forEach(l => l.classList.remove('ep-gender-opt--active'));
+    label.classList.add('ep-gender-opt--active');
   });
 });
 </script>

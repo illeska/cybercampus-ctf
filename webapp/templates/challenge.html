@@ -1,252 +1,975 @@
 {% extends "base.html" %}
-
-{% block title %}{{ challenge.titre }} - CyberCampus CTF{% endblock %}
+{% block title %}{{ challenge.titre }} — CyberCampus CTF{% endblock %}
 
 {% block content %}
-<section class="page-wrapper challenge-detail">
-  
-  <div class="back-btn-container">
-    <a href="{{ url_for('challenges_list') }}" class="back-btn-modern">
-      <span>&#8592;</span> Retour aux challenges
+
+<!-- ══════════════════════════════════════
+     HERO CHALLENGE
+══════════════════════════════════════ -->
+<section class="cv-hero">
+  <div class="cv-hero-grid" aria-hidden="true"></div>
+
+  <div class="cv-hero-inner">
+
+    <!-- Breadcrumb -->
+    <a href="{{ url_for('challenges_list') }}" class="cv-back">
+      ← Retour aux challenges
     </a>
-  </div>
 
-  <h2 class="animated-title">{{ challenge.titre }}</h2>
-  
-  <div class="challenge-content-layout">
-
-    <div class="challenge-info-block">
-      <div class="info-header">
-        <h3>Description</h3>
-      </div>
-      
-      <p>{{ challenge.description }}</p>
-      
-      <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <span class="challenge-points">
-          ⭐ {{ challenge.points }} points
-        </span>
-        {% if current_penalty > 0 %}
-          <span class="penalty-badge">
-            -{{ current_penalty }}% de pénalité
-          </span>
+    <!-- Icône + titre -->
+    <div class="cv-hero-content">
+      <div class="cv-hero-icon">
+        {% if challenge.id == 1 %}💉
+        {% elif challenge.id == 2 %}🔗
+        {% elif challenge.id == 3 %}🔨
+        {% elif challenge.id == 4 %}🌈
+        {% elif challenge.id == 5 %}🔍
+        {% elif challenge.id == 6 %}📤
+        {% elif challenge.id == 7 %}🖼️
+        {% else %}🎯
         {% endif %}
+      </div>
+      <div>
+        <h1 class="cv-hero-title">{{ challenge.titre }}</h1>
+        <div class="cv-hero-meta">
+          <span class="cv-pts-badge">
+            <span class="cv-pts-num">{{ challenge.points }}</span> pts
+          </span>
+          {% if current_penalty > 0 %}
+            <span class="cv-penalty-badge">
+              −{{ current_penalty }}% de pénalité
+            </span>
+          {% endif %}
+          {% set is_solved = current_user.submissions.filter_by(challenge_id=challenge.id, correct=True).first() %}
+          {% if is_solved %}
+            <span class="cv-solved-badge">✓ Résolu</span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
-    <div class="challenge-action-block">
+  </div>
+</section>
 
-      <!-- Carte Environnement -->
-      <div class="action-card">
-        <h3>Environnement</h3>
-        
-        {% if challenge.id == 1 %}
-          <p>Accédez à l'application vulnérable pour exploiter la faille SQLi.</p>
-          <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
-          <div class="env-btn-wrapper">
-            <a href="/challenges/sqli/" target="_blank" class="btn env-btn">
-              🔓 Ouvrir Challenge SQLi
-            </a>
-          </div>
+<!-- ══════════════════════════════════════
+     CONTENU PRINCIPAL
+══════════════════════════════════════ -->
+<section class="cv-main">
+  <div class="cv-layout">
 
-        {% elif challenge.id == 2 %}
-          <p>Testez vos compétences XSS sur ce livre d'or non sécurisé.</p>
-          <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
-          <div class="env-btn-wrapper">
-            <a href="/challenges/xss/" target="_blank" class="btn env-btn">
-              💬 Ouvrir Challenge XSS
-            </a>
-          </div>
+    <!-- Colonne gauche : description + flag + learn tip -->
+    <div class="cv-col-left">
 
-        {% elif challenge.id == 3 %}
-          <p>Accédez au coffre-fort digital et trouvez le code secret à 4 chiffres.</p>
-          <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
-          <div class="env-btn-wrapper">
-            <a href="/challenges/bruteforce/" target="_blank" class="btn env-btn">
-              🔐 Ouvrir Challenge Bruteforce
-            </a>
-          </div>
-
-        {% elif challenge.id == 4 %}
-          <p>Tentez de craquer les hash MD5 pour récupérer le flag.</p>
-          <p style="margin-top: 8px;"><span>📱</span> 💻</p>
-          <div class="env-btn-wrapper">
-            <a href="/challenges/crypto/" target="_blank" class="btn env-btn">
-              🌈 Ouvrir Challenge Cryptographie
-            </a>
-          </div>
-
-        {% elif challenge.id == 5 %}
-          <p>Explorez la présence numérique accessible publiquement et identifiez les informations exploitables pour retrouver le flag.</p>
-          <p style="margin-top: 8px;"><span>📱</span> 💻</p>
-          <div class="env-btn-wrapper">
-            <a href="/challenges/osint/accueil" target="_blank" class="btn env-btn">
-              🔎 Ouvrir Challenge OSINT
-             </a>
-         </div>
-
-        {% elif challenge.id == 6 %}
-            <p>Analysez le comportement du formulaire et identifiez une manière d’en détourner le fonctionnement pour récupérer le flag.</p>
-            <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
-            <div class="env-btn-wrapper">
-              <a href="/challenges/upload/" target="_blank" class="btn env-btn">
-                📤 Ouvrir Challenge Upload
-              </a>
-            </div>
-        {% elif challenge.id == 7 %}
-            <p>Une carte ancienne recèle un secret. Analysez l'image pour y trouver un message caché.</p>
-            <p style="margin-top: 8px;"><span style="text-decoration: line-through; text-decoration-color: #ef4444; opacity: 0.4;">📱</span> 💻</p>
-            <div class="env-btn-wrapper">
-              <a href="/challenges/stegano/" target="_blank" class="btn env-btn">
-                🗺️ Ouvrir Challenge Stéganographie
-              </a>
-            </div>         
-
-        {% else %}
-          <p style="color: #64748b; font-style: italic;">Environnement du challenge à venir...</p>
-        {% endif %}
+      <!-- Description -->
+      <div class="cv-card">
+        <div class="cv-card-topbar"></div>
+        <div class="cv-card-body">
+          <h2 class="cv-card-title">📋 Description</h2>
+          <p class="cv-desc">{{ challenge.description }}</p>
+        </div>
       </div>
 
-      <!-- Carte Indices -->
+      <!-- Soumission Flag -->
+      <div class="cv-card cv-card--flag">
+        <div class="cv-card-topbar cv-card-topbar--acc"></div>
+        <div class="cv-card-body">
+          <h2 class="cv-card-title">🚩 Soumettre le flag</h2>
+          <form method="POST" action="{{ url_for('submit_flag', challenge_id=challenge.id) }}" class="cv-flag-form">
+            <div class="cv-flag-row">
+              <input
+                type="text"
+                name="flag"
+                placeholder="CTF{...}"
+                class="cv-flag-input"
+                autocomplete="off"
+                required
+              />
+              <button type="submit" class="cv-flag-submit">Valider</button>
+            </div>
+          </form>
+          <p class="cv-flag-hint">Format attendu : <code>CTF{...}</code></p>
+        </div>
+      </div>
+
+      <!-- Cours lié — détaché en bas -->
+      <div class="cv-learn-tip">
+        <span class="cv-learn-icon">💡</span>
+        <div>
+          <strong>Besoin de revoir la théorie ?</strong>
+          <span>Consulte le cours correspondant avant de commencer.</span>
+        </div>
+        <a href="{{ url_for('learn') }}" class="cv-learn-link">Cours →</a>
+      </div>
+
+    </div>
+
+    <!-- Colonne droite : actions -->
+    <div class="cv-col-right">
+
+      <!-- ─── Environnement ─── -->
+      <div class="cv-card cv-card--env">
+        <div class="cv-card-topbar cv-card-topbar--acc"></div>
+        <div class="cv-card-body">
+          <h2 class="cv-card-title">🌐 Environnement</h2>
+
+          {% if challenge.id == 1 %}
+            <p class="cv-env-desc">Accédez à l'application vulnérable pour exploiter la faille SQLi.</p>
+            <div class="cv-compat"><span class="cv-no">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/sqli/" target="_blank" class="cv-env-btn">
+              💉 Ouvrir Challenge SQLi
+            </a>
+
+          {% elif challenge.id == 2 %}
+            <p class="cv-env-desc">Testez vos compétences XSS sur ce livre d'or non sécurisé.</p>
+            <div class="cv-compat"><span class="cv-no">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/xss/" target="_blank" class="cv-env-btn">
+              🔗 Ouvrir Challenge XSS
+            </a>
+
+          {% elif challenge.id == 3 %}
+            <p class="cv-env-desc">Accédez au coffre-fort digital et trouvez le code secret à 4 chiffres.</p>
+            <div class="cv-compat"><span class="cv-no">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/bruteforce/" target="_blank" class="cv-env-btn">
+              🔨 Ouvrir Challenge Bruteforce
+            </a>
+
+          {% elif challenge.id == 4 %}
+            <p class="cv-env-desc">Tentez de craquer les hash MD5 pour récupérer le flag.</p>
+            <div class="cv-compat"><span class="cv-yes">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/crypto/" target="_blank" class="cv-env-btn">
+              🌈 Ouvrir Challenge Cryptographie
+            </a>
+
+          {% elif challenge.id == 5 %}
+            <p class="cv-env-desc">Explorez la présence numérique accessible publiquement et identifiez les informations exploitables pour retrouver le flag.</p>
+            <div class="cv-compat"><span class="cv-yes">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/osint/accueil" target="_blank" class="cv-env-btn">
+              🔍 Ouvrir Challenge OSINT
+            </a>
+
+          {% elif challenge.id == 6 %}
+            <p class="cv-env-desc">Analysez le comportement du formulaire et identifiez une manière d'en détourner le fonctionnement pour récupérer le flag.</p>
+            <div class="cv-compat"><span class="cv-no">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/upload/" target="_blank" class="cv-env-btn">
+              📤 Ouvrir Challenge Upload
+            </a>
+
+          {% elif challenge.id == 7 %}
+            <p class="cv-env-desc">Une carte ancienne recèle un secret. Analysez l'image pour y trouver un message caché.</p>
+            <div class="cv-compat"><span class="cv-no">📱</span><span class="cv-yes">💻</span></div>
+            <a href="/challenges/stegano/" target="_blank" class="cv-env-btn">
+              🖼️ Ouvrir Challenge Stéganographie
+            </a>
+
+          {% else %}
+            <p class="cv-env-soon">Environnement du challenge à venir…</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ─── Indices ─── -->
       {% if hints and hints|length > 0 %}
-      <div class="action-card hints-card">
-        <h3>💡 Besoin d'aide ?</h3>
-        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 15px;">
-          {{ hints|length }} indices disponibles (avec pénalités progressives)
-        </p>
-        
-        <div class="hints-list">
-          {% for hint in hints %}
-            {% set is_revealed = loop.index0 in revealed_hints %}
-            {% set can_reveal = loop.index0 == 0 or (loop.index0 - 1) in revealed_hints %}
-            
-            <div class="hint-item {% if is_revealed %}revealed{% endif %} {% if not can_reveal %}locked{% endif %}">
-              <div class="hint-header">
-                <span class="hint-number">
-                  {% if not can_reveal %}🔒{% endif %} Indice {{ loop.index }}
-                </span>
-                <span class="hint-penalty">-{{ hint.penalty_percent }}%</span>
-              </div>
-              
-              {% if is_revealed %}
-                <!-- Indice déjà révélé -->
-                <div class="hint-content revealed">
-                  <p>{{ hint.text }}</p>
+      <div class="cv-card cv-card--hints">
+        <div class="cv-card-topbar cv-card-topbar--amber"></div>
+        <div class="cv-card-body">
+
+          <div class="cv-hints-header">
+            <h2 class="cv-card-title">💡 Indices</h2>
+            <span class="cv-hints-count">{{ hints|length }} disponibles</span>
+          </div>
+          <p class="cv-hints-sub">Chaque indice réduit les points obtenus (pénalité progressive).</p>
+
+          <div class="cv-hints-list">
+            {% for hint in hints %}
+              {% set is_revealed = loop.index0 in revealed_hints %}
+              {% set can_reveal = loop.index0 == 0 or (loop.index0 - 1) in revealed_hints %}
+
+              <div class="cv-hint {% if is_revealed %}cv-hint--revealed{% elif not can_reveal %}cv-hint--locked{% endif %}">
+                <div class="cv-hint-head">
+                  <span class="cv-hint-label">
+                    {% if not can_reveal %}🔒 {% endif %}Indice {{ loop.index }}
+                  </span>
+                  <span class="cv-hint-penalty">−{{ hint.penalty_percent }}%</span>
                 </div>
-              {% elif can_reveal %}
-                <!-- Indice disponible -->
-                <div class="hint-content hidden">
-                  <button 
-                    class="btn hint-btn" 
+
+                {% if is_revealed %}
+                  <p class="cv-hint-text">{{ hint.text }}</p>
+
+                {% elif can_reveal %}
+                  <button
+                    class="cv-hint-btn"
                     onclick="showHintWarning({{ challenge.id }}, {{ loop.index0 }}, {{ hint.penalty_percent }}, {{ challenge.points }})"
                   >
                     🔓 Révéler l'indice
                   </button>
-                </div>
-              {% else %}
-                <!-- Indice verrouillé -->
-                <div class="hint-content locked">
-                  <p style="color: #64748b; font-style: italic; font-size: 0.85rem; margin: 0;">
-                    Déverrouillez l'indice précédent pour accéder à celui-ci
-                  </p>
-                </div>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </div>
 
-        {% if current_penalty > 0 %}
-          <div class="penalty-summary">
-            <strong>Pénalité actuelle :</strong> -{{ current_penalty }}% 
-            ({{ (challenge.points * current_penalty / 100)|int }} points)
+                {% else %}
+                  <p class="cv-hint-locked-msg">Déverrouille l'indice précédent pour accéder à celui-ci.</p>
+                {% endif %}
+              </div>
+            {% endfor %}
           </div>
-        {% endif %}
+
+          {% if current_penalty > 0 %}
+            <div class="cv-penalty-total">
+              Pénalité actuelle : <strong>−{{ current_penalty }}%</strong>
+              ({{ (challenge.points * current_penalty / 100)|int }} pts)
+            </div>
+          {% endif %}
+
+        </div>
       </div>
       {% endif %}
-
-      <!-- Carte Soumission Flag -->
-      <div class="action-card">
-        <h3>Soumettre Flag</h3>
-        
-        <form method="POST" action="{{ url_for('submit_flag', challenge_id=challenge.id) }}" class="flag-form">
-          <div class="flag-input-wrapper">
-            <input 
-              type="text" 
-              name="flag" 
-              placeholder="CTF{...}" 
-              class="flag-input" 
-              autocomplete="off"
-              required 
-            />
-            <button type="submit" class="btn submit-btn">
-              Valider
-            </button>
-          </div>
-        </form>
-        <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; margin-bottom: 0;">
-          Format : <code>CTF{...}</code>
-        </p>
-      </div>
 
     </div>
   </div>
 </section>
 
-<!-- Modale d'avertissement -->
-<div id="hintWarningModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>⚠️ Attention</h3>
+
+<!-- ══════════════════════════════════════
+     MODALE INDICE
+══════════════════════════════════════ -->
+<div id="hintWarningModal" class="cv-modal">
+  <div class="cv-modal-box">
+
+    <div class="cv-modal-header">
+      <span class="cv-modal-icon">⚠️</span>
+      <h3>Confirmer la révélation</h3>
     </div>
-    <div class="modal-body">
+
+    <div class="cv-modal-body">
       <p id="warningMessage"></p>
-      <div class="penalty-visualization">
-        <div class="points-display">
-          <div class="points-before">
-            <span class="label">Points actuels :</span>
-            <span class="value" id="pointsBefore">150</span>
-          </div>
-          <div class="arrow">→</div>
-          <div class="points-after">
-            <span class="label">Points après indice :</span>
-            <span class="value" id="pointsAfter">135</span>
-          </div>
+
+      <div class="cv-pts-viz">
+        <div class="cv-pts-col">
+          <span class="cv-pts-vl">Points actuels</span>
+          <span class="cv-pts-vn cv-pts-vn--before" id="pointsBefore"></span>
+        </div>
+        <span class="cv-pts-arrow">→</span>
+        <div class="cv-pts-col">
+          <span class="cv-pts-vl">Après indice</span>
+          <span class="cv-pts-vn cv-pts-vn--after" id="pointsAfter"></span>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn modal-btn cancel" onclick="closeHintModal()">
-        Annuler
-      </button>
-      <button class="btn modal-btn confirm" id="confirmReveal">
-        Révéler l'indice
-      </button>
+
+    <div class="cv-modal-footer">
+      <button class="cv-modal-cancel" onclick="closeHintModal()">Annuler</button>
+      <button class="cv-modal-confirm" id="confirmReveal">Révéler l'indice</button>
     </div>
+
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════
+     STYLES
+══════════════════════════════════════ -->
+<style>
+
+:root {
+  --acc:    #00f5c0;
+  --acc2:   #0088ff;
+  --amber:  #f59e0b;
+  --red:    #ef4444;
+  --green:  #10b981;
+  --surf:   rgba(15,23,36,0.65);
+  --bord:   rgba(255,255,255,0.07);
+  --mut:    #64748b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+a { text-decoration: none; }
+
+/* ══════════════
+   HERO
+══════════════ */
+.cv-hero {
+  position: relative;
+  padding: 60px 40px 50px;
+  overflow: hidden;
+}
+
+.cv-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 100% 100% at 50% 0%, black 30%, transparent 100%);
+}
+
+.cv-hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.cv-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--acc);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 28px;
+  padding: 7px 14px;
+  background: rgba(0,245,192,0.06);
+  border: 1px solid rgba(0,245,192,0.15);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.cv-back:hover {
+  background: rgba(0,245,192,0.12);
+  border-color: rgba(0,245,192,0.3);
+}
+
+.cv-hero-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.cv-hero-icon {
+  font-size: 4.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 24px rgba(0,245,192,0.25));
+  flex-shrink: 0;
+}
+
+.cv-hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 14px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+.cv-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cv-pts-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 5px 14px;
+  background: rgba(0,245,192,0.1);
+  border: 1px solid rgba(0,245,192,0.2);
+  border-radius: 20px;
+  color: var(--acc);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cv-pts-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.cv-penalty-badge {
+  padding: 5px 14px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 20px;
+  color: var(--red);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.cv-solved-badge {
+  padding: 5px 14px;
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 20px;
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* ══════════════
+   LAYOUT
+══════════════ */
+.cv-main {
+  padding: 0 40px 80px;
+}
+
+.cv-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Flag dans colonne gauche : input + bouton côte à côte sans overflow */
+.cv-col-left .cv-card--flag .cv-card-body {
+  align-items: center; /* centre tout le contenu de la carte */
+}
+
+.cv-col-left .cv-card--flag .cv-card-title {
+  text-align: center;
+}
+
+.cv-col-left .cv-flag-row {
+  display: flex;
+  gap: 10px;
+  width: 440px;
+  max-width: 100%;
+}
+
+.cv-col-left .cv-flag-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.cv-col-left .cv-flag-submit {
+  flex-shrink: 0;
+}
+
+.cv-col-left .cv-card--flag .cv-flag-hint {
+  text-align: center;
+}
+
+/* ══════════════
+   CARTES
+══════════════ */
+.cv-card {
+  background: var(--surf);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.cv-card:hover { border-color: rgba(0,245,192,0.12); }
+
+.cv-card--env:hover  { border-color: rgba(0,245,192,0.2); }
+.cv-card--hints:hover{ border-color: rgba(245,158,11,0.2); }
+.cv-card--flag:hover { border-color: rgba(0,245,192,0.25); }
+
+.cv-card-topbar        { height: 3px; background: var(--bord); }
+.cv-card-topbar--acc   { background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.cv-card-topbar--amber { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+
+.cv-card-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cv-card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Description ─── */
+.cv-desc {
+  color: #94a3b8;
+  line-height: 1.8;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ─── Learn tip ─── */
+.cv-learn-tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(0,136,255,0.06);
+  border: 1px solid rgba(0,136,255,0.15);
+  border-radius: 12px;
+  margin-top: 8px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.cv-learn-tip:hover { opacity: 1; }
+
+.cv-learn-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+.cv-learn-tip > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cv-learn-tip strong { color: #fff; font-size: 0.88rem; }
+.cv-learn-tip span   { color: var(--mut); font-size: 0.8rem; }
+
+.cv-learn-link {
+  color: var(--acc2);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  padding: 6px 14px;
+  background: rgba(0,136,255,0.1);
+  border: 1px solid rgba(0,136,255,0.2);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.cv-learn-link:hover {
+  background: rgba(0,136,255,0.2);
+  border-color: rgba(0,136,255,0.4);
+}
+
+/* ─── Environnement ─── */
+.cv-env-desc {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cv-compat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+}
+
+.cv-no  { opacity: 0.25; text-decoration: line-through; text-decoration-color: var(--red); }
+.cv-yes { opacity: 1; }
+
+.cv-env-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  color: #050a10;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 24px rgba(0,245,192,0.2);
+  text-align: center;
+}
+
+.cv-env-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,245,192,0.35);
+}
+
+.cv-env-soon {
+  color: var(--mut);
+  font-style: italic;
+  font-size: 0.88rem;
+  margin: 0;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ─── Indices ─── */
+.cv-hints-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cv-hints-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.cv-hints-sub {
+  color: var(--mut);
+  font-size: 0.82rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cv-hints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cv-hint {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 14px;
+  transition: all 0.3s ease;
+}
+
+.cv-hint--revealed {
+  background: rgba(245,158,11,0.06);
+  border-color: rgba(245,158,11,0.25);
+}
+
+.cv-hint--locked {
+  opacity: 0.45;
+}
+
+.cv-hint-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cv-hint-label {
+  font-weight: 600;
+  color: var(--amber);
+  font-size: 0.85rem;
+}
+
+.cv-hint-penalty {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--red);
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.cv-hint-text {
+  color: #cbd5e1;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.cv-hint-btn {
+  width: 100%;
+  padding: 9px 16px;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.25);
+  color: var(--amber);
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cv-hint-btn:hover {
+  background: linear-gradient(90deg, var(--amber), #fbbf24);
+  color: #050a10;
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.cv-hint-locked-msg {
+  color: var(--mut);
+  font-size: 0.82rem;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
+}
+
+.cv-penalty-total {
+  padding: 12px 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 10px;
+  color: var(--red);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.cv-penalty-total strong { font-family: 'Orbitron', sans-serif; }
+
+/* ─── Flag ─── */
+.cv-flag-form { width: 100%; }
+
+.cv-flag-row {
+  display: flex;
+  gap: 10px;
+}
+
+.cv-flag-input {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cv-flag-input::placeholder { color: #475569; }
+
+.cv-flag-input:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px rgba(0,245,192,0.1);
+}
+
+.cv-flag-submit {
+  padding: 12px 22px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  color: #050a10;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.cv-flag-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,245,192,0.3);
+}
+
+.cv-flag-hint {
+  color: var(--mut);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.cv-flag-hint code {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--acc);
+  background: rgba(0,245,192,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ══════════════
+   MODALE
+══════════════ */
+.cv-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+}
+
+.cv-modal-box {
+  background: rgba(10,18,30,0.97);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 18px;
+  width: 90%;
+  max-width: 480px;
+  overflow: hidden;
+  animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+
+@keyframes modalIn {
+  from { opacity:0; transform: scale(0.95) translateY(-16px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.cv-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 26px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.cv-modal-icon { font-size: 1.8rem; }
+
+.cv-modal-header h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.05rem;
+  color: var(--amber);
+  margin: 0;
+  font-weight: 700;
+}
+
+.cv-modal-body {
+  padding: 24px 26px;
+}
+
+.cv-modal-body p {
+  color: #cbd5e1;
+  line-height: 1.75;
+  font-size: 0.9rem;
+  margin: 0 0 20px;
+}
+
+/* Visualisation des points */
+.cv-pts-viz {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  padding: 20px;
+  gap: 16px;
+}
+
+.cv-pts-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv-pts-vl {
+  font-size: 0.72rem;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cv-pts-vn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.cv-pts-vn--before { color: var(--green); }
+.cv-pts-vn--after  { color: var(--amber); }
+
+.cv-pts-arrow {
+  font-size: 1.8rem;
+  color: var(--mut);
+}
+
+.cv-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 26px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.cv-modal-cancel {
+  padding: 10px 22px;
+  background: rgba(255,255,255,0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv-modal-cancel:hover {
+  background: rgba(255,255,255,0.09);
+  color: #cbd5e1;
+}
+
+.cv-modal-confirm {
+  padding: 10px 22px;
+  background: linear-gradient(90deg, var(--amber), #fbbf24);
+  color: #050a10;
+  border: none;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+  transition: all 0.2s;
+}
+
+.cv-modal-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(245,158,11,0.5);
+}
+
+/* ══════════════
+   RESPONSIVE
+══════════════ */
+@media (max-width: 900px) {
+  .cv-layout {
+    grid-template-columns: 1fr;
+  }
+  .cv-col-right {
+    display: contents; /* les cartes droites s'insèrent dans le flux */
+  }
+}
+
+@media (max-width: 768px) {
+  .cv-hero { padding: 55px 20px 35px; }
+  .cv-hero-content { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .cv-hero-icon { font-size: 3rem; }
+  .cv-hero-title { font-size: clamp(1.3rem, 6vw, 2rem); }
+
+  .cv-main { padding: 0 20px 60px; }
+  .cv-card-body { padding: 20px; }
+
+  .cv-flag-row { flex-direction: column; }
+  .cv-flag-submit { width: 100%; }
+
+  .cv-pts-viz { flex-direction: column; }
+  .cv-pts-arrow { transform: rotate(90deg); }
+
+  .cv-modal-footer { flex-direction: column-reverse; }
+  .cv-modal-cancel, .cv-modal-confirm { width: 100%; text-align: center; }
+}
+
+@media (max-width: 400px) {
+  .cv-hero-title { font-size: 1.3rem; }
+  .cv-pts-num    { font-size: 1rem; }
+}
+
+</style>
+
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT (logique inchangée)
+══════════════════════════════════════ -->
 <script>
 let currentHintData = null;
 
 function showHintWarning(challengeId, hintIndex, penalty, basePoints) {
   currentHintData = { challengeId, hintIndex, penalty, basePoints };
-  
+
   const currentPenalty = {{ current_penalty }};
   const newTotalPenalty = currentPenalty + penalty;
-  
+
   const pointsBefore = basePoints - Math.floor(basePoints * currentPenalty / 100);
-  const pointsAfter = basePoints - Math.floor(basePoints * newTotalPenalty / 100);
-  const lostPoints = pointsBefore - pointsAfter;
-  
-  document.getElementById('warningMessage').innerHTML = 
+  const pointsAfter  = basePoints - Math.floor(basePoints * newTotalPenalty / 100);
+  const lostPoints   = pointsBefore - pointsAfter;
+
+  document.getElementById('warningMessage').innerHTML =
     `Vous êtes sur le point de révéler l'indice ${hintIndex + 1}.<br><br>` +
-    `<strong style="color: #ef4444;">Cela vous coûtera ${penalty}% des points (${lostPoints} points).</strong><br><br>` +
+    `<strong style="color:#ef4444">Cela vous coûtera ${penalty}% des points (${lostPoints} pts).</strong><br><br>` +
     `Êtes-vous sûr de vouloir continuer ?`;
-  
+
   document.getElementById('pointsBefore').textContent = pointsBefore;
-  document.getElementById('pointsAfter').textContent = pointsAfter;
-  
-  document.getElementById('hintWarningModal').style.display = 'flex';
+  document.getElementById('pointsAfter').textContent  = pointsAfter;
+
+  const modal = document.getElementById('hintWarningModal');
+  modal.style.display = 'flex';
 }
 
 function closeHintModal() {
@@ -256,305 +979,32 @@ function closeHintModal() {
 
 document.getElementById('confirmReveal').addEventListener('click', async () => {
   if (!currentHintData) return;
-  
   const { challengeId, hintIndex } = currentHintData;
-  
+
   try {
     const response = await fetch(`/challenge/${challengeId}/hint/${hintIndex}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
-    
     const data = await response.json();
-    
     if (data.success) {
-      // Recharger la page pour afficher l'indice
       window.location.reload();
     } else {
-      alert('Erreur : ' + (data.error || 'Impossible de révéler l\'indice'));
+      alert('Erreur : ' + (data.error || "Impossible de révéler l'indice"));
     }
-  } catch (error) {
-    console.error('Erreur:', error);
+  } catch (err) {
+    console.error('Erreur:', err);
     alert('Une erreur est survenue');
   }
-  
+
   closeHintModal();
 });
 
-// Fermer la modale en cliquant à l'extérieur
-window.onclick = function(event) {
+// Fermer en cliquant en dehors
+window.addEventListener('click', (e) => {
   const modal = document.getElementById('hintWarningModal');
-  if (event.target === modal) {
-    closeHintModal();
-  }
-}
+  if (e.target === modal) closeHintModal();
+});
 </script>
-
-<style>
-/* Styles pour les indices */
-.hints-card {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05));
-  border-color: rgba(245, 158, 11, 0.2);
-}
-
-.hints-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.hint-item {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 15px;
-  transition: all 0.3s ease;
-}
-
-.hint-item.revealed {
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.hint-item.locked {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.hint-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.hint-number {
-  font-weight: 600;
-  color: #f59e0b;
-  font-size: 0.9rem;
-}
-
-.hint-penalty {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.hint-content.hidden {
-  text-align: center;
-}
-
-.hint-content.revealed p {
-  color: #cbd5e1;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.hint-content.locked p {
-  color: #64748b;
-  font-style: italic;
-  text-align: center;
-}
-
-.hint-btn {
-  width: 100%;
-  padding: 8px 16px;
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-  font-size: 0.85rem;
-}
-
-.hint-btn:hover {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
-  color: #050a10;
-  border-color: transparent;
-}
-
-.penalty-summary {
-  margin-top: 15px;
-  padding: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
-  color: #ef4444;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.penalty-badge {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Styles pour la modale */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: rgba(15, 23, 36, 0.95);
-  border: 2px solid rgba(245, 158, 11, 0.3);
-  border-radius: 16px;
-  padding: 0;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  padding: 20px 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #f59e0b;
-  font-size: 1.4rem;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.modal-body {
-  padding: 25px;
-}
-
-.modal-body p {
-  color: #cbd5e1;
-  line-height: 1.7;
-  margin: 0 0 20px 0;
-}
-
-.penalty-visualization {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 15px;
-}
-
-.points-display {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 15px;
-}
-
-.points-before,
-.points-after {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.points-before .label,
-.points-after .label {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.points-before .value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #10b981;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.points-after .value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f59e0b;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.arrow {
-  font-size: 2rem;
-  color: #64748b;
-}
-
-.modal-footer {
-  padding: 20px 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.modal-btn {
-  padding: 10px 25px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  font-size: 0.95rem;
-}
-
-.modal-btn.cancel {
-  background: rgba(255, 255, 255, 0.05);
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-btn.cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-}
-
-.modal-btn.confirm {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
-  color: #050a10;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-}
-
-.modal-btn.confirm:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .points-display {
-    flex-direction: column;
-  }
-  
-  .arrow {
-    transform: rotate(90deg);
-  }
-}
-</style>
 
 {% endblock %}

@@ -1,146 +1,622 @@
 {% extends "base.html" %}
-{% block title %}Actualités Cyber - CyberCampus CTF{% endblock %}
+{% block title %}Actualités Cyber — CyberCampus CTF{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
 
-  <h2 class="animated-title">📡 Actualités Cyber</h2>
-  <p>Les dernières nouvelles de la cybersécurité, agrégées en temps réel.</p>
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="ac-hero">
+  <div class="ac-hero-grid" aria-hidden="true"></div>
+
+  <div class="ac-hero-inner">
+    <div class="ac-badge">
+      <span class="ac-badge-dot"></span>
+      Agrégé en temps réel · Cache 1h
+    </div>
+
+    <h1 class="ac-hero-title">
+      La veille<br>
+      <span class="ac-accent">cybersécurité</span><br>
+      <span class="ac-sub">en direct.</span>
+    </h1>
+
+    <p class="ac-hero-desc">
+      Les dernières actualités de la cybersécurité mondiale, agrégées depuis les meilleures sources FR et EN.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CONTENU
+══════════════════════════════════════ -->
+<section class="ac-section">
+  <div class="ac-inner">
 
   {% if not articles %}
-    <div class="news-empty">
-      <div class="news-empty-icon">📭</div>
+
+    <div class="ac-empty">
+      <div class="ac-empty-icon">📭</div>
       <h3>Aucune actualité pour le moment</h3>
-      <p>Les flux d'actualités ne sont pas encore configurés.<br/>Revenez bientôt ou contactez un administrateur.</p>
+      <p>Les flux d'actualités ne sont pas encore configurés.<br>Revenez bientôt ou contactez un administrateur.</p>
     </div>
 
   {% else %}
 
     <!-- ── FILTRES ── -->
-    <div class="filters-wrapper">
+    <div class="ac-filters">
 
-      <!-- Filtre Source -->
-      <div class="filter-group">
-        <span class="filter-label">Source</span>
-        <div class="filter-pills" id="filter-source">
-          <button class="pill active" data-filter="source" data-value="all">Toutes</button>
+      <div class="ac-filter-row">
+        <span class="ac-filter-label">Source</span>
+        <div class="ac-pills" id="filter-source">
+          <button class="ac-pill active" data-filter="source" data-value="all">Toutes</button>
           {% for flux in flux_actifs %}
-            <button class="pill" data-filter="source" data-value="{{ flux.nom }}">{{ flux.nom }}</button>
+            <button class="ac-pill" data-filter="source" data-value="{{ flux.nom }}">{{ flux.nom }}</button>
           {% endfor %}
         </div>
       </div>
 
-      <!-- Filtre Langue -->
-      <div class="filter-group">
-        <span class="filter-label">Langue</span>
-        <div class="filter-pills" id="filter-lang">
-          <button class="pill active" data-filter="lang" data-value="all">Toutes</button>
+      <div class="ac-filter-row">
+        <span class="ac-filter-label">Langue</span>
+        <div class="ac-pills" id="filter-lang">
+          <button class="ac-pill active" data-filter="lang" data-value="all">Toutes</button>
           {% for lang in langues_actives %}
-            <button class="pill" data-filter="lang" data-value="{{ lang }}">
-              {% if lang == 'FR' %}FR Français{% elif lang == 'EN' %}EN English{% else %}{{ lang }}{% endif %}
+            <button class="ac-pill ac-pill--lang" data-filter="lang" data-value="{{ lang }}">
+              {% if lang == 'FR' %}🇫🇷 Français{% elif lang == 'EN' %}🇬🇧 English{% else %}{{ lang }}{% endif %}
             </button>
           {% endfor %}
         </div>
       </div>
 
-      <!-- Filtre Période -->
-      <div class="filter-group">
-        <span class="filter-label">Période</span>
-        <div class="filter-pills" id="filter-period">
-          <button class="pill active" data-filter="period" data-value="all">Tout</button>
-          <button class="pill" data-filter="period" data-value="week">Cette semaine</button>
-          <button class="pill" data-filter="period" data-value="month">Ce mois</button>
-          <button class="pill" data-filter="period" data-value="year">Cette année</button>
+      <div class="ac-filter-row">
+        <span class="ac-filter-label">Période</span>
+        <div class="ac-pills" id="filter-period">
+          <button class="ac-pill active" data-filter="period" data-value="all">Tout</button>
+          <button class="ac-pill" data-filter="period" data-value="week">Cette semaine</button>
+          <button class="ac-pill" data-filter="period" data-value="month">Ce mois</button>
+          <button class="ac-pill" data-filter="period" data-value="year">Cette année</button>
         </div>
       </div>
 
     </div>
 
-    <!-- ── COMPTEUR ── -->
-    <div class="news-counter">
-      <span id="visible-count">{{ articles|length }}</span> article(s) affiché(s)
-      <span class="sources-refresh">🔄 Cache 1h</span>
+    <!-- ── BARRE INFO ── -->
+    <div class="ac-infobar">
+      <span class="ac-count">
+        <span id="visible-count">{{ articles|length }}</span>
+        <span class="ac-count-label">article(s)</span>
+      </span>
+      <span class="ac-refresh">🔄 Cache 1h</span>
     </div>
 
-    <!-- ── GRILLE 4 COLONNES ── -->
-    <div class="news-grid" id="news-grid">
+    <!-- ── GRILLE ── -->
+    <div class="ac-grid" id="news-grid">
       {% for article in articles %}
       <a href="{{ article.lien }}"
          target="_blank"
          rel="noopener noreferrer"
-         class="news-card"
+         class="ac-card"
          data-source="{{ article.source }}"
          data-lang="{{ article.lang | default('EN') }}"
          data-date="{{ article.date.strftime('%Y-%m-%d') if article.date else '' }}">
 
-        <!-- Image -->
+        <!-- Image ou placeholder -->
         {% if article.image %}
-          <div class="news-img-wrap">
-            <img src="{{ article.image }}" alt="{{ article.titre }}"
-                 class="news-img" loading="lazy"
-                 onerror="this.parentElement.style.display='none'"/>
+          <div class="ac-img-wrap">
+            <img src="{{ article.image }}"
+                 alt="{{ article.titre }}"
+                 class="ac-img"
+                 loading="lazy"
+                 onerror="this.parentElement.classList.add('ac-img-error'); this.remove()"/>
           </div>
         {% else %}
-          <div class="news-img-placeholder">
+          <div class="ac-img-placeholder">
             <span>{{ article.source[0] }}</span>
           </div>
         {% endif %}
 
-        <div class="news-body">
-          <div class="news-card-header">
-            <span class="news-source">{{ article.source }}</span>
-            <span class="news-lang-badge {% if article.lang == 'FR' %}lang-fr{% else %}lang-en{% endif %}">
+        <div class="ac-card-body">
+
+          <!-- Header meta -->
+          <div class="ac-card-meta">
+            <span class="ac-source">{{ article.source }}</span>
+            <span class="ac-lang {% if article.lang == 'FR' %}ac-lang--fr{% else %}ac-lang--en{% endif %}">
               {% if article.lang == 'FR' %}FR{% else %}EN{% endif %}
             </span>
-            <span class="news-date" data-iso="{{ article.date.isoformat() if article.date else '' }}">
-              {% if article.date %}
-                {{ article.date.strftime('%d/%m/%y') }}
-              {% else %}
-                —
-              {% endif %}
+            <span class="ac-date" data-iso="{{ article.date.isoformat() if article.date else '' }}">
+              {% if article.date %}{{ article.date.strftime('%d/%m/%y') }}{% else %}—{% endif %}
             </span>
           </div>
 
-          <h3 class="news-title">{{ article.titre }}</h3>
+          <!-- Titre -->
+          <h3 class="ac-title">{{ article.titre }}</h3>
 
+          <!-- Résumé -->
           {% if article.resume %}
-            <p class="news-resume">{{ article.resume | striptags | truncate(120) }}</p>
+            <p class="ac-resume">{{ article.resume | striptags | truncate(110) }}</p>
           {% endif %}
 
-          <div class="news-card-footer">
-            <span class="news-read">Lire →</span>
+          <!-- Footer -->
+          <div class="ac-card-footer">
+            <span class="ac-read">Lire l'article →</span>
           </div>
-        </div>
 
+        </div>
       </a>
       {% endfor %}
     </div>
 
     <!-- ── AUCUN RÉSULTAT ── -->
-    <div class="no-results" id="no-results" style="display:none;">
-      <div style="font-size:3rem;">🔍</div>
+    <div class="ac-no-results" id="no-results" style="display:none;">
+      <span>🔍</span>
       <p>Aucun article ne correspond aux filtres sélectionnés.</p>
     </div>
 
   {% endif %}
 
+  </div>
 </section>
 
+
+<!-- ══════════════════════════════════════
+     STYLES
+══════════════════════════════════════ -->
+<style>
+
+:root {
+  --acc:  #00f5c0;
+  --acc2: #0088ff;
+  --surf: rgba(15,23,36,0.65);
+  --bord: rgba(255,255,255,0.07);
+  --mut:  #64748b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+a { text-decoration: none; }
+
+/* ══════════════
+   HERO
+══════════════ */
+.ac-hero {
+  position: relative;
+  padding: 80px 40px 70px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.ac-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.ac-hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  margin: 0 auto;
+  animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.ac-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(0,245,192,0.08);
+  border: 1px solid rgba(0,245,192,0.2);
+  border-radius: 100px;
+  color: var(--acc);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 28px;
+}
+
+.ac-badge-dot {
+  width: 6px; height: 6px;
+  background: var(--acc);
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.3; }
+}
+
+.ac-hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 20px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.ac-accent {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ac-sub {
+  font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+  color: rgba(255,255,255,0.3);
+}
+
+.ac-hero-desc {
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ══════════════
+   SECTION
+══════════════ */
+.ac-section {
+  padding: 0 40px 80px;
+}
+
+.ac-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ══════════════
+   FILTRES
+══════════════ */
+.ac-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surf);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  padding: 22px 26px;
+  margin-bottom: 20px;
+}
+
+.ac-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ac-filter-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+  min-width: 56px;
+  flex-shrink: 0;
+}
+
+.ac-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ac-pill {
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ac-pill:hover {
+  border-color: rgba(0,245,192,0.25);
+  color: var(--acc);
+  background: rgba(0,245,192,0.05);
+}
+
+.ac-pill.active {
+  background: rgba(0,245,192,0.1);
+  border-color: rgba(0,245,192,0.35);
+  color: var(--acc);
+}
+
+/* ══════════════
+   BARRE INFO
+══════════════ */
+.ac-infobar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 2px;
+}
+
+.ac-count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+#visible-count {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--acc);
+}
+
+.ac-count-label { color: var(--mut); font-size: 0.82rem; }
+
+.ac-refresh {
+  font-size: 0.75rem;
+  color: #334155;
+}
+
+/* ══════════════
+   GRILLE
+══════════════ */
+.ac-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+/* ══════════════
+   CARTE
+══════════════ */
+.ac-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surf);
+  border: 1px solid var(--bord);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  position: relative;
+}
+
+.ac-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--acc), var(--acc2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.ac-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0,245,192,0.2);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+}
+
+.ac-card:hover::before { transform: scaleX(1); }
+
+/* Image */
+.ac-img-wrap {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+}
+
+.ac-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.ac-card:hover .ac-img { transform: scale(1.05); }
+
+.ac-img-placeholder {
+  width: 100%;
+  height: 110px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(0,136,255,0.1), rgba(0,245,192,0.06));
+  border-bottom: 1px solid var(--bord);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: rgba(0,245,192,0.18);
+}
+
+/* Corps */
+.ac-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  flex: 1;
+  gap: 10px;
+}
+
+/* Meta */
+.ac-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ac-source {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--acc2);
+  background: rgba(0,136,255,0.1);
+  border: 1px solid rgba(0,136,255,0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.ac-lang {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+.ac-lang--fr {
+  background: rgba(59,130,246,0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59,130,246,0.2);
+}
+
+.ac-lang--en {
+  background: rgba(239,68,68,0.1);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.18);
+}
+
+.ac-date {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: #334155;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Titre */
+.ac-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+  margin: 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Résumé */
+.ac-resume {
+  color: #475569;
+  font-size: 0.77rem;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Footer */
+.ac-card-footer {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: auto;
+}
+
+.ac-read {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--acc);
+  transition: gap 0.2s;
+}
+
+/* ══════════════
+   ÉTAT VIDE / NO RESULTS
+══════════════ */
+.ac-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: rgba(15,23,36,0.5);
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: 18px;
+}
+
+.ac-empty-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.45; }
+
+.ac-empty h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  margin: 0 0 12px;
+}
+
+.ac-empty p { color: var(--mut); line-height: 1.7; font-size: 0.9rem; margin: 0; }
+
+.ac-no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #475569;
+  background: rgba(15,23,36,0.4);
+  border: 1px dashed rgba(255,255,255,0.07);
+  border-radius: 14px;
+  margin-top: 24px;
+}
+
+.ac-no-results span { font-size: 2.5rem; display: block; margin-bottom: 14px; }
+.ac-no-results p    { font-size: 0.9rem; margin: 0; }
+
+/* ══════════════
+   RESPONSIVE
+══════════════ */
+@media (max-width: 1280px) { .ac-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 960px)  { .ac-grid { grid-template-columns: repeat(2, 1fr); } }
+
+@media (max-width: 768px) {
+  .ac-hero    { padding: 70px 20px 50px; }
+  .ac-hero-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .ac-section { padding: 0 20px 60px; }
+  .ac-filters { padding: 16px 18px; gap: 12px; }
+  .ac-filter-label { min-width: 48px; }
+}
+
+@media (max-width: 580px) {
+  .ac-grid { grid-template-columns: 1fr; }
+  .ac-hero-title { font-size: 1.9rem; }
+  .ac-badge { font-size: 0.7rem; }
+}
+
+</style>
+
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT (logique inchangée)
+══════════════════════════════════════ -->
 <script>
 // ── DATES RELATIVES ──
 function relativeDate(isoStr) {
   if (!isoStr) return null;
   const now  = new Date();
   const date = new Date(isoStr);
-  const diff = Math.floor((now - date) / 86400000); // jours
+  const diff = Math.floor((now - date) / 86400000);
 
   if (diff === 0) return "Aujourd'hui";
   if (diff === 1) return "Il y a 1 jour";
   if (diff <= 6)  return `Il y a ${diff} jours`;
-  return null; // au-delà de 7 jours → format JJ/MM/AA
+  return null;
 }
 
-document.querySelectorAll('.news-date[data-iso]').forEach(el => {
+document.querySelectorAll('.ac-date[data-iso]').forEach(el => {
   const rel = relativeDate(el.dataset.iso);
   if (rel) el.textContent = rel;
 });
@@ -153,8 +629,8 @@ function periodMatch(isoStr, period) {
   const date = new Date(isoStr);
   const now  = new Date();
   if (period === 'week') {
-    const week = new Date(); week.setDate(now.getDate() - 7);
-    return date >= week;
+    const w = new Date(); w.setDate(now.getDate() - 7);
+    return date >= w;
   }
   if (period === 'month') {
     return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
@@ -166,31 +642,26 @@ function periodMatch(isoStr, period) {
 }
 
 function applyFilters() {
-  const cards = document.querySelectorAll('.news-card');
+  const cards = document.querySelectorAll('.ac-card');
   let visible = 0;
 
   cards.forEach(card => {
-    const srcOk    = state.source === 'all' || card.dataset.source === state.source;
-    const langOk   = state.lang   === 'all' || card.dataset.lang   === state.lang;
-    const periodOk = periodMatch(card.dataset.date, state.period);
+    const ok = (state.source === 'all' || card.dataset.source === state.source)
+            && (state.lang   === 'all' || card.dataset.lang   === state.lang)
+            && periodMatch(card.dataset.date, state.period);
 
-    if (srcOk && langOk && periodOk) {
-      card.style.display = '';
-      visible++;
-    } else {
-      card.style.display = 'none';
-    }
+    card.style.display = ok ? '' : 'none';
+    if (ok) visible++;
   });
 
   document.getElementById('visible-count').textContent = visible;
   document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
 }
 
-document.querySelectorAll('.pill').forEach(btn => {
+document.querySelectorAll('.ac-pill').forEach(btn => {
   btn.addEventListener('click', () => {
     const group = btn.dataset.filter;
-    // Désactiver les autres pills du même groupe
-    document.querySelectorAll(`.pill[data-filter="${group}"]`).forEach(p => p.classList.remove('active'));
+    document.querySelectorAll(`.ac-pill[data-filter="${group}"]`).forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     state[group] = btn.dataset.value;
     applyFilters();
@@ -198,136 +669,4 @@ document.querySelectorAll('.pill').forEach(btn => {
 });
 </script>
 
-<style>
-/* ── ÉTAT VIDE ── */
-.news-empty {
-  text-align: center; padding: 80px 20px;
-  background: rgba(15,23,36,0.5); border: 1px dashed rgba(255,255,255,0.1);
-  border-radius: 20px; margin-top: 30px;
-}
-.news-empty-icon { font-size: 5rem; margin-bottom: 20px; opacity: 0.5; }
-.news-empty h3 { color: #cbd5e1; font-family: 'Orbitron', sans-serif; margin-bottom: 12px; }
-.news-empty p  { color: #64748b; line-height: 1.7; }
-
-/* ── FILTRES ── */
-.filters-wrapper {
-  display: flex; flex-direction: column; gap: 14px;
-  background: rgba(15,23,36,0.6); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;
-}
-.filter-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.filter-label {
-  color: #475569; font-size: 0.78rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  min-width: 60px; flex-shrink: 0;
-}
-.filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-.pill {
-  padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
-  color: #94a3b8; cursor: pointer; transition: all 0.2s ease;
-}
-.pill:hover { border-color: rgba(0,245,192,0.3); color: #00f5c0; }
-.pill.active {
-  background: rgba(0,245,192,0.12); border-color: rgba(0,245,192,0.4);
-  color: #00f5c0;
-}
-
-/* ── COMPTEUR ── */
-.news-counter {
-  display: flex; justify-content: space-between; align-items: center;
-  color: #475569; font-size: 0.82rem; margin-bottom: 24px; padding: 0 4px;
-}
-.sources-refresh { color: #334155; font-size: 0.76rem; }
-
-/* ── GRILLE 4 COLONNES ── */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-@media (max-width: 1280px) { .news-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px)  { .news-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 580px)  { .news-grid { grid-template-columns: 1fr; } }
-
-/* ── CARTE ── */
-.news-card {
-  display: flex; flex-direction: column;
-  background: rgba(15,23,36,0.65); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px; text-decoration: none; overflow: hidden;
-  transition: all 0.32s cubic-bezier(0.25,0.46,0.45,0.94);
-  position: relative;
-}
-.news-card::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, #00f5c0, #0088ff);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.32s ease;
-}
-.news-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(0,245,192,0.22);
-  box-shadow: 0 14px 35px rgba(0,0,0,0.45);
-}
-.news-card:hover::after { transform: scaleX(1); }
-
-/* ── IMAGE ── */
-.news-img-wrap {
-  width: 100%; height: 160px; overflow: hidden; flex-shrink: 0;
-  background: rgba(0,0,0,0.2);
-}
-.news-img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.45s ease;
-}
-.news-card:hover .news-img { transform: scale(1.04); }
-
-.news-img-placeholder {
-  width: 100%; height: 120px; flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(0,136,255,0.12), rgba(0,245,192,0.08));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.5rem; font-weight: 800;
-  color: rgba(0,245,192,0.25); font-family: 'Orbitron', sans-serif;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-/* ── BODY ── */
-.news-body { display: flex; flex-direction: column; padding: 16px; flex: 1; }
-
-.news-card-header {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;
-}
-.news-source {
-  background: rgba(0,136,255,0.12); border: 1px solid rgba(0,136,255,0.25);
-  color: #0088ff; padding: 2px 9px; border-radius: 20px;
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.4px; white-space: nowrap;
-}
-.news-lang-badge { font-size: 0.9rem; }
-.news-date {
-  margin-left: auto; color: #475569; font-size: 0.72rem;
-  white-space: nowrap; font-family: 'Courier Prime', monospace;
-}
-
-.news-title {
-  font-family: 'Orbitron', sans-serif; font-size: 0.82rem;
-  color: #e2e8f0; line-height: 1.5; margin-bottom: 10px; flex: 1;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-.news-resume {
-  color: #64748b; font-size: 0.78rem; line-height: 1.6; margin-bottom: 12px;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.news-card-footer {
-  margin-top: auto; padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-.news-read { color: #00f5c0; font-size: 0.78rem; font-weight: 600; }
-
-/* ── AUCUN RÉSULTAT ── */
-.no-results {
-  text-align: center; padding: 60px; color: #475569;
-  font-size: 0.95rem; background: rgba(15,23,36,0.4);
-  border: 1px dashed rgba(255,255,255,0.07); border-radius: 12px;
-}
-</style>
 {% endblock %}

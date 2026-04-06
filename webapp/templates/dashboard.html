@@ -1,335 +1,613 @@
 {% extends "base.html" %}
-{% block title %}Tableau de Bord - CyberCampus CTF{% endblock %}
+{% block title %}Dashboard — CyberCampus CTF{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
-  
-  <h2 class="animated-title">Bienvenue {{ user.pseudo }} 👋</h2>
-  <p>Voici un aperçu de votre progression dans le CyberCampus.</p>
 
-  <div class="stats">
-    <div class="card stat-card">
-      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">💎</div>
-      <h3>{{ user.score }}</h3>
-      <p style="color: #94a3b8; font-weight: 500;">Points Totaux</p>
-    </div>
-    
-    <div class="card stat-card">
-      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🏆</div>
-      <h3>{{ user.get_solved_challenges()|length }}</h3>
-      <p style="color: #94a3b8; font-weight: 500;">Challenges Validés</p>
-    </div>
-    
-    <div class="card stat-card">
-      <div class="stat-icon" style="font-size: 2.5rem; margin-bottom: 10px;">📅</div>
-      <h3 style="font-size: 1.5rem;">{{ user.created_at.strftime('%d/%m/%Y') }}</h3>
-      <p style="color: #94a3b8; font-weight: 500;">
-        Inscrit depuis {{ (now() - user.created_at).days }} jours
-      </p>
-    </div>
-  </div>
+{% set total_challenges = Challenge.query.filter_by(actif=True).count() %}
+{% set solved_count = user.get_solved_challenges()|length %}
+{% set progress_percent = (solved_count / total_challenges * 100) if total_challenges > 0 else 0 %}
+{% set in_progress = user.get_in_progress_challenges() %}
+{% set recent_submissions = user.submissions.order_by(Submission.timestamp.desc()).limit(5).all() %}
 
-  <div class="section-large" style="margin-top: 40px; text-align: left;">
-    <h3 style="margin-bottom: 20px;">📊 Progression Globale</h3>
-    
-    {% set total_challenges = Challenge.query.filter_by(actif=True).count() %}
-    {% set solved_count = user.get_solved_challenges()|length %}
-    {% set progress_percent = (solved_count / total_challenges * 100) if total_challenges > 0 else 0 %}
-    
-    <div class="progress-container" style="background: rgba(255,255,255,0.05); border-radius: 50px; padding: 4px; border: 1px solid rgba(255,255,255,0.1);">
-      <div class="progress-fill" style="width: {{ progress_percent }}%; background: linear-gradient(90deg, #00f5c0, #0088ff); height: 12px; border-radius: 50px; box-shadow: 0 0 10px rgba(0, 245, 192, 0.5); transition: width 1s ease;"></div>
-    </div>
-    
-    <div style="display: flex; justify-content: space-between; margin-top: 10px; color: #cbd5e1; font-size: 0.9rem;">
-      <span><strong>{{ solved_count }}</strong> / {{ total_challenges }} challenges complétés</span>
-      <span style="color: #00f5c0; font-weight: bold;">{{ "%.0f"|format(progress_percent) }}%</span>
-    </div>
-  </div>
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="db-hero">
+  <div class="db-hero-grid" aria-hidden="true"></div>
 
-  {% set in_progress = user.get_in_progress_challenges() %}
-  {% if in_progress %}
-  <div style="width: 100%; margin-top: 50px;">
-    <h2 class="animated-title" style="font-size: 1.8rem; text-align: left; margin-bottom: 20px;">⚡ Reprendre les challenges</h2>
-    
-    <div class="challenges-grid">
-      {% for challenge in in_progress %}
-        <div class="challenge-card">
-          <div class="challenge-header">
-            <h3>{{ challenge.titre }}</h3>
-            <span class="challenge-points" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
-              En cours
-            </span>
-          </div>
-          <p class="challenge-description" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-            {{ challenge.description }}
-          </p>
-          <a href="{{ url_for('challenge_view', challenge_id=challenge.id) }}" class="btn challenge-btn">
-            Continuer →
-          </a>
-        </div>
-      {% endfor %}
+  <div class="db-hero-inner">
+    <div class="db-hero-left">
+      <div class="db-welcome-badge">
+        <span class="db-badge-dot"></span>
+        Tableau de bord
+      </div>
+      <h1 class="db-hero-title">
+        Bienvenue,<br>
+        <span class="db-accent">{{ user.pseudo }}</span> 👋
+      </h1>
+      <p class="db-hero-desc">Voici ta progression sur CyberCampus. Continue comme ça !</p>
+
+      <div class="db-hero-actions">
+        <a href="{{ url_for('challenges_list') }}" class="db-btn-primary">🎯 Voir les challenges</a>
+        <a href="{{ url_for('auth.edit_profile') }}" class="db-btn-secondary">⚙️ Mon profil</a>
+      </div>
     </div>
-  </div>
-  {% endif %}
 
-  {% set recent_submissions = user.submissions.order_by(Submission.timestamp.desc()).limit(5).all() %}
-  {% if recent_submissions %}
-  <div class="section-large" style="margin-top: 50px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
-    <div style="padding: 20px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
-      <h3 style="margin: 0; font-size: 1.2rem;">📝 Historique Récent</h3>
-    </div>
-    
-    <div class="history-list">
-      {% for sub in recent_submissions %}
-        <div class="history-item" style="display: flex; align-items: center; justify-content: space-between; padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.03);">
-          
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="
-              width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;
-              background: {{ 'rgba(16, 185, 129, 0.2)' if sub.correct else 'rgba(239, 68, 68, 0.2)' }};
-              color: {{ '#10b981' if sub.correct else '#ef4444' }};
-            ">
-              {{ '✓' if sub.correct else '✗' }}
-            </div>
-            
-            <div style="text-align: left;">
-              <div style="color: #fff; font-weight: 600;">{{ sub.challenge.titre }}</div>
-              <div style="color: #64748b; font-size: 0.8rem;">{{ sub.timestamp.strftime('%d/%m/%Y à %H:%M') }}</div>
-            </div>
-          </div>
-
-          <div style="font-weight: 600; color: {{ '#10b981' if sub.correct else '#ef4444' }};">
-            {{ ('+' ~ sub.challenge.points ~ ' pts') if sub.correct else 'Échoué' }}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <div style="margin-top: 50px; text-align: center;">
-    <a href="{{ url_for('challenges_list') }}" class="btn primary-btn" style="width: auto; display: inline-flex; padding: 12px 30px;">
-      🎯 Voir tous les challenges
-    </a>
-  </div>
-
-  <a href="{{ url_for('auth.edit_profile') }}" class="btn primary-btn" style="width: auto; display: inline-flex; padding: 12px 30px;">
-  ⚙️ Modifier mon profil
-</a>
-
-  <!-- ── ZONE DANGER ── -->
-  <div class="danger-zone">
-    <div class="danger-zone-header">
-      <h3>⚠️ Zone de danger</h3>
-      <p>Les actions ci-dessous sont irréversibles. Procédez avec précaution.</p>
-    </div>
-    <div class="danger-zone-content">
-      <div class="danger-item">
-        <div class="danger-item-info">
-          <strong>Supprimer mon compte</strong>
-          <p>Toutes vos données (progression, scores, soumissions) seront définitivement supprimées.</p>
-        </div>
-        <button class="btn danger-btn" onclick="showDeleteModal()">
-          🗑️ Supprimer mon compte
-        </button>
+    <div class="db-hero-stats">
+      <div class="db-stat">
+        <span class="db-stat-icon">💎</span>
+        <span class="db-stat-num">{{ user.score }}</span>
+        <span class="db-stat-label">Points</span>
+      </div>
+      <div class="db-stat-divider"></div>
+      <div class="db-stat">
+        <span class="db-stat-icon">🏆</span>
+        <span class="db-stat-num">{{ solved_count }}</span>
+        <span class="db-stat-label">Résolus</span>
+      </div>
+      <div class="db-stat-divider"></div>
+      <div class="db-stat">
+        <span class="db-stat-icon">📅</span>
+        <span class="db-stat-num">{{ (now() - user.created_at).days }}</span>
+        <span class="db-stat-label">Jours</span>
       </div>
     </div>
   </div>
-
 </section>
 
-<!-- ── MODALE CONFIRMATION SUPPRESSION ── -->
-<div id="deleteModal" class="delete-modal">
-  <div class="delete-modal-content">
-    <div class="delete-modal-icon">😢</div>
+<!-- ══════════════════════════════════════
+     MAIN
+══════════════════════════════════════ -->
+<section class="db-main">
+  <div class="db-inner">
+
+    <!-- Progression globale -->
+    <div class="db-card db-card--progress">
+      <div class="db-card-topbar db-card-topbar--acc"></div>
+      <div class="db-card-body">
+        <div class="db-progress-header">
+          <div>
+            <h2 class="db-card-title">📊 Progression globale</h2>
+            <p class="db-progress-sub">{{ solved_count }} / {{ total_challenges }} challenges complétés</p>
+          </div>
+          <span class="db-progress-pct">{{ "%.0f"|format(progress_percent) }}%</span>
+        </div>
+        <div class="db-progress-track">
+          <div class="db-progress-fill" style="width: {{ progress_percent }}%"></div>
+        </div>
+        <div class="db-progress-legend">
+          <div class="db-legend-item"><span class="db-legend-dot db-legend-dot--easy"></span><span>Débutant (≤50 pts)</span></div>
+          <div class="db-legend-item"><span class="db-legend-dot db-legend-dot--medium"></span><span>Intermédiaire (≤100 pts)</span></div>
+          <div class="db-legend-item"><span class="db-legend-dot db-legend-dot--hard"></span><span>Avancé (+100 pts)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout 2 colonnes -->
+    <div class="db-layout">
+
+      <!-- Colonne principale -->
+      <div class="db-col-main">
+
+        {% if in_progress %}
+        <div class="db-section-label">En cours</div>
+        <h2 class="db-section-title">⚡ Reprendre un challenge</h2>
+        <div class="db-challenges-grid">
+          {% for challenge in in_progress %}
+          <a href="{{ url_for('challenge_view', challenge_id=challenge.id) }}" class="db-ch-card">
+            <div class="db-ch-card-topbar"></div>
+            <div class="db-ch-card-body">
+              <div class="db-ch-icon">
+                {% if 'sql' in challenge.titre|lower %}💉
+                {% elif 'xss' in challenge.titre|lower %}🔗
+                {% elif 'brut' in challenge.titre|lower %}🔨
+                {% elif 'crypt' in challenge.titre|lower or 'hash' in challenge.titre|lower %}🌈
+                {% elif 'osint' in challenge.titre|lower %}🔍
+                {% elif 'upload' in challenge.titre|lower %}📤
+                {% elif 'steg' in challenge.titre|lower %}🖼️
+                {% else %}🎯
+                {% endif %}
+              </div>
+              <div class="db-ch-info">
+                <span class="db-ch-status">En cours</span>
+                <h3 class="db-ch-title">{{ challenge.titre }}</h3>
+                <p class="db-ch-desc">{{ challenge.description[:90] }}{% if challenge.description|length > 90 %}…{% endif %}</p>
+              </div>
+              <span class="db-ch-cta">Continuer →</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if recent_submissions %}
+        <div class="db-section-label" {% if in_progress %}style="margin-top:32px"{% endif %}>Activité</div>
+        <h2 class="db-section-title">📝 Historique récent</h2>
+        <div class="db-card">
+          <div class="db-card-topbar"></div>
+          <div class="db-history">
+            {% for sub in recent_submissions %}
+            <div class="db-history-item">
+              <div class="db-history-icon {% if sub.correct %}db-history-icon--ok{% else %}db-history-icon--fail{% endif %}">
+                {{ '✓' if sub.correct else '✗' }}
+              </div>
+              <div class="db-history-info">
+                <span class="db-history-name">{{ sub.challenge.titre }}</span>
+                <span class="db-history-date">{{ sub.timestamp.strftime('%d/%m/%Y à %H:%M') }}</span>
+              </div>
+              <span class="db-history-result {% if sub.correct %}db-history-result--ok{% else %}db-history-result--fail{% endif %}">
+                {% if sub.correct %}+{{ sub.challenge.points }} pts{% else %}Échoué{% endif %}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Colonne latérale -->
+      <div class="db-col-side">
+
+        <div class="db-card db-card--profile">
+          <div class="db-card-topbar db-card-topbar--acc"></div>
+          <div class="db-card-body">
+            <h2 class="db-card-title">👤 Mon compte</h2>
+            <div class="db-profile-avatar">{{ user.pseudo[0].upper() }}</div>
+            <div class="db-profile-rows">
+              <div class="db-profile-row">
+                <span class="db-profile-key">Pseudo</span>
+                <span class="db-profile-val">{{ user.pseudo }}</span>
+              </div>
+              <div class="db-profile-row">
+                <span class="db-profile-key">Email</span>
+                <span class="db-profile-val db-profile-val--muted">{{ user.email }}</span>
+              </div>
+              <div class="db-profile-row">
+                <span class="db-profile-key">Inscrit le</span>
+                <span class="db-profile-val">{{ user.created_at.strftime('%d/%m/%Y') }}</span>
+              </div>
+              {% if user.country %}
+              <div class="db-profile-row">
+                <span class="db-profile-key">Pays</span>
+                <span class="db-profile-val">{{ user.country }}</span>
+              </div>
+              {% endif %}
+            </div>
+            <a href="{{ url_for('auth.edit_profile') }}" class="db-profile-edit-btn">⚙️ Modifier le profil</a>
+          </div>
+        </div>
+
+        <div class="db-card">
+          <div class="db-card-topbar"></div>
+          <div class="db-card-body">
+            <h2 class="db-card-title">🚀 Accès rapide</h2>
+            <div class="db-quick-links">
+              <a href="{{ url_for('challenges_list') }}" class="db-quick-link">
+                <span>🎯</span>
+                <div><strong>Challenges</strong><span>{{ total_challenges - solved_count }} restants</span></div>
+                <span class="db-quick-arrow">→</span>
+              </a>
+              <a href="{{ url_for('learn') }}" class="db-quick-link">
+                <span>📚</span>
+                <div><strong>Cours</strong><span>7 disponibles</span></div>
+                <span class="db-quick-arrow">→</span>
+              </a>
+              <a href="{{ url_for('scoreboard') }}" class="db-quick-link">
+                <span>🏆</span>
+                <div><strong>Classement</strong><span>Ma position</span></div>
+                <span class="db-quick-arrow">→</span>
+              </a>
+              <a href="{{ url_for('news') }}" class="db-quick-link">
+                <span>📡</span>
+                <div><strong>Actualités</strong><span>Cyber news</span></div>
+                <span class="db-quick-arrow">→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Zone danger -->
+    <div class="db-danger">
+      <div class="db-danger-header">
+        <h3>⚠️ Zone de danger</h3>
+        <p>Les actions ci-dessous sont irréversibles. Procédez avec précaution.</p>
+      </div>
+      <div class="db-danger-body">
+        <div class="db-danger-item">
+          <div>
+            <strong>Supprimer mon compte</strong>
+            <p>Toutes vos données (progression, scores, soumissions) seront définitivement supprimées.</p>
+          </div>
+          <button class="db-danger-btn" onclick="showDeleteModal()">🗑️ Supprimer mon compte</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     MODALE SUPPRESSION
+══════════════════════════════════════ -->
+<div id="deleteModal" class="db-modal">
+  <div class="db-modal-box">
+    <div class="db-modal-icon">😢</div>
     <h3>Supprimer votre compte ?</h3>
-    <p>
-      Vous êtes sur le point de supprimer définitivement votre compte
-      <strong style="color: #00f5c0;">{{ user.pseudo }}</strong>.
-    </p>
-    <p style="color: #94a3b8; font-size: 0.88rem;">
-      Toutes vos données (progression, scores, soumissions) seront perdues pour toujours.
-      Un email de confirmation vous sera envoyé à <strong>{{ user.email }}</strong>.
-    </p>
-    <div class="delete-modal-actions">
-      <button class="btn delete-cancel-btn" onclick="hideDeleteModal()">
-        Annuler
-      </button>
-      <form method="POST" action="{{ url_for('auth.request_delete_account') }}" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none;">
-        <button type="submit" class="btn delete-confirm-btn">
-          📧 Envoyer l'email de confirmation
-        </button>
+    <p>Vous êtes sur le point de supprimer définitivement le compte <strong class="db-modal-pseudo">{{ user.pseudo }}</strong>.</p>
+    <p class="db-modal-sub">Toutes vos données seront perdues pour toujours. Un email de confirmation sera envoyé à <strong>{{ user.email }}</strong>.</p>
+    <div class="db-modal-actions">
+      <button class="db-modal-cancel" onclick="hideDeleteModal()">Annuler</button>
+      <form method="POST" action="{{ url_for('auth.request_delete_account') }}">
+        <button type="submit" class="db-modal-confirm">📧 Envoyer l'email de confirmation</button>
       </form>
     </div>
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════
+     STYLES
+══════════════════════════════════════ -->
+<style>
+:root {
+  --acc:  #00f5c0;
+  --acc2: #0088ff;
+  --red:  #ef4444;
+  --surf: rgba(15,23,36,0.65);
+  --bord: rgba(255,255,255,0.07);
+  --mut:  #64748b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+a { text-decoration: none; }
+
+/* ── HERO ── */
+.db-hero {
+  position: relative;
+  padding: 70px 40px 60px;
+  overflow: hidden;
+}
+
+.db-hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,192,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,192,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 100% 100% at 0% 50%, black 20%, transparent 80%);
+}
+
+.db-hero-inner {
+  position: relative; z-index: 2;
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 40px;
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.db-welcome-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px;
+  background: rgba(0,245,192,0.08); border: 1px solid rgba(0,245,192,0.18);
+  border-radius: 100px; color: var(--acc);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.db-badge-dot {
+  width: 6px; height: 6px; background: var(--acc);
+  border-radius: 50%; animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.db-hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900; color: #fff;
+  margin: 0 0 14px; line-height: 1.15;
+}
+
+.db-accent {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.db-hero-desc { color: #94a3b8; font-size: 0.95rem; margin: 0 0 28px; line-height: 1.6; }
+
+.db-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.db-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  color: #050a10; font-weight: 700; font-size: 0.88rem;
+  border-radius: 10px; transition: all 0.3s ease;
+  box-shadow: 0 4px 18px rgba(0,245,192,0.2);
+}
+.db-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,245,192,0.35); }
+
+.db-btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8; font-weight: 600; font-size: 0.88rem;
+  border-radius: 10px; transition: all 0.2s ease;
+}
+.db-btn-secondary:hover { background: rgba(255,255,255,0.09); color: #fff; }
+
+.db-hero-stats {
+  display: flex; align-items: center; gap: 32px;
+  background: var(--surf); border: 1px solid var(--bord);
+  border-radius: 20px; padding: 28px 36px; flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+.db-hero-stats::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--acc), var(--acc2));
+}
+
+.db-stat { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.db-stat-icon { font-size: 1.6rem; }
+.db-stat-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem; font-weight: 900; color: var(--acc); line-height: 1;
+}
+.db-stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mut); font-weight: 700; }
+.db-stat-divider { width: 1px; height: 50px; background: rgba(255,255,255,0.07); }
+
+/* ── MAIN ── */
+.db-main { padding: 0 40px 80px; }
+.db-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+/* ── CARTES ── */
+.db-card {
+  background: var(--surf); border: 1px solid var(--bord);
+  border-radius: 16px; overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+.db-card:hover { border-color: rgba(0,245,192,0.1); }
+.db-card-topbar { height: 3px; background: var(--bord); }
+.db-card-topbar--acc { background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.db-card-body { padding: 26px; display: flex; flex-direction: column; gap: 16px; }
+.db-card-title { font-family: 'Orbitron', sans-serif; font-size: 0.92rem; font-weight: 700; color: #fff; margin: 0; }
+
+/* ── PROGRESSION ── */
+.db-progress-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.db-progress-sub { color: var(--mut); font-size: 0.85rem; margin: 4px 0 0; }
+.db-progress-pct { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; color: var(--acc); line-height: 1; }
+.db-progress-track { height: 10px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+.db-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--acc), var(--acc2));
+  border-radius: 100px;
+  box-shadow: 0 0 12px rgba(0,245,192,0.4);
+  transition: width 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.db-progress-legend { display: flex; gap: 20px; flex-wrap: wrap; }
+.db-legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.76rem; color: var(--mut); }
+.db-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.db-legend-dot--easy   { background: #10b981; }
+.db-legend-dot--medium { background: #f59e0b; }
+.db-legend-dot--hard   { background: #ef4444; }
+
+/* ── LAYOUT ── */
+.db-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+.db-col-main { display: flex; flex-direction: column; gap: 14px; }
+.db-col-side  { display: flex; flex-direction: column; gap: 14px; }
+
+.db-section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--acc); }
+.db-section-title { font-family: 'Orbitron', sans-serif; font-size: 1.05rem; color: #fff; font-weight: 700; margin: 4px 0 10px; }
+
+/* ── Challenges en cours ── */
+.db-challenges-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.db-ch-card {
+  background: var(--surf); border: 1px solid var(--bord);
+  border-radius: 13px; overflow: hidden;
+  transition: all 0.3s ease;
+}
+.db-ch-card:hover { border-color: rgba(0,245,192,0.2); transform: translateX(4px); }
+.db-ch-card-topbar { height: 2px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.db-ch-card-body { display: flex; align-items: center; gap: 16px; padding: 16px 20px; }
+.db-ch-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+.db-ch-info { flex: 1; }
+.db-ch-status {
+  font-size: 0.66rem; font-weight: 700; color: #f59e0b;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);
+  padding: 2px 7px; border-radius: 8px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.db-ch-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: #fff; margin: 6px 0 4px; font-weight: 700; }
+.db-ch-desc  { color: var(--mut); font-size: 0.78rem; line-height: 1.5; margin: 0; }
+.db-ch-cta   { font-size: 0.82rem; font-weight: 600; color: var(--acc); flex-shrink: 0; white-space: nowrap; }
+
+/* ── Historique ── */
+.db-history { display: flex; flex-direction: column; }
+.db-history-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.2s;
+}
+.db-history-item:last-child { border-bottom: none; }
+.db-history-item:hover { background: rgba(0,245,192,0.03); }
+.db-history-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+.db-history-icon--ok   { background: rgba(16,185,129,0.15); color: #10b981; }
+.db-history-icon--fail { background: rgba(239,68,68,0.12);  color: #ef4444; }
+.db-history-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.db-history-name { color: #fff; font-weight: 600; font-size: 0.88rem; }
+.db-history-date { color: var(--mut); font-size: 0.74rem; }
+.db-history-result { font-weight: 700; font-size: 0.88rem; white-space: nowrap; }
+.db-history-result--ok   { color: #10b981; }
+.db-history-result--fail { color: #ef4444; }
+
+/* ── Profil ── */
+.db-profile-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--acc2), var(--acc));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 700; color: #050a10;
+  box-shadow: 0 0 20px rgba(0,245,192,0.2);
+  margin: 0 auto;
+}
+.db-profile-rows {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--bord); border-radius: 10px; overflow: hidden;
+}
+.db-profile-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.db-profile-row:last-child { border-bottom: none; }
+.db-profile-key { color: var(--mut); font-size: 0.78rem; flex-shrink: 0; }
+.db-profile-val { color: #fff; font-size: 0.84rem; font-weight: 600; text-align: right; word-break: break-all; }
+.db-profile-val--muted { color: #94a3b8; font-size: 0.78rem; font-weight: 400; }
+
+.db-profile-edit-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px; background: rgba(0,245,192,0.07);
+  border: 1px solid rgba(0,245,192,0.15); border-radius: 10px;
+  color: var(--acc); font-size: 0.84rem; font-weight: 600;
+  transition: all 0.2s;
+}
+.db-profile-edit-btn:hover { background: rgba(0,245,192,0.13); border-color: rgba(0,245,192,0.3); }
+
+/* ── Liens rapides ── */
+.db-quick-links { display: flex; flex-direction: column; gap: 6px; }
+.db-quick-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px; transition: all 0.2s ease;
+}
+.db-quick-link:hover { background: rgba(0,245,192,0.05); border-color: rgba(0,245,192,0.15); transform: translateX(3px); }
+.db-quick-link > span:first-child { font-size: 1.3rem; flex-shrink: 0; }
+.db-quick-link > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.db-quick-link strong { color: #fff; font-size: 0.84rem; }
+.db-quick-link span   { color: var(--mut); font-size: 0.74rem; }
+.db-quick-arrow { color: var(--acc); font-size: 0.9rem; flex-shrink: 0; }
+
+/* ── Zone danger ── */
+.db-danger { border: 1px solid rgba(239,68,68,0.22); border-radius: 16px; overflow: hidden; }
+.db-danger-header {
+  background: rgba(239,68,68,0.07); padding: 18px 26px;
+  border-bottom: 1px solid rgba(239,68,68,0.15);
+}
+.db-danger-header h3 { font-family: 'Orbitron', sans-serif; color: #ef4444; font-size: 0.92rem; margin: 0 0 4px; font-weight: 700; }
+.db-danger-header p  { color: #94a3b8; font-size: 0.82rem; margin: 0; }
+.db-danger-body { padding: 22px 26px; }
+.db-danger-item { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.db-danger-item > div strong { display: block; color: #fff; font-size: 0.88rem; margin-bottom: 5px; }
+.db-danger-item > div p { color: #94a3b8; font-size: 0.82rem; margin: 0; }
+.db-danger-btn {
+  padding: 10px 20px;
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+  color: #ef4444; border-radius: 10px;
+  font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.25s ease; white-space: nowrap;
+}
+.db-danger-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; box-shadow: 0 4px 18px rgba(239,68,68,0.4); }
+
+/* ── Modale ── */
+.db-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+  z-index: 9999; align-items: center; justify-content: center; padding: 20px;
+}
+.db-modal-box {
+  background: rgba(8,14,24,0.98);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 20px; padding: 44px 40px;
+  max-width: 480px; width: 100%; text-align: center;
+  animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+@keyframes modalIn {
+  from { opacity:0; transform: scale(0.95) translateY(-12px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.db-modal-icon { font-size: 3.5rem; margin-bottom: 18px; }
+.db-modal-box h3 { font-family: 'Orbitron', sans-serif; color: #ef4444; font-size: 1.2rem; margin: 0 0 16px; }
+.db-modal-box p  { color: #cbd5e1; line-height: 1.75; font-size: 0.9rem; margin: 0 0 10px; }
+.db-modal-pseudo { color: var(--acc); }
+.db-modal-sub    { color: #94a3b8 !important; font-size: 0.82rem !important; }
+.db-modal-actions { display: flex; gap: 12px; margin-top: 28px; justify-content: center; flex-wrap: wrap; }
+.db-modal-cancel {
+  padding: 11px 24px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8; border-radius: 10px; font-weight: 600; font-size: 0.88rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.db-modal-cancel:hover { background: rgba(255,255,255,0.09); color: #fff; }
+.db-modal-confirm {
+  padding: 11px 24px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none; color: #fff; border-radius: 10px;
+  font-weight: 700; font-size: 0.88rem; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(239,68,68,0.3); transition: all 0.2s;
+}
+.db-modal-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(239,68,68,0.5); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .db-hero-inner { flex-direction: column; align-items: flex-start; }
+  .db-hero-stats  { width: 100%; justify-content: center; }
+  .db-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .db-hero { padding: 60px 20px 40px; }
+  .db-hero-title { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+  .db-main { padding: 0 20px 60px; }
+  .db-hero-stats { gap: 20px; padding: 22px 24px; }
+  .db-stat-num { font-size: 1.6rem; }
+  .db-card-body { padding: 18px 20px; }
+  .db-danger-item { flex-direction: column; align-items: flex-start; }
+  .db-modal-box { padding: 32px 24px; }
+  .db-modal-actions { flex-direction: column; }
+  .db-modal-cancel, .db-modal-confirm { width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .db-hero-title { font-size: 1.5rem; }
+  .db-hero-stats { flex-wrap: wrap; gap: 16px; }
+  .db-stat-divider { display: none; }
+}
+</style>
+
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
 <script>
 function showDeleteModal() {
   document.getElementById('deleteModal').style.display = 'flex';
 }
-
 function hideDeleteModal() {
   document.getElementById('deleteModal').style.display = 'none';
 }
-
-window.onclick = function(e) {
-  const modal = document.getElementById('deleteModal');
-  if (e.target === modal) hideDeleteModal();
-}
+window.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('deleteModal')) hideDeleteModal();
+});
 </script>
-
-<style>
-/* ── ZONE DANGER ── */
-.danger-zone {
-  margin-top: 60px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 16px;
-  overflow: hidden;
-  width: 100%;
-}
-
-.danger-zone-header {
-  background: rgba(239, 68, 68, 0.08);
-  padding: 20px 30px;
-  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.danger-zone-header h3 {
-  color: #ef4444;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.1rem;
-  margin: 0 0 5px 0;
-}
-
-.danger-zone-header p {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-.danger-zone-content {
-  padding: 25px 30px;
-  background: rgba(15, 23, 36, 0.4);
-}
-
-.danger-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.danger-item-info strong {
-  display: block;
-  color: #fff;
-  margin-bottom: 5px;
-}
-
-.danger-item-info p {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-.danger-btn {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #ef4444;
-  padding: 10px 20px;
-  white-space: nowrap;
-  width: auto;
-}
-
-.danger-btn:hover {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
-  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
-}
-
-/* ── MODALE SUPPRESSION ── */
-.delete-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.delete-modal-content {
-  background: rgba(10, 15, 25, 0.98);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 20px;
-  padding: 45px 40px;
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
-  animation: modalIn 0.3s ease-out;
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.delete-modal-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-
-.delete-modal-content h3 {
-  font-family: 'Orbitron', sans-serif;
-  color: #ef4444;
-  font-size: 1.4rem;
-  margin-bottom: 15px;
-}
-
-.delete-modal-content p {
-  color: #cbd5e1;
-  line-height: 1.7;
-  margin-bottom: 10px;
-}
-
-.delete-modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 30px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.delete-cancel-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
-  padding: 12px 25px;
-  width: auto;
-}
-
-.delete-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-}
-
-.delete-confirm-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border: none;
-  color: #fff;
-  padding: 12px 25px;
-  width: auto;
-  box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
-}
-
-.delete-confirm-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-}
-</style>
 
 {% endblock %}

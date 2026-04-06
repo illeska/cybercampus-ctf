@@ -46,6 +46,9 @@
       </label>
     </div>
 
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}"></div>
+
     {{ form.submit(class="btn primary-btn") }}
   </form>
 </section>

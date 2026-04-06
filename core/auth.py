@@ -11,6 +11,7 @@ from core.models import User, EmailVerification
 from core import db, mail
 from datetime import datetime
 import random
+import requests as http_requests
 
 # Création du blueprint d'authentification
 auth_bp = Blueprint('auth', __name__)
@@ -18,6 +19,18 @@ auth_bp = Blueprint('auth', __name__)
 # ------------------------------
 # Fonctions utilitaires
 # ------------------------------
+
+
+#------------------------------
+# Recapcha 
+# ------------------------------
+def verify_recaptcha(response_token):
+    secret = current_app.config['RECAPTCHA_PRIVATE_KEY']
+    r = http_requests.post('https://www.google.com/recaptcha/api/siteverify', data={
+        'secret': secret,
+        'response': response_token
+    })
+    return r.json().get('success', False) 
 
 def generate_code():
     """Génère un code aléatoire à 6 chiffres"""
@@ -86,6 +99,12 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
+        # RECAPTCHA
+        token = request.form.get('g-recaptcha-response')
+        if not token or not verify_recaptcha(token):
+            flash('Veuillez valider le CAPTCHA.', 'error')
+            return render_template('register.html', form=form)
+        
         # Vérifier que les CGU ont été acceptées
         if not request.form.get('accept_cgu'):
             flash("Vous devez accepter les CGU et la politique de confidentialité pour vous inscrire.", "danger")
@@ -225,6 +244,12 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
+        # RECAPTCHA
+        token = request.form.get('g-recaptcha-response')
+        if not token or not verify_recaptcha(token):
+            flash('Veuillez valider le CAPTCHA.', 'error')
+            return render_template('login.html', form=form)
+        
         # Rechercher l'utilisateur par email
         user = User.query.filter_by(email=form.email.data).first()
 
@@ -329,7 +354,8 @@ def request_delete_account():
  
     return redirect(url_for('dashboard'))
  
- 
+
+
 @auth_bp.route("/account/delete/confirm/<token>", methods=["GET", "POST"])
 @login_required
 def confirm_delete_account(token):
