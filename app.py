@@ -402,7 +402,6 @@ def actualites():
     )
 
 @app.route('/learn')
-@login_required
 def learn():
     """Bibliothèque de cours - Page d'index"""
     return render_template("learn/index.html")
