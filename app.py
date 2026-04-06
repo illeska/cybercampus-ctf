@@ -448,6 +448,12 @@ def learn_stegano():
     """Cours sur la Stéganographie"""
     return render_template("learn/stegano.html")
 
+@app.route('/auth/check')
+def auth_check():
+    if current_user.is_authenticated:
+        return '', 200
+    return '', 401
+
 @app.route('/challenges')
 def challenges_list():
     """Page listant tous les challenges disponibles"""
