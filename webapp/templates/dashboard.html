@@ -198,7 +198,7 @@
                 <div><strong>Classement</strong><span>Ma position</span></div>
                 <span class="db-quick-arrow">→</span>
               </a>
-              <a href="{{ url_for('actualites') }}" class="db-quick-link">
+              <a href="{{ url_for('news') }}" class="db-quick-link">
                 <span>📡</span>
                 <div><strong>Actualités</strong><span>Cyber news</span></div>
                 <span class="db-quick-arrow">→</span>
@@ -405,9 +405,10 @@ a { text-decoration: none; }
 .db-legend-dot--hard   { background: #ef4444; }
 
 /* ── LAYOUT ── */
-.db-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+.db-layout { display: grid; grid-template-columns: 1fr 660px; gap: 24px; align-items: start; }
 .db-col-main { display: flex; flex-direction: column; gap: 14px; }
-.db-col-side  { display: flex; flex-direction: column; gap: 14px; }
+.db-col-side  { display: flex; flex-direction: row; gap: 14px; align-items: start; }
+.db-col-side .db-card { flex: 1; min-width: 0; }
 
 .db-section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--acc); }
 .db-section-title { font-family: 'Orbitron', sans-serif; font-size: 1.05rem; color: #fff; font-weight: 700; margin: 4px 0 10px; }
@@ -572,6 +573,7 @@ a { text-decoration: none; }
   .db-hero-inner { flex-direction: column; align-items: flex-start; }
   .db-hero-stats  { width: 100%; justify-content: center; }
   .db-layout { grid-template-columns: 1fr; }
+  .db-col-side { flex-direction: column; }
 }
 
 @media (max-width: 768px) {
