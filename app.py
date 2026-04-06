@@ -402,41 +402,49 @@ def actualites():
     )
 
 @app.route('/learn')
+@login_required
 def learn():
     """Bibliothèque de cours - Page d'index"""
     return render_template("learn/index.html")
 
 @app.route('/learn/sqli')
+@login_required
 def learn_sqli():
     """Cours sur les injections SQL"""
     return render_template("learn/sqli.html")
 
 @app.route('/learn/xss')
+@login_required
 def learn_xss():
     """Cours sur le Cross-Site Scripting"""
     return render_template("learn/xss.html")
 
 @app.route('/learn/bruteforce')
+@login_required
 def learn_bruteforce():
     """Cours sur le Bruteforce"""
     return render_template("learn/bruteforce.html")
 
 @app.route('/learn/crypto')
+@login_required
 def learn_crypto():
     """Cours sur la Cryptographie"""
     return render_template("learn/crypto.html")
 
 @app.route('/learn/osint')
+@login_required
 def learn_osint():
     """Cours sur l'OSINT"""
     return render_template("learn/osint.html")
 
 @app.route('/learn/upload')
+@login_required
 def learn_upload():
     """Cours sur l'Upload"""
     return render_template("learn/upload.html")
 
 @app.route('/learn/stegano')
+@login_required
 def learn_stegano():
     """Cours sur la Stéganographie"""
     return render_template("learn/stegano.html")
