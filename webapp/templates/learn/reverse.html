@@ -1,0 +1,753 @@
+{% extends "base.html" %}
+{% block title %}Cours : Reverse Engineering - CyberCampus CTF{% endblock %}
+
+{% block content %}
+<section class="page-wrapper course-page">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('learn') }}">📚 Bibliothèque</a>
+    <span class="separator">/</span>
+    <span class="current">Reverse Engineering</span>
+  </div>
+
+  <!-- En-tête du cours -->
+  <div class="course-header">
+    <div class="course-header-icon">🔬</div>
+    <div class="course-header-content">
+      <h1>Reverse Engineering</h1>
+      <p class="course-subtitle">Décompiler, analyser et comprendre un programme sans accès au code source</p>
+      <div class="course-badges">
+        <span class="badge-high">Élevé</span>
+        <span class="badge-time">📖 20 min</span>
+        <span class="badge-level">⚡ Intermédiaire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu du cours -->
+  <div class="course-content">
+
+    <!-- Section 1 : Qu'est-ce que le reverse -->
+    <div class="course-section">
+      <h2>🔍 Qu'est-ce que le Reverse Engineering ?</h2>
+      <p>
+        Le <strong>reverse engineering</strong> (ou rétro-ingénierie) consiste à analyser un programme
+        <strong>sans accès à son code source</strong> pour comprendre son fonctionnement interne.
+        C'est comme démonter une montre pour comprendre comment elle tourne — sauf qu'ici, la montre
+        est un exécutable binaire.
+      </p>
+      <p>
+        En cybersécurité, le reverse engineering est utilisé pour analyser des malwares, trouver des
+        vulnérabilités, contourner des protections ou, dans le cadre des CTF, retrouver un mot de passe
+        ou une clé cachée dans un binaire.
+      </p>
+
+      <div class="info-box">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <strong>Usages légitimes du reverse engineering :</strong>
+          <p>Analyse de malware, audit de sécurité, récupération de protocoles propriétaires,
+          interopérabilité logicielle, et bien sûr… les CTF !</p>
+        </div>
+      </div>
+
+      <!-- Nouveau composant : comparaison deux colonnes -->
+      <div class="re-split">
+        <div class="re-split-col re-split-col--dark">
+          <div class="re-split-icon">📄</div>
+          <h4>Code source</h4>
+          <p>Lisible par l'humain. Écrit en Python, C, Java… On voit exactement ce que fait le programme.</p>
+          <div class="re-code-mini">
+<pre>def check(password):
+    return password == "s3cr3t"</pre>
+          </div>
+        </div>
+        <div class="re-split-arrow">→</div>
+        <div class="re-split-col re-split-col--compiled">
+          <div class="re-split-icon">⚙️</div>
+          <h4>Binaire compilé</h4>
+          <p>Exécuté par la machine. Illisible sans outils. C'est ce que le reverse engineering déchiffre.</p>
+          <div class="re-code-mini re-code-mini--hex">
+<pre>48 89 e5 48 83
+ec 10 48 8d 35
+f2 0e 00 00 e8
+a3 fe ff ff 85</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Les types de binaires -->
+    <div class="course-section">
+      <h2>📦 Les types de binaires que tu rencontreras</h2>
+      <p>Selon le langage et la plateforme, les binaires n'ont pas la même structure ni les mêmes outils de reverse :</p>
+
+      <div class="attack-types">
+        <div class="attack-type-card re-type-card">
+          <h4>🐧 ELF (Linux)</h4>
+          <p>Format d'exécutable Linux. Produit par GCC, Clang, etc. Outils : <code>ghidra</code>, <code>gdb</code>, <code>radare2</code>.</p>
+        </div>
+        <div class="attack-type-card re-type-card">
+          <h4>🪟 PE (Windows)</h4>
+          <p>Format .exe / .dll Windows. Outils : <code>x64dbg</code>, <code>IDA Pro</code>, <code>PE-bear</code>.</p>
+        </div>
+        <div class="attack-type-card re-type-card">
+          <h4>🐍 PyInstaller</h4>
+          <p>Script Python empaqueté en binaire. Outils : <code>pyinstxtractor</code>, <code>pycdc</code>, <code>uncompyle6</code>.</p>
+        </div>
+        <div class="attack-type-card re-type-card">
+          <h4>☕ JAR (Java)</h4>
+          <p>Bytecode JVM. Facilement décompilable. Outils : <code>jadx</code>, <code>procyon</code>.</p>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:20px">
+        <div class="info-icon">🎯</div>
+        <div class="info-content">
+          <strong>Dans ce cours, on se concentre sur PyInstaller</strong>
+          <p>C'est le cas le plus courant dans les CTF débutants/intermédiaires et c'est ce que
+          tu rencontreras dans notre challenge. Le code Python décompilé reste lisible — pas besoin
+          de maîtriser l'assembleur x86.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : Méthodologie -->
+    <div class="course-section">
+      <h2>🛠️ Méthodologie d'un reverse PyInstaller</h2>
+      <p>Voici les 4 étapes à suivre pour reverser un binaire PyInstaller :</p>
+
+      <div class="protection-method">
+        <div class="method-number">1</div>
+        <div class="method-content">
+          <h3>Analyse statique préliminaire</h3>
+          <p>Avant tout, examine le binaire à froid sans l'exécuter. Tu peux y trouver des chaînes
+          de caractères révélatrices avec <code>strings</code> :</p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔍 Analyse statique</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Affiche toutes les chaînes lisibles dans le binaire
+strings ./licenseguard | grep -i "flag\|password\|secret\|key"
+
+# Détermine le type de fichier
+file ./licenseguard
+# Output: ELF 64-bit LSB executable...</code></pre>
+          </div>
+
+          <div class="explanation-box">
+            <h4>⚠️ Attention aux fausses pistes !</h4>
+            <p>Les développeurs expérimentés placent parfois de fausses chaînes dans leur binaire
+            pour tromper le reverse engineer. Si tu vois un flag trop facilement… méfie-toi.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">2</div>
+        <div class="method-content">
+          <h3>Extraction du bytecode PyInstaller</h3>
+          <p>Un binaire PyInstaller est en réalité un <strong>archive ZIP embarquée</strong> qui contient
+          l'interpréteur Python + ton script compilé en bytecode <code>.pyc</code>.
+          L'outil <strong>pyinstxtractor</strong> permet de tout extraire :</p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔧 Extraction</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Télécharge pyinstxtractor
+wget https://github.com/extremecoders-re/pyinstxtractor/raw/master/pyinstxtractor.py
+
+# Extrait le contenu du binaire
+python3 pyinstxtractor.py licenseguard
+
+# Résultat : dossier licenseguard_extracted/
+# Dedans : licenseguard.pyc + toutes les dépendances</code></pre>
+          </div>
+
+          <div class="success-box">
+            <strong>Ce que tu obtiens :</strong> Un dossier avec tous les fichiers <code>.pyc</code>
+            dont le script principal — celui qui contient la logique de vérification.
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">3</div>
+        <div class="method-content">
+          <h3>Décompilation du bytecode .pyc</h3>
+          <p>Un fichier <code>.pyc</code> est du bytecode Python — il n'est pas directement lisible
+          mais peut être <strong>décompilé en Python lisible</strong> avec les bons outils :</p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-status">🔧 Décompilation</span>
+              <span class="code-lang">Bash</span>
+            </div>
+            <pre><code># Option 1 : pycdc (recommandé, supporte Python 3.11+)
+git clone https://github.com/zrax/pycdc
+cd pycdc && cmake . && make
+./pycdc ../licenseguard_extracted/licenseguard.pyc
+
+# Option 2 : uncompyle6 (Python <= 3.8)
+pip install uncompyle6
+uncompyle6 licenseguard_extracted/licenseguard.pyc
+
+# Option 3 : decompile3 (fork actif)
+pip install decompile3
+pycdc licenseguard_extracted/licenseguard.pyc</code></pre>
+          </div>
+
+          <p>Tu obtiens du code Python quasi identique à l'original. La logique de vérification
+          est maintenant visible !</p>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number">4</div>
+        <div class="method-content">
+          <h3>Analyse du code et inversion de la logique</h3>
+          <p>C'est là que le vrai travail commence. Tu lis le code décompilé et tu cherches les
+          fonctions de vérification pour les <strong>inverser mathématiquement</strong>.</p>
+
+          <div class="code-block vulnerable">
+            <div class="code-header">
+              <span class="code-status">🔎 Exemple de code décompilé</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>def verify_password(password):
+    # XOR chaque caractère avec une clé
+    key = [0x4C, 0x47, 0x32, 0x34]
+    expected = [0x1a, 0x2b, 0x3c, 0x4d]
+
+    for i, char in enumerate(password.encode()):
+        if (char ^ key[i]) != expected[i]:
+            return False
+    return True</code></pre>
+          </div>
+
+          <div class="explanation-box">
+            <h4>Comment inverser un XOR ?</h4>
+            <p>Le XOR est sa propre inverse : si <code>A XOR K = B</code>, alors <code>B XOR K = A</code>.</p>
+            <p>Donc pour retrouver le mot de passe :</p>
+          </div>
+
+          <div class="code-block safe">
+            <div class="code-header">
+              <span class="code-status">✅ Script d'inversion</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre><code>key      = [0x4C, 0x47, 0x32, 0x34]
+expected = [0x1a, 0x2b, 0x3c, 0x4d]
+
+# On XOR expected avec key pour retrouver le mot de passe
+password = ''.join(chr(e ^ k) for e, k in zip(expected, key))
+print(password)  # → le mot de passe en clair !</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 : Techniques de protection -->
+    <div class="course-section">
+      <h2>🛡️ Techniques de protection courantes</h2>
+      <p>Les développeurs utilisent diverses techniques pour rendre le reverse plus difficile.
+      Les connaître t'aide à les contourner :</p>
+
+      <div class="attack-types">
+        <div class="attack-type-card re-defense-card">
+          <h4>🚫 Anti-debug</h4>
+          <p>Détecte si un debugger est attaché et quitte le programme.</p>
+          <div class="code-snippet">
+            <code>if sys.gettrace() is not None:
+    sys.exit(1)</code>
+          </div>
+          <p style="margin-top:8px;font-size:0.82rem;color:#94a3b8;">
+            <strong>Contournement :</strong> Patch le binaire ou analyse statiquement sans l'exécuter.
+          </p>
+        </div>
+
+        <div class="attack-type-card re-defense-card">
+          <h4>🔒 Flag XORé en mémoire</h4>
+          <p>Le flag n'est jamais en clair dans le binaire — il est encodé et décodé à la volée.</p>
+          <div class="code-snippet">
+            <code>encoded = [0x0f, 0x3d, 0x25]
+key = b"secret"
+flag = ''.join(chr(b ^ key[i%len(key)])
+    for i,b in enumerate(encoded))</code>
+          </div>
+          <p style="margin-top:8px;font-size:0.82rem;color:#94a3b8;">
+            <strong>Contournement :</strong> Reproduis le décodage en Python une fois la logique comprise.
+          </p>
+        </div>
+
+        <div class="attack-type-card re-defense-card">
+          <h4>🎭 Fausse piste</h4>
+          <p>Une variable <code>FAKE_FLAG</code> visible dans les strings pour décourager l'analyse.</p>
+          <div class="code-snippet">
+            <code>FAKE_FLAG = "CTF{fake_try_harder}"
+# Le vrai flag est ailleurs...</code>
+          </div>
+          <p style="margin-top:8px;font-size:0.82rem;color:#94a3b8;">
+            <strong>Contournement :</strong> Lis <em>tout</em> le code, ne t'arrête pas au premier flag trouvé.
+          </p>
+        </div>
+
+        <div class="attack-type-card re-defense-card">
+          <h4>🧮 Vérifications multiples</h4>
+          <p>Le mot de passe est découpé en blocs vérifiés indépendamment avec des algos différents.</p>
+          <div class="code-snippet">
+            <code>check_bloc1(b1)  # XOR
+check_bloc2(b2)  # somme
+check_bloc3(b3)  # rotation bits
+check_bloc4(b4)  # hash SHA256</code>
+          </div>
+          <p style="margin-top:8px;font-size:0.82rem;color:#94a3b8;">
+            <strong>Contournement :</strong> Inverse chaque vérification dans l'ordre, bloc par bloc.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5 : Opérations bitwise -->
+    <div class="course-section">
+      <h2>🧮 Les opérations bitwise à connaître</h2>
+      <p>Le reverse engineering implique souvent de comprendre des opérations sur les bits.
+      Voici les plus courantes en CTF :</p>
+
+      <!-- Tableau visuel des opérations -->
+      <div class="re-ops-grid">
+
+        <div class="re-op-card">
+          <div class="re-op-name">XOR <code>^</code></div>
+          <div class="re-op-desc">1 si les bits sont différents, 0 sinon. <strong>Sa propre inverse.</strong></div>
+          <div class="re-op-example">
+            <span class="re-op-val">0101</span>
+            <span class="re-op-sym">^</span>
+            <span class="re-op-val">0011</span>
+            <span class="re-op-sym">=</span>
+            <span class="re-op-res">0110</span>
+          </div>
+          <div class="re-op-tip">💡 Si A ^ K = B, alors B ^ K = A</div>
+        </div>
+
+        <div class="re-op-card">
+          <div class="re-op-name">AND <code>&</code></div>
+          <div class="re-op-desc">1 uniquement si les deux bits sont à 1. Utilisé pour <strong>masquer</strong> des bits.</div>
+          <div class="re-op-example">
+            <span class="re-op-val">1101</span>
+            <span class="re-op-sym">&</span>
+            <span class="re-op-val">1010</span>
+            <span class="re-op-sym">=</span>
+            <span class="re-op-res">1000</span>
+          </div>
+          <div class="re-op-tip">💡 <code>val & 0xFF</code> garde les 8 bits de poids faible</div>
+        </div>
+
+        <div class="re-op-card">
+          <div class="re-op-name">OR <code>|</code></div>
+          <div class="re-op-desc">1 si au moins un des bits est à 1. Utilisé pour <strong>combiner</strong> des bits.</div>
+          <div class="re-op-example">
+            <span class="re-op-val">0101</span>
+            <span class="re-op-sym">|</span>
+            <span class="re-op-val">0011</span>
+            <span class="re-op-sym">=</span>
+            <span class="re-op-res">0111</span>
+          </div>
+          <div class="re-op-tip">💡 Souvent combiné avec <code>&</code> pour les rotations</div>
+        </div>
+
+        <div class="re-op-card">
+          <div class="re-op-name">Rotation <code>&gt;&gt; / &lt;&lt;</code></div>
+          <div class="re-op-desc">Décale les bits à droite ou à gauche. La <strong>rotation</strong> fait revenir les bits sortants.</div>
+          <div class="re-op-example">
+            <span class="re-op-val">11010000</span>
+            <span class="re-op-sym">&gt;&gt;3</span>
+            <span class="re-op-sym">=</span>
+            <span class="re-op-res">00011010</span>
+          </div>
+          <div class="re-op-tip">💡 Rotation droite = inverse de rotation gauche</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section 6 : Outils -->
+    <div class="course-section">
+      <h2>🧰 Boîte à outils du reverse engineer</h2>
+
+      <div class="protection-method">
+        <div class="method-number" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">🐍</div>
+        <div class="method-content">
+          <h3>pyinstxtractor — Extraction PyInstaller</h3>
+          <p>Outil indispensable pour extraire le contenu d'un binaire PyInstaller.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-status">🔧 Installation & usage</span><span class="code-lang">Bash</span></div>
+            <pre><code>wget https://raw.githubusercontent.com/extremecoders-re/pyinstxtractor/master/pyinstxtractor.py
+python3 pyinstxtractor.py mon_binaire</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number" style="background: linear-gradient(135deg, #0088ff, #0060cc);">📝</div>
+        <div class="method-content">
+          <h3>pycdc — Décompilateur .pyc</h3>
+          <p>Transforme le bytecode Python en code source lisible. Supporte Python 3.11+.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-status">🔧 Installation & usage</span><span class="code-lang">Bash</span></div>
+            <pre><code>git clone https://github.com/zrax/pycdc && cd pycdc
+cmake . && make
+./pycdc fichier.pyc > source_decompile.py</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🔍</div>
+        <div class="method-content">
+          <h3>strings — Analyse statique rapide</h3>
+          <p>Extrait toutes les chaînes ASCII/Unicode d'un binaire. Premier réflexe en CTF.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-status">🔧 Usage</span><span class="code-lang">Bash</span></div>
+            <pre><code># Lister toutes les strings
+strings ./binaire
+
+# Filtrer les strings intéressantes
+strings ./binaire | grep -iE "flag|key|pass|secret|CTF"
+
+# Voir aussi les offsets
+strings -tx ./binaire</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="protection-method">
+        <div class="method-number" style="background: linear-gradient(135deg, #10b981, #059669);">🧬</div>
+        <div class="method-content">
+          <h3>Ghidra / GDB — Pour les binaires compilés C</h3>
+          <p>Quand le binaire n'est pas Python, ces outils permettent de décompiler et déboguer de l'assembleur.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-status">🔧 GDB basique</span><span class="code-lang">Bash</span></div>
+            <pre><code># Lancer GDB sur un binaire
+gdb ./binaire
+
+# Désassembler la fonction main
+(gdb) disas main
+
+# Mettre un breakpoint et exécuter
+(gdb) break main
+(gdb) run</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7 : Exemple complet -->
+    <div class="course-section">
+      <h2>📝 Exemple complet : reverser une vérification de mot de passe</h2>
+      <p>Voici un exemple concret de bout en bout. Imagine que tu as extrait ce code décompilé :</p>
+
+      <div class="code-block vulnerable">
+        <div class="code-header">
+          <span class="code-status">🔎 Code décompilé trouvé</span>
+          <span class="code-lang">Python</span>
+        </div>
+        <pre><code>import hashlib
+
+_KEY  = [0x41, 0x42, 0x43, 0x44]
+_SUM  = 394
+_HASH = "5d41402abc4b2a76b9719d911017c592"
+
+def verify(password):
+    data = password.encode()
+
+    # Vérification 1 : XOR
+    xored = [b ^ _KEY[i % 4] for i, b in enumerate(data[:4])]
+    if xored != [0x21, 0x63, 0x26, 0x25]:
+        return False
+
+    # Vérification 2 : Somme
+    if sum(data[4:8]) != _SUM:
+        return False
+
+    # Vérification 3 : Hash MD5
+    if hashlib.md5(data[8:]).hexdigest() != _HASH:
+        return False
+
+    return True</code></pre>
+      </div>
+
+      <p>Pour inverser chaque vérification :</p>
+
+      <div class="code-block safe">
+        <div class="code-header">
+          <span class="code-status">✅ Script d'inversion complet</span>
+          <span class="code-lang">Python</span>
+        </div>
+        <pre><code>import hashlib
+
+# ── Bloc 1 : inverser le XOR ──
+_KEY    = [0x41, 0x42, 0x43, 0x44]
+_xored  = [0x21, 0x63, 0x26, 0x25]
+bloc1   = ''.join(chr(x ^ k) for x, k in zip(_xored, _KEY))
+print(f"Bloc 1 : {bloc1}")  # → "part"
+
+# ── Bloc 2 : 4 octets dont la somme = 394 ──
+# On cherche 4 caractères imprimables qui somment à 394
+# Ex: 'a'(97) + 'a'(97) + 'a'(97) + 'm'(109) = 400... on tâtonne
+# Ou on cherche intelligemment :
+for c1 in range(32, 127):
+    for c2 in range(32, 127):
+        for c3 in range(32, 127):
+            c4 = 394 - c1 - c2 - c3
+            if 32 <= c4 < 127:
+                bloc2 = chr(c1)+chr(c2)+chr(c3)+chr(c4)
+                print(f"Bloc 2 possible : {bloc2}")
+                break  # On prend le premier
+
+# ── Bloc 3 : hash MD5 connu → rainbow table ──
+# hashlib.md5(b"hello").hexdigest() == "5d41402abc4b2a76b9719d911017c592"
+bloc3 = "hello"
+print(f"Bloc 3 : {bloc3}")
+
+print(f"Mot de passe complet : {bloc1 + bloc2 + bloc3}")</code></pre>
+      </div>
+    </div>
+
+    <!-- Section 8 : Bonnes pratiques -->
+    <div class="course-section">
+      <h2>📝 Résumé — Réflexes CTF Reverse</h2>
+      <div class="checklist">
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Commence toujours par <code>file</code> et <code>strings</code> avant tout</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Identifie le type de binaire (ELF natif, PyInstaller, JAR…) pour choisir les bons outils</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Ne fais pas confiance au premier flag visible — cherche les fausses pistes</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Lis <em>toutes</em> les fonctions de vérification avant de commencer à inverser</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Inverse les vérifications dans l'ordre : bloc 1, puis 2, puis 3…</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Pour les XOR : A ^ K = B → B ^ K = A. La rotation droite inverse la rotation gauche.</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Vérifie ton résultat avec un script Python avant de le soumettre</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check">✅</span>
+          <span>Utilise des rainbow tables ou CrackStation pour inverser les hash MD5/SHA1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Challenge -->
+    <div class="challenge-cta">
+      <div class="cta-content">
+        <h2>🎯 Prêt à pratiquer ?</h2>
+        <p>
+          Tu maîtrises maintenant les bases du reverse engineering sur Python. Mets tes compétences
+          à l'épreuve sur notre challenge LicenseGuard : un vrai binaire PyInstaller avec plusieurs
+          niveaux de vérification imbriqués à inverser.
+        </p>
+        <div class="cta-info">
+          <div class="cta-detail">
+            <span class="cta-icon">⭐</span>
+            <span><strong>200 points</strong></span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">🎓</span>
+            <span>Niveau intermédiaire</span>
+          </div>
+          <div class="cta-detail">
+            <span class="cta-icon">⏱️</span>
+            <span>30-60 minutes</span>
+          </div>
+        </div>
+        <a href="{{ url_for('challenge_view', challenge_id=8) }}" class="btn challenge-btn-large">
+          Accéder au challenge Reverse Engineering
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="course-navigation">
+      <a href="{{ url_for('learn_stegano') }}" class="nav-btn back">
+        ← Cours précédent : Stéganographie
+      </a>
+      <a href="{{ url_for('learn') }}" class="nav-btn next">
+        Retour à la bibliothèque →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════════════
+     STYLES SPÉCIFIQUES AU COURS REVERSE
+══════════════════════════════════════ -->
+<style>
+
+/* ── Split comparaison code source / binaire ── */
+.re-split {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.re-split-col {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.re-split-col--dark {
+  background: rgba(16,185,129,0.06);
+  border: 1px solid rgba(16,185,129,0.2);
+}
+
+.re-split-col--compiled {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+.re-split-icon { font-size: 2rem; margin-bottom: 10px; }
+
+.re-split-col h4 {
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.re-split-col p {
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.re-code-mini {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.re-code-mini pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #10b981;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.re-code-mini--hex pre { color: #ef4444; }
+
+.re-split-arrow {
+  font-size: 1.8rem;
+  color: #334155;
+  text-align: center;
+}
+
+/* ── Cards types de binaires ── */
+.re-type-card { border-color: rgba(139,92,246,0.2) !important; }
+.re-type-card h4 { color: #a78bfa !important; }
+.re-type-card:hover { border-color: rgba(139,92,246,0.4) !important; background: rgba(139,92,246,0.06) !important; }
+
+/* ── Cards défenses ── */
+.re-defense-card h4 { color: #f59e0b !important; }
+.re-defense-card { background: rgba(245,158,11,0.04) !important; border-color: rgba(245,158,11,0.15) !important; }
+.re-defense-card:hover { border-color: rgba(245,158,11,0.3) !important; }
+
+/* ── Grille opérations bitwise ── */
+.re-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.re-op-card {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 18px;
+  transition: border-color 0.2s;
+}
+
+.re-op-card:hover { border-color: rgba(0,245,192,0.15); }
+
+.re-op-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  color: #00f5c0;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.re-op-name code {
+  background: rgba(0,245,192,0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.re-op-desc {
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.re-op-example {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.re-op-val { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #94a3b8; }
+.re-op-sym { color: #475569; font-size: 0.85rem; font-weight: bold; }
+.re-op-res { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #00f5c0; font-weight: bold; }
+
+.re-op-tip {
+  font-size: 0.75rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .re-split { grid-template-columns: 1fr; }
+  .re-split-arrow { transform: rotate(90deg); }
+  .re-ops-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+
+{% endblock %}
