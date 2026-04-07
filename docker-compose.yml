@@ -135,7 +135,7 @@ services:
     ports:
       - "127.0.0.1:5008:5008"
     networks:
-      - cybercampus_network  
+      - default
 
 volumes:
   pgdata:

@@ -2,15 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Dépendances
+RUN apt-get update && apt-get install -y binutils && rm -rf /var/lib/apt/lists/*
+
 RUN pip install pyinstaller flask
 
-# Copier les sources
 COPY licenseguard.py .
 COPY serve.py .
 COPY templates/ ./templates/
 
-# Compiler le binaire PyInstaller (ce que le joueur télécharge et reverse)
 RUN pyinstaller --onefile --strip --name licenseguard licenseguard.py && \
     mkdir -p /app/public && \
     cp /app/dist/licenseguard /app/public/licenseguard && \
