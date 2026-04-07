@@ -153,7 +153,7 @@ def handle_client(conn):
                 msg = f"\n  ✗ Invalid license key. {remaining} attempt(s) remaining.\n  > "
                 conn.sendall(msg.encode())
             else:
-                conn.sendall(b"\n  ✗ Too many failed attempts. Connection closed.\n")
+                conn.sendall("\n  x Too many failed attempts. Connection closed.\n".encode())
 
     except Exception:
         pass
