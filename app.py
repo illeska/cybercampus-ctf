@@ -464,6 +464,12 @@ def learn_stegano():
     """Cours sur la Stéganographie"""
     return render_template("learn/stegano.html")
 
+@app.route('/learn/reverse')
+@login_required
+def learn_reverse():
+    """Cours sur le Reverse Engineering"""
+    return render_template("learn/reverse.html")
+
 @app.route('/auth/check')
 def auth_check():
     if current_user.is_authenticated:
