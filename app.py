@@ -169,6 +169,22 @@ HINTS_DATABASE = {
                 "penalty_percent": 50
             }
         ]
+    },
+    8: {  # Challenge Reverse
+        "hints": [
+            {
+                "text": "💡 Le binaire est compilé avec PyInstaller. L'outil pyinstxtractor.py permet d'en extraire le bytecode Python.",
+                "penalty_percent": 10
+            },
+            {
+                "text": "🎯 Une fois le .pyc extrait, utilise pycdc ou uncompyle6 pour décompiler le bytecode en Python lisible. Cherche les fonctions de vérification.",
+                "penalty_percent": 20
+            },
+            {
+                "text": "🔑 Chaque vérification peut s'inverser mathématiquement. Écris un script Python qui recalcule chaque bloc dans l'ordre et concatène les résultats au format XXXX-XXXX-XXXX-XXXX.",
+                "penalty_percent": 50
+            }
+        ]
     }
     
 }

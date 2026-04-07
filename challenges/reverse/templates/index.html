@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverse Simple Challenge - Reverse Engineering</title>
+  <link rel="icon" type="image/png" href="https://cybercampus-ctf.fr/static/img/logo.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #050a10;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(0,245,192,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,136,255,0.04) 0%, transparent 50%);
+      color: #cbd5e1;
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeDown 0.6s ease-out both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #00f5c0;
+      margin-bottom: 10px;
+    }
+
+    .header-title {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: bold;
+      color: #fff;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 30px rgba(0,245,192,0.3);
+    }
+
+    .header-title span {
+      color: #00f5c0;
+    }
+
+    .header-sub {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #475569;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeUp 0.7s ease-out both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TERMINAL BANNER ── */
+    .terminal {
+      background: #080e18;
+      border: 1px solid rgba(0,245,192,0.15);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      background: rgba(0,245,192,0.05);
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(0,245,192,0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ef4444; }
+    .dot-y { background: #f59e0b; }
+    .dot-g { background: #10b981; }
+
+    .terminal-title {
+      margin-left: 6px;
+      color: #64748b;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    .terminal-body {
+      padding: 22px 26px;
+    }
+
+    .terminal-body pre {
+      color: #00f5c0;
+      font-size: 0.8rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .terminal-body .t-muted { color: #334155; }
+    .terminal-body .t-warn  { color: #f59e0b; }
+    .terminal-body .t-white { color: #e2e8f0; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #080e18;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.82rem;
+      font-weight: bold;
+      color: #94a3b8;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body { padding: 20px; }
+
+    /* ── STEPS ── */
+    .steps { display: flex; flex-direction: column; gap: 14px; }
+
+    .step { display: flex; gap: 14px; align-items: flex-start; }
+
+    .step-num {
+      width: 28px; height: 28px;
+      background: rgba(0,245,192,0.08);
+      border: 1px solid rgba(0,245,192,0.2);
+      color: #00f5c0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: bold; flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-content { flex: 1; }
+
+    .step-content p {
+      color: #94a3b8;
+      font-size: 0.84rem;
+      line-height: 1.65;
+      font-family: sans-serif;
+    }
+
+    .step-content strong { color: #e2e8f0; }
+
+    .cmd {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      padding: 9px 13px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+
+    .cmd .prompt { color: #00f5c0; user-select: none; }
+
+    /* ── BADGES ── */
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-pts    { background: rgba(0,245,192,0.1); color: #00f5c0; border: 1px solid rgba(0,245,192,0.2); }
+    .badge-cat    { background: rgba(168,85,247,0.1); color: #a78bfa; border: 1px solid rgba(168,85,247,0.2); }
+    .badge-diff   { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* ── DOWNLOAD ── */
+    .download-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 13px;
+      background: rgba(0,245,192,0.07);
+      border: 1px solid rgba(0,245,192,0.2);
+      color: #00f5c0;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 0.88rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .download-btn:hover {
+      background: linear-gradient(135deg, #00f5c0, #0088ff);
+      color: #050a10;
+      border-color: transparent;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(0,245,192,0.25);
+    }
+
+    /* ── FORM ── */
+    .serial-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .serial-input {
+      flex: 1;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.92rem;
+      outline: none;
+      letter-spacing: 0.08em;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      text-transform: uppercase;
+    }
+
+    .serial-input:focus {
+      border-color: #00f5c0;
+      box-shadow: 0 0 0 3px rgba(0,245,192,0.1);
+    }
+
+    .serial-input::placeholder { color: #1e293b; }
+
+    .serial-btn {
+      padding: 11px 22px;
+      background: linear-gradient(135deg, #00f5c0, #0088ff);
+      color: #050a10;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 0.88rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .serial-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(0,245,192,0.3);
+    }
+
+    /* ── RÉSULTATS ── */
+    .result {
+      margin-top: 14px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .result-ok {
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.25);
+      color: #10b981;
+    }
+
+    .result-err {
+      background: rgba(239,68,68,0.07);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #ef4444;
+      font-family: sans-serif;
+    }
+
+    .result-fmt {
+      background: rgba(245,158,11,0.07);
+      border: 1px solid rgba(245,158,11,0.2);
+      color: #f59e0b;
+      font-family: sans-serif;
+    }
+
+    .flag-box {
+      display: inline-block;
+      margin-top: 10px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #00f5c0;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 10px rgba(0,245,192,0.2); }
+      50%       { box-shadow: 0 0 24px rgba(0,245,192,0.5); }
+    }
+
+    /* ── OUTILS ── */
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .tool-badge {
+      padding: 4px 12px;
+      background: rgba(0,136,255,0.08);
+      border: 1px solid rgba(0,136,255,0.15);
+      border-radius: 6px;
+      color: #60a5fa;
+      font-size: 0.76rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .tool-badge::before { content: '$ '; color: #334155; }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: #1e293b;
+      text-transform: uppercase;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 580px) {
+      .serial-form { flex-direction: column; }
+      .terminal-body { padding: 16px; }
+      .card-body { padding: 16px; }
+      .header-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <p class="header-label">CyberCampus CTF &nbsp;·&nbsp; Reverse Engineering</p>
+    <h1 class="header-title">License<span>Guard</span></h1>
+    <p class="header-sub">v2.3.1 - SecureSoft Inc. - Enterprise Edition</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Badges + terminal banner -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badges">
+          <span class="badge badge-pts">⬡ 200 pts</span>
+          <span class="badge badge-cat">◈ REVERSE ENGINEERING</span>
+          <span class="badge badge-diff">▲ AVANCÉ</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:0">
+        <div class="terminal" style="margin-top:16px">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+            <span class="terminal-title">licenseguard - license verification system</span>
+          </div>
+          <div class="terminal-body">
+<pre><span class="t-muted">╔══════════════════════════════════════════════════════════╗
+║          LicenseGuard v2.3.1 - SecureSoft Inc.          ║
+║              Enterprise License Verification             ║
+╚══════════════════════════════════════════════════════════╝</span>
+
+<span class="t-white">  Product  :</span> LG-2024-ENTERPRISE
+<span class="t-white">  Status   :</span> <span class="t-warn">License INVALID - Activation required</span>
+
+<span class="t-muted">  [!] This binary uses a proprietary verification algorithm.
+  [!] Reverse it to find the valid serial key.</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="card">
+      <div class="card-header">📋 Instructions</div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <p>Télécharge le binaire <strong>licenseguard</strong> compilé avec PyInstaller (ELF 64-bit Linux).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <p>Extrais le bytecode Python embarqué avec <strong>pyinstxtractor</strong>.</p>
+              <div class="cmd"><span class="prompt">$ </span>python3 pyinstxtractor.py licenseguard</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <p>Décompile le <strong>.pyc</strong> extrait pour obtenir le code source Python.</p>
+              <div class="cmd"><span class="prompt">$ </span>pycdc licenseguard.pyc<br><span class="prompt">  </span><span style="color:#475569"># ou : uncompyle6 licenseguard.pyc</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <p>Analyse la logique de vérification et reconstitue le serial valide au format <strong>XXXX-XXXX-XXXX-XXXX</strong>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <p>Entre le serial ci-dessous pour obtenir le flag.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Téléchargement -->
+    <div class="card">
+      <div class="card-header">⬇️ Télécharger le binaire</div>
+      <div class="card-body">
+        <a href="/challenges/reverse/download" class="download-btn">
+          ⬇️&nbsp; licenseguard &nbsp;-&nbsp; ELF 64-bit Linux (PyInstaller)
+        </a>
+
+        <div style="margin-top:14px">
+          <p style="font-size:0.78rem; color:#475569; font-family:sans-serif; margin-bottom:10px;">Outils recommandés :</p>
+          <div class="tools">
+            <span class="tool-badge">pyinstxtractor</span>
+            <span class="tool-badge">pycdc</span>
+            <span class="tool-badge">uncompyle6</span>
+            <span class="tool-badge">python3</span>
+            <span class="tool-badge">hashlib</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation -->
+    <div class="card">
+      <div class="card-header">🔑 Valider le serial</div>
+      <div class="card-body">
+
+        <form method="POST" action="/challenges/reverse/validate" class="serial-form">
+          <input
+            type="text"
+            name="serial"
+            class="serial-input"
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            value="{{ serial or '' }}"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="19"
+          />
+          <button type="submit" class="serial-btn">Valider →</button>
+        </form>
+
+        {% if result == 'ok' %}
+          <div class="result result-ok">
+            ✓ Serial accepté !<br>
+            ✓ Signature vérifiée.<br>
+            ✓ Licence activée avec succès.<br><br>
+            Flag :<br>
+            <span class="flag-box">{{ flag }}</span>
+          </div>
+
+        {% elif result == 'fail' %}
+          <div class="result result-err">
+            ✗ Serial invalide. Analysez plus attentivement la logique de vérification.
+          </div>
+
+        {% elif result == 'format' %}
+          <div class="result result-fmt">
+            ✗ Format invalide. Le serial doit être au format XXXX-XXXX-XXXX-XXXX en hexadécimal.
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    CyberCampus CTF &nbsp;·&nbsp; LicenseGuard Challenge &nbsp;·&nbsp; MMXXVI
+  </footer>
+
+</body>
+</html>

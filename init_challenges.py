@@ -54,10 +54,18 @@ CHALLENGES_DATA = [
     {
         "id": 7,
         "titre": "Stéganographie - Carta Obscura",
-        "description": "Un explorateur a disparu en laissant derrière lui une carte ancienne. Ses collègues affirment qu'il y avait caché un message secret. Les apparences sont trompeuses — regardez entre les lignes… et les pixels.",
+        "description": "Un explorateur a disparu en laissant derrière lui une carte ancienne. Ses collègues affirment qu'il y avait caché un message secret. Les apparences sont trompeuses - regardez entre les lignes… et les pixels.",
         "points": 150,
         "actif": True,
         "flag_str": "CTF{C4rt0_st3g4_ROT13_pwn3d}"
+    },
+    {
+        "id": 8,
+        "titre": "Reverse Engineering - LicenseGuard",
+        "description": "SecureSoft Inc. prétend que leur système de licence est inviolable. Prouve-leur qu'ils ont tort. Trouve le bon serial pour activer le logiciel et récupérer le flag caché à l’intérieur du binaire.",
+        "points": 200,
+        "actif": True,
+        "flag_str": "CTF{py1nst4ll3r_r3v3rs3_m4st3r}"
     }
 ]
 

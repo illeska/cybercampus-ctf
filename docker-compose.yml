@@ -128,6 +128,15 @@ services:
       - "127.0.0.1:5007:5007"
     restart: always  
 
+  reverse-challenge:
+    build: ./challenges/reverse
+    container_name: cybercampus_reverse
+    restart: always
+    ports:
+      - "127.0.0.1:5008:5008"
+    networks:
+      - cybercampus_network  
+
 volumes:
   pgdata:
   umami_pgdata:
