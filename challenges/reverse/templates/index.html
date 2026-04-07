@@ -1,484 +1,391 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reverse Simple Challenge - Reverse Engineering</title>
-  <link rel="icon" type="image/png" href="https://cybercampus-ctf.fr/static/img/logo.png">
+  <title>LicenseGuard v2.3.1 — SecureSoft Inc.</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+    :root {
+      --green:  #39ff14;
+      --dgreen: #1a7a00;
+      --red:    #ff2020;
+      --gray:   #1c1c1c;
+      --light:  #888;
+      --white:  #e8e8e8;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #050a10;
-      background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(0,245,192,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(0,136,255,0.04) 0%, transparent 50%);
-      color: #cbd5e1;
-      font-family: 'Courier New', monospace;
+      background: #0d0d0d;
+      color: var(--white);
+      font-family: 'Share Tech Mono', monospace;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* ── HEADER ── */
-    .header {
+    /* Scanlines effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Bruit de fond */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* ── LOGO CORP ── */
+    .corp-header {
       text-align: center;
-      margin-bottom: 32px;
-      animation: fadeDown 0.6s ease-out both;
+      margin-bottom: 40px;
+      animation: flicker 0.15s infinite alternate;
     }
 
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes flicker {
+      0%   { opacity: 1; }
+      100% { opacity: 0.97; }
     }
 
-    .header-label {
+    .corp-logo {
+      font-family: 'Rajdhani', sans-serif;
       font-size: 0.7rem;
-      letter-spacing: 0.25em;
+      font-weight: 600;
+      letter-spacing: 0.6em;
       text-transform: uppercase;
-      color: #00f5c0;
+      color: var(--light);
+      margin-bottom: 6px;
+    }
+
+    .corp-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    .corp-name::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 2px;
+      top: 0;
+      color: var(--red);
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+      opacity: 0.6;
+      animation: glitch 4s infinite;
+    }
+
+    @keyframes glitch {
+      0%, 90%, 100% { transform: none; opacity: 0; }
+      92%  { transform: translateX(-3px); opacity: 0.6; }
+      94%  { transform: translateX(3px);  opacity: 0.6; }
+      96%  { transform: translateX(-2px); opacity: 0.6; }
+    }
+
+    .corp-sub {
+      font-size: 0.72rem;
+      color: #444;
+      letter-spacing: 0.25em;
+      margin-top: 4px;
+    }
+
+    /* ── MAIN BOX ── */
+    .main-box {
+      width: 100%;
+      max-width: 640px;
+      border: 1px solid #2a2a2a;
+      background: #111;
+      position: relative;
+    }
+
+    /* Coin supérieur gauche */
+    .main-box::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: -1px;
+      width: 30px; height: 30px;
+      border-top: 2px solid var(--green);
+      border-left: 2px solid var(--green);
+    }
+
+    /* Coin inférieur droit */
+    .main-box::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; right: -1px;
+      width: 30px; height: 30px;
+      border-bottom: 2px solid var(--green);
+      border-right: 2px solid var(--green);
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      background: #161616;
+      border-bottom: 1px solid #222;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #444;
+    }
+
+    .status-bar .status-left { display: flex; align-items: center; gap: 14px; }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink-dot 1.2s ease-in-out infinite;
+    }
+
+    .status-dot.active { background: var(--green); animation: none; }
+
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    .status-text { color: var(--red); font-size: 0.7rem; letter-spacing: 0.1em; }
+    .status-text.ok { color: var(--green); }
+
+    .status-right { color: #333; font-size: 0.65rem; }
+
+    /* ── TERMINAL OUTPUT ── */
+    .terminal-out {
+      padding: 24px 26px;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      color: #555;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    .terminal-out .ln { display: block; }
+    .terminal-out .ln-g { color: var(--green); }
+    .terminal-out .ln-r { color: var(--red); }
+    .terminal-out .ln-w { color: #999; }
+    .terminal-out .ln-d { color: #333; }
+
+    /* ── FORM SECTION ── */
+    .form-section {
+      padding: 24px 26px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: #444;
+      text-transform: uppercase;
       margin-bottom: 10px;
     }
 
-    .header-title {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
-      font-weight: bold;
-      color: #fff;
-      letter-spacing: 0.08em;
-      text-shadow: 0 0 30px rgba(0,245,192,0.3);
-    }
-
-    .header-title span {
-      color: #00f5c0;
-    }
-
-    .header-sub {
-      margin-top: 10px;
-      font-size: 0.82rem;
-      color: #475569;
-      letter-spacing: 0.1em;
-    }
-
-    /* ── CONTAINER ── */
-    .container {
-      width: 100%;
-      max-width: 720px;
+    .form-row {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-      animation: fadeUp 0.7s ease-out both;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── TERMINAL BANNER ── */
-    .terminal {
-      background: #080e18;
-      border: 1px solid rgba(0,245,192,0.15);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .terminal-bar {
-      background: rgba(0,245,192,0.05);
-      padding: 10px 16px;
-      border-bottom: 1px solid rgba(0,245,192,0.1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.78rem;
-      color: #475569;
-    }
-
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ef4444; }
-    .dot-y { background: #f59e0b; }
-    .dot-g { background: #10b981; }
-
-    .terminal-title {
-      margin-left: 6px;
-      color: #64748b;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-    }
-
-    .terminal-body {
-      padding: 22px 26px;
-    }
-
-    .terminal-body pre {
-      color: #00f5c0;
-      font-size: 0.8rem;
-      line-height: 1.65;
-      white-space: pre-wrap;
-    }
-
-    .terminal-body .t-muted { color: #334155; }
-    .terminal-body .t-warn  { color: #f59e0b; }
-    .terminal-body .t-white { color: #e2e8f0; }
-
-    /* ── CARDS ── */
-    .card {
-      background: #080e18;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .card-header {
-      padding: 12px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 0.82rem;
-      font-weight: bold;
-      color: #94a3b8;
-      letter-spacing: 0.08em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-body { padding: 20px; }
-
-    /* ── STEPS ── */
-    .steps { display: flex; flex-direction: column; gap: 14px; }
-
-    .step { display: flex; gap: 14px; align-items: flex-start; }
-
-    .step-num {
-      width: 28px; height: 28px;
-      background: rgba(0,245,192,0.08);
-      border: 1px solid rgba(0,245,192,0.2);
-      color: #00f5c0;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: bold; flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .step-content { flex: 1; }
-
-    .step-content p {
-      color: #94a3b8;
-      font-size: 0.84rem;
-      line-height: 1.65;
-      font-family: sans-serif;
-    }
-
-    .step-content strong { color: #e2e8f0; }
-
-    .cmd {
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 6px;
-      padding: 9px 13px;
-      margin-top: 8px;
-      font-size: 0.78rem;
-      color: #e2e8f0;
-      font-family: 'Courier New', monospace;
-      line-height: 1.6;
-    }
-
-    .cmd .prompt { color: #00f5c0; user-select: none; }
-
-    /* ── BADGES ── */
-    .badges {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-
-    .badge {
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-pts    { background: rgba(0,245,192,0.1); color: #00f5c0; border: 1px solid rgba(0,245,192,0.2); }
-    .badge-cat    { background: rgba(168,85,247,0.1); color: #a78bfa; border: 1px solid rgba(168,85,247,0.2); }
-    .badge-diff   { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-
-    /* ── DOWNLOAD ── */
-    .download-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 13px;
-      background: rgba(0,245,192,0.07);
-      border: 1px solid rgba(0,245,192,0.2);
-      color: #00f5c0;
-      font-family: 'Courier New', monospace;
-      font-weight: bold;
-      font-size: 0.88rem;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-    }
-
-    .download-btn:hover {
-      background: linear-gradient(135deg, #00f5c0, #0088ff);
-      color: #050a10;
-      border-color: transparent;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(0,245,192,0.25);
-    }
-
-    /* ── FORM ── */
-    .serial-form {
-      display: flex;
-      gap: 10px;
+      gap: 0;
     }
 
     .serial-input {
       flex: 1;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 11px 14px;
-      color: #fff;
-      font-family: 'Courier New', monospace;
-      font-size: 0.92rem;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-right: none;
+      padding: 12px 16px;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
       outline: none;
-      letter-spacing: 0.08em;
-      transition: border-color 0.2s, box-shadow 0.2s;
       text-transform: uppercase;
+      transition: border-color 0.2s;
     }
 
-    .serial-input:focus {
-      border-color: #00f5c0;
-      box-shadow: 0 0 0 3px rgba(0,245,192,0.1);
-    }
-
-    .serial-input::placeholder { color: #1e293b; }
+    .serial-input:focus { border-color: #3a3a3a; }
+    .serial-input::placeholder { color: #222; }
 
     .serial-btn {
-      padding: 11px 22px;
-      background: linear-gradient(135deg, #00f5c0, #0088ff);
-      color: #050a10;
-      font-family: 'Courier New', monospace;
-      font-weight: bold;
-      font-size: 0.88rem;
+      background: var(--green);
       border: none;
-      border-radius: 8px;
+      padding: 12px 22px;
+      color: #000;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: background 0.2s;
       white-space: nowrap;
     }
 
-    .serial-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 18px rgba(0,245,192,0.3);
-    }
+    .serial-btn:hover { background: #50ff25; }
 
     /* ── RÉSULTATS ── */
-    .result {
-      margin-top: 14px;
-      padding: 14px 18px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      line-height: 1.7;
+    .result-block {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-left: 3px solid;
+      font-size: 0.8rem;
+      line-height: 1.8;
     }
 
     .result-ok {
-      background: rgba(16,185,129,0.08);
-      border: 1px solid rgba(16,185,129,0.25);
-      color: #10b981;
+      border-color: var(--green);
+      background: rgba(57,255,20,0.04);
+      color: #aaa;
     }
 
     .result-err {
-      background: rgba(239,68,68,0.07);
-      border: 1px solid rgba(239,68,68,0.2);
-      color: #ef4444;
-      font-family: sans-serif;
+      border-color: var(--red);
+      background: rgba(255,32,32,0.04);
+      color: var(--red);
     }
 
     .result-fmt {
-      background: rgba(245,158,11,0.07);
-      border: 1px solid rgba(245,158,11,0.2);
-      color: #f59e0b;
-      font-family: sans-serif;
+      border-color: #555;
+      background: rgba(255,255,255,0.02);
+      color: #666;
     }
 
-    .flag-box {
-      display: inline-block;
+    .flag-out {
+      display: block;
       margin-top: 10px;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(16,185,129,0.3);
-      border-radius: 6px;
-      padding: 9px 16px;
-      color: #00f5c0;
+      color: var(--green);
       font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 0.05em;
-      animation: glow 2s ease-in-out infinite;
+      letter-spacing: 0.06em;
+      animation: pulse-green 2s ease-in-out infinite;
     }
 
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 10px rgba(0,245,192,0.2); }
-      50%       { box-shadow: 0 0 24px rgba(0,245,192,0.5); }
+    @keyframes pulse-green {
+      0%, 100% { text-shadow: 0 0 6px rgba(57,255,20,0.4); }
+      50%       { text-shadow: 0 0 18px rgba(57,255,20,0.8); }
     }
 
-    /* ── OUTILS ── */
-    .tools {
+    /* ── DOWNLOAD ── */
+    .download-section {
+      padding: 0 26px 24px;
+    }
+
+    .download-link {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      border: 1px solid #222;
+      background: #0a0a0a;
+      color: #555;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      transition: all 0.2s;
     }
 
-    .tool-badge {
-      padding: 4px 12px;
-      background: rgba(0,136,255,0.08);
-      border: 1px solid rgba(0,136,255,0.15);
-      border-radius: 6px;
-      color: #60a5fa;
-      font-size: 0.76rem;
-      font-family: 'Courier New', monospace;
+    .download-link:hover {
+      border-color: #3a3a3a;
+      color: #888;
     }
 
-    .tool-badge::before { content: '$ '; color: #334155; }
+    .download-link .dl-icon { color: var(--green); font-size: 1rem; }
+    .download-link .dl-size { margin-left: auto; color: #333; font-size: 0.7rem; }
 
-    /* ── FOOTER ── */
-    .footer {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 0.68rem;
-      letter-spacing: 0.2em;
-      color: #1e293b;
+    /* ── FOOTER BAR ── */
+    .footer-bar {
+      margin-top: 28px;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: #252525;
       text-transform: uppercase;
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 580px) {
-      .serial-form { flex-direction: column; }
-      .terminal-body { padding: 16px; }
-      .card-body { padding: 16px; }
-      .header-title { font-size: 1.6rem; }
+    @media (max-width: 520px) {
+      .form-row { flex-direction: column; }
+      .serial-input { border-right: 1px solid #2a2a2a; border-bottom: none; }
+      .corp-name { font-size: 1.8rem; }
+      .terminal-out, .form-section, .download-section { padding-left: 18px; padding-right: 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <p class="header-label">CyberCampus CTF &nbsp;·&nbsp; Reverse Engineering</p>
-    <h1 class="header-title">License<span>Guard</span></h1>
-    <p class="header-sub">v2.3.1 - SecureSoft Inc. - Enterprise Edition</p>
+  <!-- EN-TÊTE CORPORATE -->
+  <header class="corp-header">
+    <p class="corp-logo">SecureSoft Inc. &nbsp;·&nbsp; Enterprise Division</p>
+    <h1 class="corp-name" data-text="LicenseGuard">LicenseGuard</h1>
+    <p class="corp-sub">v2.3.1 &nbsp;·&nbsp; License Verification System</p>
   </header>
 
-  <div class="container">
+  <!-- BOX PRINCIPALE -->
+  <div class="main-box">
 
-    <!-- Badges + terminal banner -->
-    <div class="card">
-      <div class="card-header">
-        <div class="badges">
-          <span class="badge badge-pts">⬡ 200 pts</span>
-          <span class="badge badge-cat">◈ REVERSE ENGINEERING</span>
-          <span class="badge badge-diff">▲ AVANCÉ</span>
+    <!-- Barre de statut -->
+    <div class="status-bar">
+      <div class="status-left">
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text">LICENSE INVALID</span>
         </div>
+        <span>|</span>
+        <span>PRODUCT: LG-2024-ENTERPRISE</span>
       </div>
-      <div class="card-body" style="padding-top:0">
-        <div class="terminal" style="margin-top:16px">
-          <div class="terminal-bar">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
-            <span class="terminal-title">licenseguard - license verification system</span>
-          </div>
-          <div class="terminal-body">
-<pre><span class="t-muted">╔══════════════════════════════════════════════════════════╗
-║          LicenseGuard v2.3.1 - SecureSoft Inc.          ║
-║              Enterprise License Verification             ║
-╚══════════════════════════════════════════════════════════╝</span>
-
-<span class="t-white">  Product  :</span> LG-2024-ENTERPRISE
-<span class="t-white">  Status   :</span> <span class="t-warn">License INVALID - Activation required</span>
-
-<span class="t-muted">  [!] This binary uses a proprietary verification algorithm.
-  [!] Reverse it to find the valid serial key.</span></pre>
-          </div>
-        </div>
-      </div>
+      <div class="status-right">SYS: ONLINE</div>
     </div>
 
-    <!-- Instructions -->
-    <div class="card">
-      <div class="card-header">📋 Instructions</div>
-      <div class="card-body">
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-content">
-              <p>Télécharge le binaire <strong>licenseguard</strong> compilé avec PyInstaller (ELF 64-bit Linux).</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-content">
-              <p>Extrais le bytecode Python embarqué avec <strong>pyinstxtractor</strong>.</p>
-              <div class="cmd"><span class="prompt">$ </span>python3 pyinstxtractor.py licenseguard</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-content">
-              <p>Décompile le <strong>.pyc</strong> extrait pour obtenir le code source Python.</p>
-              <div class="cmd"><span class="prompt">$ </span>pycdc licenseguard.pyc<br><span class="prompt">  </span><span style="color:#475569"># ou : uncompyle6 licenseguard.pyc</span></div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-content">
-              <p>Analyse la logique de vérification et reconstitue le serial valide au format <strong>XXXX-XXXX-XXXX-XXXX</strong>.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">5</div>
-            <div class="step-content">
-              <p>Entre le serial ci-dessous pour obtenir le flag.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Output terminal -->
+    <div class="terminal-out">
+      <span class="ln ln-d">──────────────────────────────────────────────</span>
+      <span class="ln ln-w">&gt; Initializing license verification module...</span>
+      <span class="ln ln-w">&gt; Loading cryptographic routines............. <span style="color:#333">OK</span></span>
+      <span class="ln ln-w">&gt; Checking activation status................. <span class="ln-r">FAILED</span></span>
+      <span class="ln ln-d">&nbsp;</span>
+      <span class="ln ln-r">&gt; ERROR: No valid license detected.</span>
+      <span class="ln ln-r">&gt; ERROR: Activation required to continue.</span>
+      <span class="ln ln-d">&nbsp;</span>
+      <span class="ln" style="color:#333">&gt; Enter a valid license key to activate this product.</span>
+      <span class="ln ln-d">──────────────────────────────────────────────</span>
     </div>
 
-    <!-- Téléchargement -->
-    <div class="card">
-      <div class="card-header">⬇️ Télécharger le binaire</div>
-      <div class="card-body">
-        <a href="/challenges/reverse/download" class="download-btn">
-          ⬇️&nbsp; licenseguard &nbsp;-&nbsp; ELF 64-bit Linux (PyInstaller)
-        </a>
-
-        <div style="margin-top:14px">
-          <p style="font-size:0.78rem; color:#475569; font-family:sans-serif; margin-bottom:10px;">Outils recommandés :</p>
-          <div class="tools">
-            <span class="tool-badge">pyinstxtractor</span>
-            <span class="tool-badge">pycdc</span>
-            <span class="tool-badge">uncompyle6</span>
-            <span class="tool-badge">python3</span>
-            <span class="tool-badge">hashlib</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Validation -->
-    <div class="card">
-      <div class="card-header">🔑 Valider le serial</div>
-      <div class="card-body">
-
-        <form method="POST" action="/challenges/reverse/validate" class="serial-form">
+    <!-- Formulaire -->
+    <div class="form-section">
+      <label class="form-label">[ Enter license key ]</label>
+      <form method="POST" action="/challenges/reverse/validate">
+        <div class="form-row">
           <input
             type="text"
             name="serial"
@@ -489,36 +396,48 @@
             spellcheck="false"
             maxlength="19"
           />
-          <button type="submit" class="serial-btn">Valider →</button>
-        </form>
+          <button type="submit" class="serial-btn">Activate</button>
+        </div>
+      </form>
 
-        {% if result == 'ok' %}
-          <div class="result result-ok">
-            ✓ Serial accepté !<br>
-            ✓ Signature vérifiée.<br>
-            ✓ Licence activée avec succès.<br><br>
-            Flag :<br>
-            <span class="flag-box">{{ flag }}</span>
-          </div>
+      {% if result == 'ok' %}
+        <div class="result-block result-ok">
+          &gt; Verification.............. PASS<br>
+          &gt; Signature check........... PASS<br>
+          &gt; Activation................ COMPLETE<br>
+          <span class="flag-out">{{ flag }}</span>
+        </div>
 
-        {% elif result == 'fail' %}
-          <div class="result result-err">
-            ✗ Serial invalide. Analysez plus attentivement la logique de vérification.
-          </div>
+      {% elif result == 'fail' %}
+        <div class="result-block result-err">
+          &gt; ERROR: Invalid license key.<br>
+          &gt; Verification failed.
+        </div>
 
-        {% elif result == 'format' %}
-          <div class="result result-fmt">
-            ✗ Format invalide. Le serial doit être au format XXXX-XXXX-XXXX-XXXX en hexadécimal.
-          </div>
-        {% endif %}
+      {% elif result == 'format' %}
+        <div class="result-block result-fmt">
+          &gt; ERROR: Invalid format.<br>
+          &gt; Expected: XXXX-XXXX-XXXX-XXXX (hex)
+        </div>
+      {% endif %}
+    </div>
 
-      </div>
+    <!-- Téléchargement -->
+    <div class="download-section">
+      <a href="/challenges/reverse/download" class="download-link">
+        <span class="dl-icon">↓</span>
+        <span>licenseguard &nbsp;—&nbsp; ELF 64-bit Linux binary</span>
+        <span class="dl-size">PyInstaller</span>
+      </a>
     </div>
 
   </div>
 
-  <footer class="footer">
-    CyberCampus CTF &nbsp;·&nbsp; LicenseGuard Challenge &nbsp;·&nbsp; MMXXVI
+  <!-- FOOTER -->
+  <footer class="footer-bar">
+    <span>SecureSoft Inc. © 2024</span>
+    <span>All rights reserved</span>
+    <span>Build 2024.12.01</span>
   </footer>
 
 </body>
