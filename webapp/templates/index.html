@@ -51,7 +51,7 @@
 
 <div class="hero-stats">
   <div class="hero-stat">
-    <strong>7</strong>
+    <strong>8</strong>
     <span>Cours gratuits</span>
   </div>
   <div class="hero-stat-sep"></div>
@@ -81,12 +81,12 @@
       <span class="t-title">terminal - bash</span>
     </div>
     <div class="terminal-body">
-      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">nmap -sV cybercampus-ctf.fr</span></div>
+      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">nmap -sV targ3t.com</span></div>
       <div class="t-line t-out">Starting Nmap scan...</div>
       <div class="t-line t-out">PORT     STATE SERVICE</div>
       <div class="t-line t-out">80/tcp   open  http</div>
       <div class="t-line t-out">443/tcp  open  https</div>
-      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqlmap -u "target.com?id=1"</span></div>
+      <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">sqlmap -u "targ3t.com?id=1"</span></div>
       <div class="t-line t-success">✓ Injectable parameter found: id</div>
       <div class="t-line t-success">✓ Database: MySQL 8.0</div>
       <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd t-blink">_</span></div>
@@ -102,7 +102,7 @@
   <div class="section-inner">
 
     <div class="section-label">Ce que tu vas apprendre</div>
-    <h2 class="section-title">7 domaines, 1 objectif :<br>maîtriser la cybersécurité</h2>
+    <h2 class="section-title">8 domaines, 1 objectif :<br>maîtriser la cybersécurité</h2>
 
     <div class="challenges-track">
 
@@ -165,6 +165,15 @@
         <div class="tile-info">
           <strong>Stéganographie</strong>
           <span>Messages cachés dans les pixels</span>
+        </div>
+        <div class="tile-pts">150 pts</div>
+      </a>
+
+      <a href="{{ url_for('learn_reverse') }}" class="challenge-tile">
+        <div class="tile-icon">🔬</div>
+        <div class="tile-info">
+          <strong>Reverse Engineering</strong>
+          <span>Analyse et décompilation de logiciels</span>
         </div>
         <div class="tile-pts">150 pts</div>
       </a>
