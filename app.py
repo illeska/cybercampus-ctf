@@ -32,6 +32,9 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=31536000 # Session d'une année
 )
 
+app.config["GOOGLE_OAUTH_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
+app.config["GOOGLE_OAUTH_CLIENT_SECRET"] = os.getenv("GOOGLE_CLIENT_SECRET")
+
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
 init_app(app)
 
@@ -42,14 +45,6 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(google_bp, url_prefix="/auth")
 
-# Après la création de l'app Flask
-app.config["GOOGLE_OAUTH_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
-app.config["GOOGLE_OAUTH_CLIENT_SECRET"] = os.getenv("GOOGLE_CLIENT_SECRET")
-
-# Route callback
-@app.route("/auth/google/callback")
-def google_callback():
-    return handle_google_callback()
 
 @app.errorhandler(404)
 def page_not_found(e):
