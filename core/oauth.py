@@ -12,7 +12,7 @@ google_bp = make_google_blueprint(
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     scope=["openid", "https://www.googleapis.com/auth/userinfo.email",
            "https://www.googleapis.com/auth/userinfo.profile"],
-    redirect_url="/auth/google/callback"
+    redirect_url="/auth/google/authorized"
 )
 
 def generate_unique_pseudo(base_pseudo):
