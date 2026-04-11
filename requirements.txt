@@ -24,3 +24,4 @@ pytest-cov==7.1.0
 Flask-Mail==0.10.0
 itsdangerous==2.2.0
 requests==2.31.0
+flask-dance==7.0.0

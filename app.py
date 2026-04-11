@@ -13,6 +13,7 @@ from core import init_app, db
 from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 from core.admin import admin_bp
+from core.oauth import google_bp, handle_google_callback
 
 import os
 
@@ -39,6 +40,16 @@ print("DB URI =", app.config["SQLALCHEMY_DATABASE_URI"])
 # Enregistrement des blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(google_bp, url_prefix="/auth")
+
+# Après la création de l'app Flask
+app.config["GOOGLE_OAUTH_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
+app.config["GOOGLE_OAUTH_CLIENT_SECRET"] = os.getenv("GOOGLE_CLIENT_SECRET")
+
+# Route callback
+@app.route("/auth/google/callback")
+def google_callback():
+    return handle_google_callback()
 
 @app.errorhandler(404)
 def page_not_found(e):
