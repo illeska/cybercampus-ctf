@@ -13,7 +13,7 @@ from core import init_app, db
 from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 from core.admin import admin_bp
-from core.oauth import google_bp, handle_google_callback
+from core.oauth import google_bp
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import os
@@ -50,16 +50,6 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(google_bp, url_prefix="/auth")
 
-# Après la création de l'app Flask
-
-@app.route("/debug-oauth")
-def debug_oauth():
-    from flask_dance.contrib.google import google
-    from flask import jsonify
-    return jsonify({
-        "google_login_url": url_for("google.login", _external=True),
-        "authorized_url": url_for("google.authorized", _external=True)
-    })
 
 @app.errorhandler(404)
 def page_not_found(e):
