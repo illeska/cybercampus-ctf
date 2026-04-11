@@ -17,6 +17,75 @@
     <a href="{{ url_for('admin.export_scoreboard') }}" class="admin-nav-btn">📥 Export CSV</a>
   </div>
 
+    <!-- Barre de recherche -->
+  <div class="search-bar">
+    <input 
+      type="text" 
+      id="searchInput" 
+      placeholder="🔍 Rechercher par pseudo ou email..."
+      class="search-input"
+      onkeyup="filterUsers()"
+    />
+    <span id="search-count" class="search-count"></span>
+  </div>
+
+  <style>
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(0,245,192,0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .search-input:focus {
+    border-color: rgba(0,245,192,0.5);
+    box-shadow: 0 0 0 3px rgba(0,245,192,0.1);
+  }
+
+  .search-input::placeholder { color: #475569; }
+
+  .search-count {
+    color: #64748b;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  </style>
+
+  <script>
+  function filterUsers() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('.admin-table tbody tr');
+    let visible = 0;
+
+    rows.forEach(row => {
+      const pseudo = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+      const email  = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+
+      if (pseudo.includes(input) || email.includes(input)) {
+        row.style.display = '';
+        visible++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const countEl = document.getElementById('search-count');
+    countEl.textContent = input ? `${visible} résultat(s)` : '';
+  }
+  </script>
+
   <!-- Table des utilisateurs -->
   <div class="admin-section">
     <div class="users-table-wrapper">
@@ -68,7 +137,9 @@
                       </button>
                     {% endif %}
                   </form>
-
+                  <a href="{{ url_for('admin.user_profile', user_id=user.id) }}" class="action-btn profile">
+                    👁️ Profil
+                  </a>
                   <form method="POST" action="{{ url_for('admin.reset_user_score', user_id=user.id) }}" style="display: inline;">
                     <button type="submit" class="action-btn reset" onclick="return confirm('Réinitialiser le score de {{ user.pseudo }} ?')">
                       🔄 Reset
@@ -99,6 +170,17 @@
   padding: 15px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.action-btn.profile {
+  background: rgba(139,92,246,0.2);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.3);
+}
+.action-btn.profile:hover {
+  background: #8b5cf6;
+  color: #fff;
+  transform: translateY(-2px);
 }
 
 .admin-nav-btn {

@@ -139,6 +139,42 @@ def reset_user_score(user_id):
     flash(f"🔄 Score de {user.pseudo} réinitialisé.", "info")
     return redirect(url_for('admin.users'))
 
+@admin_bp.route('/users/<int:user_id>/profile')
+@login_required
+@admin_required
+def user_profile(user_id):
+    from core.models import Submission, Scoreboard
+    
+    profile_user = User.query.get_or_404(user_id)
+    
+    # Stats
+    total_submissions = Submission.query.filter_by(user_id=user_id).count()
+    correct_submissions = Submission.query.filter_by(user_id=user_id, correct=True).count()
+    
+    # Challenges
+    solved_challenges = profile_user.get_solved_challenges()
+    in_progress = profile_user.get_in_progress_challenges()
+    
+    # Classement
+    rank = Scoreboard.query.filter(
+        Scoreboard.points_total > profile_user.score
+    ).count() + 1
+    
+    # Toutes les soumissions
+    submissions = Submission.query.filter_by(user_id=user_id)\
+        .order_by(Submission.timestamp.desc()).all()
+    
+    return render_template(
+        'admin/user_profile.html',
+        profile_user=profile_user,
+        total_submissions=total_submissions,
+        correct_submissions=correct_submissions,
+        solved_challenges=solved_challenges,
+        in_progress=in_progress,
+        rank=rank,
+        submissions=submissions
+    )
+
 # ------------------------------
 # GESTION DES CHALLENGES
 # ------------------------------
