@@ -14,6 +14,7 @@ from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 from core.admin import admin_bp
 from core.oauth import google_bp, handle_google_callback
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import os
 
@@ -29,14 +30,14 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,  # Empêche le JavaScript de voler le cookie (sécurité anti-XSS)
     SESSION_COOKIE_SAMESITE='Lax', # Permet de garder la session lors de la navigation interne
     SESSION_COOKIE_NAME='cybercampus_session', # Un nom unique pour ton CTF
-    PERMANENT_SESSION_LIFETIME=31536000 # Session d'une année
+    PERMANENT_SESSION_LIFETIME=31536000, # Session d'une année
     PREFERRED_URL_SCHEME='https'
 )
 
 app.config["GOOGLE_OAUTH_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
 app.config["GOOGLE_OAUTH_CLIENT_SECRET"] = os.getenv("GOOGLE_CLIENT_SECRET")
 
-from werkzeug.middleware.proxy_fix import ProxyFix
+
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
