@@ -132,6 +132,7 @@ class Submission(db.Model):
     flag_soumis = db.Column(db.String(255), nullable=False)
     correct = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    points_obtenus = db.Column(db.Integer, default=0)
 
     def verifier(self) -> bool:
         # Charge explicitement le challenge depuis la base

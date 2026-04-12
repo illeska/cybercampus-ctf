@@ -139,6 +139,8 @@
       </a>
       {% endfor %}
     </div>
+    <!-- Pagination -->
+    <div class="ac-pagination" id="pagination"></div>
 
     <!-- ── AUCUN RÉSULTAT ── -->
     <div class="ac-no-results" id="no-results" style="display:none;">
@@ -597,13 +599,16 @@ a { text-decoration: none; }
      JAVASCRIPT (logique inchangée)
 ══════════════════════════════════════ -->
 <script>
+const ITEMS_PER_PAGE = 12;
+let currentPage = 1;
+let filteredCards = [];
+
 // ── DATES RELATIVES ──
 function relativeDate(isoStr) {
   if (!isoStr) return null;
   const now  = new Date();
   const date = new Date(isoStr);
   const diff = Math.floor((now - date) / 86400000);
-
   if (diff === 0) return "Aujourd'hui";
   if (diff === 1) return "Il y a 1 jour";
   if (diff <= 6)  return `Il y a ${diff} jours`;
@@ -635,32 +640,141 @@ function periodMatch(isoStr, period) {
   return true;
 }
 
-function applyFilters() {
-  const cards = document.querySelectorAll('.ac-card');
-  let visible = 0;
-
-  cards.forEach(card => {
-    const ok = (state.source === 'all' || card.dataset.source === state.source)
-            && (state.lang   === 'all' || card.dataset.lang   === state.lang)
-            && periodMatch(card.dataset.date, state.period);
-
-    card.style.display = ok ? '' : 'none';
-    if (ok) visible++;
-  });
-
-  document.getElementById('visible-count').textContent = visible;
-  document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+function getAllCards() {
+  return Array.from(document.querySelectorAll('.ac-card'));
 }
 
+function applyFilters() {
+  const allCards = getAllCards();
+  filteredCards = allCards.filter(card => {
+    const sourceOk = state.source === 'all' || card.dataset.source === state.source;
+    const langOk   = state.lang   === 'all' || card.dataset.lang   === state.lang;
+    const periodOk = periodMatch(card.dataset.date, state.period);
+    return sourceOk && langOk && periodOk;
+  });
+
+  currentPage = 1;
+  renderPage();
+}
+
+function renderPage() {
+  const allCards = getAllCards();
+
+  // Cacher toutes les cartes
+  allCards.forEach(card => card.style.display = 'none');
+
+  // Afficher celles de la page courante
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const end   = start + ITEMS_PER_PAGE;
+  const pageCards = filteredCards.slice(start, end);
+  pageCards.forEach(card => card.style.display = '');
+
+  // Mettre à jour le compteur
+  document.getElementById('visible-count').textContent = filteredCards.length;
+
+  // Afficher/masquer le message "aucun résultat"
+  document.getElementById('no-results').style.display = filteredCards.length === 0 ? 'block' : 'none';
+
+  // Générer la pagination
+  renderPagination();
+
+  // Scroll vers le haut de la grille
+  if (currentPage > 1) {
+    document.getElementById('news-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
+  const container  = document.getElementById('pagination');
+
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // Bouton précédent
+  html += `<button class="ac-page-btn ${currentPage === 1 ? 'disabled' : ''}" 
+    onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+    ← Précédent
+  </button>`;
+
+  // Pages numérotées
+  html += '<div class="ac-page-numbers">';
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 || i === totalPages ||
+      (i >= currentPage - 2 && i <= currentPage + 2)
+    ) {
+      html += `<button class="ac-page-num ${i === currentPage ? 'active' : ''}" 
+        onclick="goToPage(${i})">${i}</button>`;
+    } else if (i === currentPage - 3 || i === currentPage + 3) {
+      html += `<span class="ac-page-dots">...</span>`;
+    }
+  }
+  html += '</div>';
+
+  // Bouton suivant
+  html += `<button class="ac-page-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+    onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+    Suivant →
+  </button>`;
+
+  container.innerHTML = html;
+}
+
+function goToPage(page) {
+  const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
+  if (page < 1 || page > totalPages) return;
+  currentPage = page;
+  renderPage();
+}
+
+// ── SAUVEGARDE PREFERENCES ──
+function savePrefs() {
+  localStorage.setItem('ac_prefs', JSON.stringify(state));
+}
+
+function loadPrefs() {
+  try {
+    const saved = localStorage.getItem('ac_prefs');
+    if (!saved) return;
+    const prefs = JSON.parse(saved);
+
+    // Restaurer l'état
+    Object.assign(state, prefs);
+
+    // Mettre à jour visuellement les boutons actifs
+    Object.entries(prefs).forEach(([group, value]) => {
+      document.querySelectorAll(`.ac-pill[data-filter="${group}"]`).forEach(p => {
+        p.classList.toggle('active', p.dataset.value === value);
+      });
+    });
+  } catch(e) {
+    localStorage.removeItem('ac_prefs');
+  }
+}
+
+// ── INIT ──
 document.querySelectorAll('.ac-pill').forEach(btn => {
   btn.addEventListener('click', () => {
     const group = btn.dataset.filter;
     document.querySelectorAll(`.ac-pill[data-filter="${group}"]`).forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     state[group] = btn.dataset.value;
+    savePrefs();  // ✅ Sauvegarder à chaque changement
     applyFilters();
   });
 });
+
+// Charger les préférences puis afficher
+loadPrefs();
+applyFilters();
+
+// Premier rendu
+applyFilters();
 </script>
 
 {% endblock %}

@@ -375,6 +375,13 @@ def dashboard():
     """Page du tableau de bord (protégée)"""
     return render_template("dashboard.html", user=current_user)
 
+@app.route('/history')
+@login_required
+def history():
+    all_submissions = current_user.submissions\
+        .order_by(Submission.timestamp.desc()).all()
+    return render_template('history.html', submissions=all_submissions)
+
 @app.route('/scoreboard')
 def scoreboard():
     """Page du classement général (Top 100)"""
@@ -582,6 +589,7 @@ def submit_flag(challenge_id):
         if previous_correct == 1:  # === 1 car on vient juste d'enregistrer
             # Retirer les points de base déjà ajoutés par Submission.enregistrer()
             sb.points_total = sb.points_total - base_points + final_points
+            submission.points_obtenus = final_points
             db.session.commit()
         
         # Message personnalisé selon la pénalité

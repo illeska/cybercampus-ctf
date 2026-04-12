@@ -127,6 +127,77 @@ p, li, span, input, textarea {
 .nav-btn.orange { background: linear-gradient(90deg, #ff8a00, #ff3d00); color: white !important; }
 
 
+/* ── PAGINATION ── */
+.ac-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.ac-page-btn {
+  padding: 9px 20px;
+  background: var(--surf);
+  border: 1px solid var(--bord);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ac-page-btn:hover:not(.disabled) {
+  background: rgba(0,245,192,0.1);
+  border-color: rgba(0,245,192,0.3);
+  color: #00f5c0;
+}
+
+.ac-page-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ac-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ac-page-num {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  background: var(--surf);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ac-page-num:hover {
+  background: rgba(0,245,192,0.08);
+  border-color: rgba(0,245,192,0.2);
+  color: #00f5c0;
+}
+
+.ac-page-num.active {
+  background: rgba(0,245,192,0.15);
+  border-color: rgba(0,245,192,0.4);
+  color: #00f5c0;
+  font-weight: 700;
+}
+
+.ac-page-dots {
+  color: #334155;
+  font-size: 0.85rem;
+  padding: 0 4px;
+}
+
 /* ========================================================
    LAYOUT & TITRES
 ======================================================== */

@@ -134,10 +134,13 @@
                 <span class="db-history-date">{{ sub.timestamp.strftime('%d/%m/%Y à %H:%M') }}</span>
               </div>
               <span class="db-history-result {% if sub.correct %}db-history-result--ok{% else %}db-history-result--fail{% endif %}">
-                {% if sub.correct %}+{{ sub.challenge.points }} pts{% else %}Échoué{% endif %}
+                {% if sub.correct %}+{{ sub.points_obtenus if sub.points_obtenus else sub.challenge.points }} pts{% else %}Échoué{% endif %}
               </span>
             </div>
             {% endfor %}
+            <a href="{{ url_for('history') }}" class="db-history-more">
+              Voir tout l'historique →
+            </a>
           </div>
         </div>
         {% endif %}
@@ -565,6 +568,22 @@ a { text-decoration: none; }
   box-shadow: 0 4px 18px rgba(239,68,68,0.3); transition: all 0.2s;
 }
 .db-modal-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(239,68,68,0.5); }
+
+.db-history-more {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  color: #00f5c0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.db-history-more:hover {
+  background: rgba(0,245,192,0.05);
+  color: #fff;
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
