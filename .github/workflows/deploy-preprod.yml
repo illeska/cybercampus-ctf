@@ -1,0 +1,47 @@
+name: Deploy CyberCampus CTF - Preprod
+
+on:
+  push:
+    branches:
+      - preprod
+
+jobs:
+  deploy-preprod:
+    name: Deploy to Preprod
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy
+        run: |
+          cd /var/www/preprod
+          echo "📥 Pull des dernières modifications..."
+          git pull origin preprod
+          echo "🛑 Arrêt des conteneurs preprod..."
+          sudo docker-compose -p preprod -f docker-compose.preprod.yml down
+          echo "🚀 Rebuild et relance preprod..."
+          sudo docker-compose -p preprod -f docker-compose.preprod.yml up --build -d
+          echo "✅ Déploiement preprod terminé !"
+
+  promote-to-main:
+    name: Promote preprod → main
+    needs: deploy-preprod
+    runs-on: self-hosted
+    steps:
+      - name: Checkout full repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Merge preprod into main
+        run: |
+          echo "🔄 Merge preprod → main..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git pull origin main
+          git merge origin/preprod --no-ff -m "Auto-merge preprod → main [skip preprod]"
+          git push origin main
+          echo "✅ Main mis à jour, le workflow prod va se déclencher !"
