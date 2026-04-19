@@ -64,7 +64,11 @@
         <span class="hist-date">{{ sub.timestamp.strftime('%d/%m/%Y à %H:%M') }}</span>
         <span class="hist-pts {{ 'pts-ok' if sub.correct else 'pts-fail' }}">
           {% if sub.correct %}
-            +{{ sub.points_obtenus if sub.points_obtenus else sub.challenge.points }} pts
+            {% if sub.points_obtenus and sub.points_obtenus > 0 %}
+              +{{ sub.points_obtenus }} pts
+            {% else %}
+              <span class="hist-replay">↻ Rejoué</span>
+            {% endif %}
           {% else %}
             Échoué
           {% endif %}
@@ -227,6 +231,11 @@
 .hist-pts { font-weight: 700; font-size: 0.88rem; }
 .pts-ok   { color: #10b981; }
 .pts-fail { color: #ef4444; }
+.hist-replay {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
 
 .hist-empty {
   text-align: center;

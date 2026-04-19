@@ -124,11 +124,18 @@
             <td><strong class="score-text">{{ user.score }}</strong> pts</td>
             <td><span class="date-text">{{ user.created_at.strftime('%d/%m/%Y') }}</span></td>
             <td>
-              <div class="action-buttons">
-                {% if user.id != current_user.id %}
+            <div class="action-buttons">
+              {% if user.id == current_user.id %}
+                <span class="disabled-action">—</span>
+              {% else %}
                 <a href="{{ url_for('admin.user_profile', user_id=user.id) }}" class="action-btn profile">
-                    👁️ Profil
-                  </a>
+                  👁️ Profil
+                </a>
+
+                {% if user.role == "admin" %}
+                  {# Un admin ne peut pas ban/reset un autre admin #}
+                  <span class="disabled-action" title="Action impossible sur un autre admin">🛡️ Protégé</span>
+                {% else %}
                   <form method="POST" action="{{ url_for('admin.ban_user', user_id=user.id) }}" style="display: inline;">
                     {% if user.role == "banned" %}
                       <button type="submit" class="action-btn unban" onclick="return confirm('Débannir {{ user.pseudo }} ?')">
@@ -145,10 +152,9 @@
                       🔄 Reset
                     </button>
                   </form>
-                {% else %}
-                  <span class="disabled-action">—</span>
                 {% endif %}
-              </div>
+              {% endif %}
+            </div>
             </td>
           </tr>
           {% endfor %}
