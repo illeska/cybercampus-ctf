@@ -28,6 +28,7 @@ jobs:
     name: Promote preprod → main
     needs: deploy-preprod
     runs-on: self-hosted
+    if: contains(github.event.head_commit.message, '[deploy-prod]')
     steps:
       - name: Checkout full repo
         uses: actions/checkout@v3
@@ -35,13 +36,29 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
 
-      - name: Merge preprod into main
+      - name: Squash merge preprod into main
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          echo "🔄 Merge preprod → main..."
+          echo "🔑 Mot magique [deploy-prod] détecté !"
+          
+          # Retire [deploy-prod] du message + nettoie les espaces en trop
+          CLEAN_MSG=$(echo "$COMMIT_MSG" | sed 's/\[deploy-prod\]//g' | sed 's/[[:space:]]*$//' | sed 's/^[[:space:]]*//')
+          
+          # Si le message est vide après nettoyage, message par défaut
+          if [ -z "$CLEAN_MSG" ]; then
+            CLEAN_MSG="Release preprod → main"
+          fi
+          
+          echo "📝 Message du commit : $CLEAN_MSG"
+          echo "🔄 Squash merge preprod → main..."
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout main
           git pull origin main
-          git merge origin/preprod --no-ff -m "Auto-merge preprod → main [skip preprod]"
+          git merge --squash origin/preprod
+          git commit -m "$CLEAN_MSG"
           git push origin main
-          echo "✅ Main mis à jour, le workflow prod va se déclencher !"
+          
+          echo "✅ Main mis à jour avec un commit propre !"

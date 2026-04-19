@@ -1279,6 +1279,105 @@ footer {
   font-weight: bold;
 }
 
+/* ========================================================
+   BARRE DE PROGRESSION DE LECTURE (pages de cours)
+======================================================== */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(5, 10, 16, 0.4);
+  z-index: 3000; /* Au-dessus de la navbar (z-index: 2000) */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.reading-progress.is-active {
+  opacity: 1;
+}
+
+.reading-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00f5c0, #0088ff);
+  box-shadow: 0 0 10px rgba(0, 245, 192, 0.6);
+  transition: width 0.1s ease-out;
+  will-change: width;
+}
+
+/* ========================================================
+   SÉPARATEURS ENTRE SECTIONS DE COURS
+======================================================== */
+
+/* Désactive le gap du container pour que le séparateur s'applique aux bordures de section */
+.course-page .course-content {
+  gap: 0;
+}
+
+.course-page .course-section {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.course-page .course-section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Ligne fine dégradée sous chaque section (sauf la dernière et les blocs spéciaux) */
+.course-page .course-section:not(:last-of-type)::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(0, 245, 192, 0.2) 50%,
+    rgba(255, 255, 255, 0.06) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Petit losange central */
+.course-page .course-section:not(:last-of-type)::before {
+  content: '';
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #050a10;
+  border: 1px solid rgba(0, 245, 192, 0.5);
+  box-shadow: 0 0 8px rgba(0, 245, 192, 0.3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Responsive : séparateur plus court sur mobile */
+@media (max-width: 768px) {
+  .course-page .course-section {
+    margin-bottom: 32px;
+  }
+
+  .course-page .course-section:not(:last-of-type)::after {
+    left: 15%;
+    right: 15%;
+    bottom: -16px;
+  }
+
+  .course-page .course-section:not(:last-of-type)::before {
+    bottom: -20px;
+  }
+}
+
 /* Checklist */
 .checklist {
   background: rgba(16, 185, 129, 0.05);

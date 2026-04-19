@@ -104,11 +104,16 @@ def users():
 def ban_user(user_id):
     """Bannir/débannir un utilisateur"""
     user = User.query.get_or_404(user_id)
-    
+
     if user.id == current_user.id:
         flash("❌ Vous ne pouvez pas vous bannir vous-même.", "danger")
         return redirect(url_for('admin.users'))
-    
+
+    # Un admin ne peut pas bannir/débannir un autre admin
+    if user.role == "admin":
+        flash("❌ Vous ne pouvez pas bannir un autre administrateur.", "danger")
+        return redirect(url_for('admin.users'))
+
     # Toggle le rôle (banned ou user)
     if user.role == "banned":
         user.role = "user"
@@ -116,7 +121,7 @@ def ban_user(user_id):
     else:
         user.role = "banned"
         flash(f"🔨 {user.pseudo} a été banni.", "warning")
-    
+
     db.session.commit()
     return redirect(url_for('admin.users'))
 
@@ -126,15 +131,20 @@ def ban_user(user_id):
 def reset_user_score(user_id):
     """Réinitialiser le score d'un utilisateur"""
     user = User.query.get_or_404(user_id)
-    
+
+    # Un admin ne peut pas reset le score d'un autre admin
+    if user.role == "admin" and user.id != current_user.id:
+        flash("❌ Vous ne pouvez pas réinitialiser le score d'un autre administrateur.", "danger")
+        return redirect(url_for('admin.users'))
+
     # Supprimer toutes ses soumissions
     Submission.query.filter_by(user_id=user.id).delete()
-    
+
     # Reset son scoreboard
     scoreboard = Scoreboard.query.filter_by(user_id=user.id).first()
     if scoreboard:
         scoreboard.points_total = 0
-    
+
     db.session.commit()
     flash(f"🔄 Score de {user.pseudo} réinitialisé.", "info")
     return redirect(url_for('admin.users'))

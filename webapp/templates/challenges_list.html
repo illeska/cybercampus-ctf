@@ -46,6 +46,22 @@
 </section>
 
 <!-- ══════════════════════════════════════
+     FAIR PLAY
+══════════════════════════════════════ -->
+<section class="ch-fairplay">
+  <div class="ch-fairplay-inner">
+    <div class="ch-fairplay-icon">🤝</div>
+    <div class="ch-fairplay-content">
+      <h3>Joue le jeu</h3>
+      <p>
+        On te fait confiance. <strong>Pas de triche, pas d'IA pour résoudre les challenges à ta place, pas de partage de flags.</strong>
+        Le but ici, c'est d'apprendre, pas d'avoir un bon score. Les indices et les cours sont là pour ça.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
      CHALLENGES
 ══════════════════════════════════════ -->
 <section class="ch-section">
@@ -306,6 +322,72 @@ a { text-decoration: none; }
   width: 1px;
   height: 36px;
   background: rgba(255,255,255,0.08);
+}
+
+/* ══════════════
+   FAIR PLAY
+══════════════ */
+.ch-fairplay {
+  padding: 0 40px 20px;
+}
+
+.ch-fairplay-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 24px;
+  background: rgba(0, 245, 192, 0.04);
+  border: 1px solid rgba(0, 245, 192, 0.15);
+  border-left: 3px solid var(--acc);
+  border-radius: 12px;
+}
+
+.ch-fairplay-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ch-fairplay-content {
+  flex: 1;
+}
+
+.ch-fairplay-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.ch-fairplay-content p {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ch-fairplay-content strong {
+  color: var(--acc);
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ch-fairplay { padding: 0 20px 20px; }
+
+  .ch-fairplay-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .ch-fairplay-icon { font-size: 1.6rem; }
+  .ch-fairplay-content p { font-size: 0.82rem; }
 }
 
 /* ══════════════
