@@ -142,6 +142,45 @@ function closeBanner() {
     }
 }
 
+  (function() {
+    const bar = document.querySelector('.reading-progress-bar');
+    const wrap = document.getElementById('reading-progress');
+    const coursePage = document.querySelector('.course-page');
+
+    if (!bar || !wrap || !coursePage) return;
+
+    wrap.classList.add('is-active');
+
+    let ticking = false;
+
+    function updateProgress() {
+      const rect = coursePage.getBoundingClientRect();
+      const pageTop = window.scrollY + rect.top;
+      const pageHeight = coursePage.offsetHeight;
+      const viewportHeight = window.innerHeight;
+
+      const scrollable = pageHeight - viewportHeight;
+      const scrolled = window.scrollY - pageTop;
+
+      let progress = scrollable > 0 ? (scrolled / scrollable) * 100 : 0;
+      progress = Math.max(0, Math.min(100, progress));
+
+      bar.style.width = progress + '%';
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        window.requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', updateProgress, { passive: true });
+    updateProgress();
+  })();
+
+
 document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('beta-closed') === 'true') {
         const banner = document.getElementById('beta-banner');
