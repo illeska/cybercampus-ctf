@@ -72,12 +72,12 @@
   </script>
 
   <!-- ── FAVICON & ICÔNES (multi-tailles + cache-busting) ── -->
-  <link rel="icon" type="image/png" sizes="16x16"   href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
-  <link rel="icon" type="image/png" sizes="32x32"   href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
-  <link rel="icon" type="image/png" sizes="96x96"   href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
-  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
-  <link rel="apple-touch-icon" sizes="180x180"      href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
-  <link rel="shortcut icon"                          href="{{ url_for('static', filename='img/icone.png') }}?v=2" />
+  <link rel="icon" type="image/png" sizes="16x16"   href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
+  <link rel="icon" type="image/png" sizes="32x32"   href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
+  <link rel="icon" type="image/png" sizes="96x96"   href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180"      href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
+  <link rel="shortcut icon"                          href="{{ url_for('static', filename='img/tab_icon.png') }}?v=2" />
 
   <!-- ── PERFORMANCE ── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -136,6 +136,11 @@
 </head>
 <body>
 
+  <!-- Barre de progression de lecture (active uniquement sur les pages de cours) -->
+    <div id="reading-progress" class="reading-progress" aria-hidden="true">
+      <div class="reading-progress-bar"></div>
+    </div>
+
   <!-- ── BANNIÈRE COOKIES ── -->
   <div id="cookie-banner" class="cookie-banner" style="display: none;">
     <div class="cookie-content">
@@ -173,10 +178,6 @@
       <span></span>
     </button>
 
-    <!-- Barre de progression de lecture (active uniquement sur les pages de cours) -->
-    <div id="reading-progress" class="reading-progress" aria-hidden="true">
-      <div class="reading-progress-bar"></div>
-    </div>
 
     <!-- Menu desktop -->
     <div class="nav-center">
