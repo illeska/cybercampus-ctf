@@ -14,6 +14,7 @@ from core.models import User, Challenge, Submission, Scoreboard
 from core.auth import auth_bp
 from core.admin import admin_bp
 from core.oauth import google_bp
+from core.security import SecurityEvent, detect_flag_spam
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import os
@@ -42,6 +43,10 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Initialisation des extensions (SQLAlchemy, LoginManager, etc.)
 init_app(app)
+
+@app.template_filter('security_extra')
+def security_extra_filter(event):
+    return SecurityEvent.get_extra(event)
 
 print("DB URI =", app.config["SQLALCHEMY_DATABASE_URI"])
 
@@ -609,6 +614,37 @@ def submit_flag(challenge_id):
             session.modified = True
     else:
         flash("❌ Flag incorrect. Réessayez !", "danger")
+
+    # Logging sécurité
+    if submission.correct:
+        SecurityEvent.log(
+            SecurityEvent.FLAG_OK,
+            ip=request.remote_addr,
+            user_id=current_user.id,
+            extra={
+                "challenge_id": challenge_id,
+                "challenge": challenge.titre,
+                "points": final_points,
+            }
+        )
+    else:
+        SecurityEvent.log(
+            SecurityEvent.FLAG_FAIL,
+            ip=request.remote_addr,
+            user_id=current_user.id,
+            extra={
+                "challenge_id": challenge_id,
+                "challenge": challenge.titre,
+                "flag_tried": flag_soumis[:40],
+            }
+        )
+        if detect_flag_spam(request.remote_addr):
+            SecurityEvent.log(
+                SecurityEvent.BRUTE_SUSPECT,
+                ip=request.remote_addr,
+                user_id=current_user.id,
+                extra={"reason": "Flag spam detected"}
+            )
     
     return redirect(url_for('challenge_view', challenge_id=challenge_id))
 

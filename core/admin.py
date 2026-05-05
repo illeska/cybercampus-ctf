@@ -7,6 +7,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from core import db
 from core.models import User, Challenge, Submission, Scoreboard, Flag, RssFeed
+from core.security import SecurityEvent, get_dashboard_stats
 from datetime import datetime, timedelta
 import csv
 import io
@@ -383,3 +384,11 @@ def export_scoreboard():
         as_attachment=True,
         download_name=f'scoreboard_{datetime.now().strftime("%Y%m%d")}.csv'
     )
+
+@admin_bp.route('/security')
+@login_required
+@admin_required
+def security():
+    """Dashboard Sécurité / IDS / Pare-feu"""
+    stats = get_dashboard_stats()
+    return render_template('admin/security.html', stats=stats)
