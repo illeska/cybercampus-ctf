@@ -48,6 +48,17 @@ init_app(app)
 def security_extra_filter(event):
     return SecurityEvent.get_extra(event)
 
+@app.before_request
+def check_banned_ip():
+    from core.security import BannedIP
+    from flask import abort, request
+    ip = request.remote_addr
+    # Ne pas bloquer les routes admin (pour que l'admin puisse débannir)
+    if request.path.startswith('/admin'):
+        return
+    if BannedIP.is_banned(ip):
+        abort(403)
+
 print("DB URI =", app.config["SQLALCHEMY_DATABASE_URI"])
 
 # Enregistrement des blueprints

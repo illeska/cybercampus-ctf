@@ -232,3 +232,24 @@ def get_dashboard_stats() -> dict:
         "hourly"          : hourly,
         "banned_attempts" : banned_attempts,
     }
+
+class BannedIP(db.Model):
+    __tablename__ = "banned_ip"
+ 
+    id         = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), unique=True, nullable=False)
+    reason     = db.Column(db.String(300), nullable=True)
+    banned_by  = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    banned_at  = db.Column(db.DateTime, default=datetime.utcnow)
+ 
+    admin = db.relationship("User", foreign_keys=[banned_by])
+ 
+    @staticmethod
+    def is_banned(ip: str) -> bool:
+        if not ip:
+            return False
+        return BannedIP.query.filter_by(ip_address=ip).first() is not None
+ 
+    def __repr__(self):
+        return f"<BannedIP {self.ip_address}>"
+ 
