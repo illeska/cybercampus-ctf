@@ -19,6 +19,7 @@ RUN npm install -g docx
 # Copier tout le reste du code dans le conteneur
 COPY . .
 
+
 # Définir la variable d'environnement Flask
 ENV FLASK_ENV=production
 
