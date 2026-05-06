@@ -403,26 +403,35 @@ def security():
 @admin_required
 def ban_ip():
     from core.security import BannedIP
-    ip      = request.form.get('ip', '').strip()
-    reason  = request.form.get('reason', 'Brute-force détecté').strip()
- 
+    import subprocess
+    ip     = request.form.get('ip', '').strip()
+    reason = request.form.get('reason', 'Brute-force détecté').strip()
+
     if not ip:
         flash("❌ IP invalide.", "danger")
         return redirect(url_for('admin.security'))
- 
+
     existing = BannedIP.query.filter_by(ip_address=ip).first()
     if existing:
         flash(f"⚠️ L'IP {ip} est déjà bannie.", "warning")
         return redirect(url_for('admin.security'))
- 
-    ban = BannedIP(
-        ip_address=ip,
-        reason=reason,
-        banned_by=current_user.id
-    )
+
+    # Ban en base Flask
+    ban = BannedIP(ip_address=ip, reason=reason, banned_by=current_user.id)
     db.session.add(ban)
     db.session.commit()
-    flash(f"🔨 IP {ip} bannie avec succès.", "success")
+
+    # Ban au niveau réseau via Fail2ban
+    try:
+        subprocess.run(
+            ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock",
+             "set", "cybercampus-blocked", "banip", ip],
+            timeout=5, capture_output=True
+        )
+    except Exception:
+        pass  # Le ban Flask reste actif même si Fail2ban échoue
+
+    flash(f"🔨 IP {ip} bannie (Flask + Fail2ban).", "success")
     return redirect(url_for('admin.security'))
  
  
@@ -432,11 +441,23 @@ def ban_ip():
 @admin_required
 def unban_ip(ban_id):
     from core.security import BannedIP
+    import subprocess
     ban = BannedIP.query.get_or_404(ban_id)
     ip  = ban.ip_address
     db.session.delete(ban)
     db.session.commit()
-    flash(f"✅ IP {ip} débannie.", "success")
+
+    # Débannir aussi au niveau réseau
+    try:
+        subprocess.run(
+            ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock",
+             "set", "cybercampus-blocked", "unbanip", ip],
+            timeout=5, capture_output=True
+        )
+    except Exception:
+        pass
+
+    flash(f"✅ IP {ip} débannie (Flask + Fail2ban).", "success")
     return redirect(url_for('admin.security'))
  
  

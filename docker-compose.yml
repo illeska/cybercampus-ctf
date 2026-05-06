@@ -17,6 +17,7 @@ services:
       - /var/log/fail2ban:/var/log/fail2ban:ro 
       - /var/log/kern.log:/var/log/kern.log:ro 
       - /run/fail2ban/fail2ban.sock:/run/fail2ban/fail2ban.sock
+      - /etc/fail2ban/filter.d:/etc/fail2ban/filter.d:ro
     restart: always
 
   db:
