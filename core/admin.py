@@ -2,11 +2,13 @@
 # CyberCampus CTF - Panel Admin
 # ------------------------------
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file
+from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
 from core import db
 from core.models import User, Challenge, Submission, Scoreboard, Flag, RssFeed
+from core.security import SecurityEvent, get_dashboard_stats
+from layer1_reader import get_layer1_stats
 from datetime import datetime, timedelta
 import csv
 import io
@@ -382,4 +384,318 @@ def export_scoreboard():
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'scoreboard_{datetime.now().strftime("%Y%m%d")}.csv'
+    )
+
+# ── Dashboard sécurité ───────────────────────────────────────────────
+@admin_bp.route('/security')
+@login_required
+@admin_required
+def security():
+    from core.security import get_dashboard_stats, BannedIP
+    stats = get_dashboard_stats()
+    banned_ips = BannedIP.query.order_by(BannedIP.banned_at.desc()).all()
+    return render_template('admin/security.html', stats=stats, banned_ips=banned_ips, layer1=get_layer1_stats())
+ 
+ 
+# ── Bannir une IP ────────────────────────────────────────────────────
+@admin_bp.route('/security/ban-ip', methods=['POST'])
+@login_required
+@admin_required
+def ban_ip():
+    from core.security import BannedIP
+    import subprocess
+    ip     = request.form.get('ip', '').strip()
+    reason = request.form.get('reason', 'Brute-force détecté').strip()
+
+    if not ip:
+        flash("❌ IP invalide.", "danger")
+        return redirect(url_for('admin.security'))
+
+    existing = BannedIP.query.filter_by(ip_address=ip).first()
+    if existing:
+        flash(f"⚠️ L'IP {ip} est déjà bannie.", "warning")
+        return redirect(url_for('admin.security'))
+
+    # Ban en base Flask
+    ban = BannedIP(ip_address=ip, reason=reason, banned_by=current_user.id)
+    db.session.add(ban)
+    db.session.commit()
+
+    # Ban au niveau réseau via Fail2ban
+    try:
+        subprocess.run(
+            ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock",
+             "set", "cybercampus-blocked", "banip", ip],
+            timeout=5, capture_output=True
+        )
+    except Exception:
+        pass  # Le ban Flask reste actif même si Fail2ban échoue
+
+    flash(f"🔨 IP {ip} bannie (Flask + Fail2ban).", "success")
+    return redirect(url_for('admin.security'))
+ 
+ 
+# ── Débannir une IP ──────────────────────────────────────────────────
+@admin_bp.route('/security/unban-ip/<int:ban_id>', methods=['POST'])
+@login_required
+@admin_required
+def unban_ip(ban_id):
+    from core.security import BannedIP
+    import subprocess
+    ban = BannedIP.query.get_or_404(ban_id)
+    ip  = ban.ip_address
+    db.session.delete(ban)
+    db.session.commit()
+
+    # Débannir aussi au niveau réseau
+    try:
+        subprocess.run(
+            ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock",
+             "set", "cybercampus-blocked", "unbanip", ip],
+            timeout=5, capture_output=True
+        )
+    except Exception:
+        pass
+
+    flash(f"✅ IP {ip} débannie (Flask + Fail2ban).", "success")
+    return redirect(url_for('admin.security'))
+ 
+ 
+# ── Export CSV ───────────────────────────────────────────────────────
+@admin_bp.route('/security/export/csv', methods=['POST'])
+@login_required
+@admin_required
+def security_export_csv():
+    from core.security import SecurityEvent
+    import csv, io
+ 
+    # Filtres choisis par l'admin
+    selected_types = request.form.getlist('event_types')
+    limit          = int(request.form.get('limit', 500))
+    date_from      = request.form.get('date_from', '')
+    date_to        = request.form.get('date_to', '')
+ 
+    query = SecurityEvent.query
+ 
+    if selected_types:
+        query = query.filter(SecurityEvent.event_type.in_(selected_types))
+ 
+    if date_from:
+        try:
+            query = query.filter(
+                SecurityEvent.timestamp >= datetime.strptime(date_from, '%Y-%m-%d')
+            )
+        except ValueError:
+            pass
+ 
+    if date_to:
+        try:
+            query = query.filter(
+                SecurityEvent.timestamp <= datetime.strptime(date_to + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+            )
+        except ValueError:
+            pass
+ 
+    events = query.order_by(SecurityEvent.timestamp.desc()).limit(limit).all()
+ 
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Date', 'Type', 'IP', 'Utilisateur', 'Chemin', 'Détails', 'User-Agent'])
+ 
+    for ev in events:
+        writer.writerow([
+            ev.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            ev.event_type,
+            ev.ip_address or '',
+            ev.user.pseudo if ev.user else '',
+            ev.path or '',
+            ev.extra or '',
+            (ev.user_agent or '')[:100],
+        ])
+ 
+    output.seek(0)
+    filename = f"cybercampus_security_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+ 
+    from flask import Response
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv; charset=utf-8',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
+ 
+@admin_bp.route('/security/live-filters')
+@login_required
+def security_live_filters():
+    """Retourne les matches de tous les filtres en JSON pour l'AJAX."""
+    import subprocess, re, json
+    from pathlib import Path
+
+    LOG = "/var/log/nginx/cybercampus_access.log"
+    FILTER_DIR = Path("/etc/fail2ban/filter.d")
+    
+    filters = [
+        "cybercampus-blocked",
+        "cybercampus-dirscan", 
+        "cybercampus-flagspam",
+        "cybercampus-ratelimit",
+        "nginx-cybercampus-login",
+        "nginx-cybercampus-admin",
+        "nginx-badbots",
+        "nginx-noscript",
+    ]
+
+    results = []
+    for f in filters:
+        filter_path = FILTER_DIR / f"{f}.conf"
+        if not filter_path.exists():
+            continue
+        try:
+            out = subprocess.run(
+                ["fail2ban-regex", LOG, str(filter_path), "--print-all-matched"],
+                capture_output=True, text=True, timeout=10
+            )
+            txt = out.stdout
+
+            # Total matches
+            total_match = re.search(r"Failregex: (\d+) total", txt)
+            total = int(total_match.group(1)) if total_match else 0
+
+            # Lignes matchées
+            matched_lines = []
+            in_matched = False
+            for line in txt.splitlines():
+                if "Matched line(s):" in line:
+                    in_matched = True
+                    continue
+                if in_matched:
+                    if line.strip().startswith("`-"):
+                        break
+                    line = line.strip().lstrip("|").strip()
+                    if line:
+                        try:
+                            data = json.loads(line)
+                            matched_lines.append(data)
+                        except Exception:
+                            matched_lines.append({"raw": line})
+
+            results.append({
+                "filter": f,
+                "total": total,
+                "matches": matched_lines[-20:],  # 20 derniers
+            })
+        except Exception as e:
+            results.append({"filter": f, "total": 0, "matches": [], "error": str(e)})
+
+    return jsonify(results) 
+
+@admin_bp.route('/security/live-stats')
+@login_required  
+def security_live_stats():
+    from layer1_reader import get_layer1_stats
+    return jsonify(get_layer1_stats())
+
+# ── Export Word ──────────────────────────────────────────────────────
+@admin_bp.route('/security/export/word', methods=['POST'])
+@login_required
+@admin_required
+def security_export_word():
+    from core.security import SecurityEvent, BannedIP, get_dashboard_stats
+    import subprocess, tempfile, os, json
+ 
+    selected_types = request.form.getlist('event_types')
+    limit          = int(request.form.get('limit', 200))
+    date_from      = request.form.get('date_from', '')
+    date_to        = request.form.get('date_to', '')
+    include_stats  = request.form.get('include_stats') == '1'
+    include_banned = request.form.get('include_banned') == '1'
+ 
+    # Récupérer les événements
+    query = SecurityEvent.query
+    if selected_types:
+        query = query.filter(SecurityEvent.event_type.in_(selected_types))
+    if date_from:
+        try:
+            query = query.filter(
+                SecurityEvent.timestamp >= datetime.strptime(date_from, '%Y-%m-%d')
+            )
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            query = query.filter(
+                SecurityEvent.timestamp <= datetime.strptime(date_to + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+            )
+        except ValueError:
+            pass
+ 
+    events = query.order_by(SecurityEvent.timestamp.desc()).limit(limit).all()
+ 
+    # Stats et IPs bannies
+    stats      = get_dashboard_stats() if include_stats else {}
+    banned_ips = BannedIP.query.all() if include_banned else []
+ 
+    # Sérialiser pour passer au script Node.js
+    payload = {
+        "generated_at": datetime.now().strftime('%d/%m/%Y à %H:%M'),
+        "generated_by": current_user.pseudo,
+        "include_stats": include_stats,
+        "include_banned": include_banned,
+        "stats": {
+            "events_24h":      stats.get("events_24h", 0),
+            "logins_ok_24h":   stats.get("logins_ok_24h", 0),
+            "logins_fail_24h": stats.get("logins_fail_24h", 0),
+            "flags_ok_24h":    stats.get("flags_ok_24h", 0),
+            "flags_fail_24h":  stats.get("flags_fail_24h", 0),
+            "suspicious_ips":  [(ip, cnt) for ip, cnt in stats.get("suspicious_ips", [])],
+        } if include_stats else {},
+        "banned_ips": [
+            {
+                "ip": b.ip_address,
+                "reason": b.reason,
+                "at": b.banned_at.strftime('%d/%m/%Y %H:%M'),
+            }
+            for b in banned_ips
+        ],
+        "events": [
+            {
+                "ts":   ev.timestamp.strftime('%d/%m/%Y %H:%M:%S'),
+                "type": ev.event_type,
+                "ip":   ev.ip_address or "?",
+                "user": ev.user.pseudo if ev.user else "—",
+                "path": ev.path or "—",
+                "extra": ev.extra or "",
+            }
+            for ev in events
+        ],
+    }
+ 
+    # Écrire le payload JSON temporaire
+    tmp_json = tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w', encoding='utf-8')
+    json.dump(payload, tmp_json, ensure_ascii=False)
+    tmp_json.close()
+ 
+    tmp_docx = tempfile.NamedTemporaryFile(suffix='.docx', delete=False)
+    tmp_docx.close()
+ 
+    # Appeler le script Node.js
+    script_path = os.path.join(os.path.dirname(__file__), '..', 'webapp', 'static', 'js', 'gen_security_report.js')
+    result = subprocess.run(
+        ['node', script_path, tmp_json.name, tmp_docx.name],
+        capture_output=True, text=True, timeout=30
+    )
+ 
+    os.unlink(tmp_json.name)
+ 
+    if result.returncode != 0:
+        os.unlink(tmp_docx.name)
+        flash(f"❌ Erreur génération Word : {result.stderr[:200]}", "danger")
+        return redirect(url_for('admin.security'))
+ 
+    from flask import send_file
+    filename = f"rapport_securite_{datetime.now().strftime('%Y%m%d_%H%M')}.docx"
+    return send_file(
+        tmp_docx.name,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )

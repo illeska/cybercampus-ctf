@@ -12,6 +12,7 @@ from core import db, mail
 from datetime import datetime
 import random
 import requests as http_requests
+from core.security import SecurityEvent, detect_bruteforce
 
 # Création du blueprint d'authentification
 auth_bp = Blueprint('auth', __name__)
@@ -128,6 +129,15 @@ def register():
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
+
+        new_user.ip_address = request.remote_addr
+        db.session.commit()
+        SecurityEvent.log(
+            SecurityEvent.REGISTER,
+            ip=request.remote_addr,
+            user_id=new_user.id,
+            extra={"pseudo": new_user.pseudo}
+        )
 
         # Générer et envoyer le code
         try:
@@ -254,6 +264,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
 
         if user and user.check_password(form.password.data):
+            
             # Vérifier si l'email est confirmé
             if not user.email_verified:
                 session['verify_user_id'] = user.id
@@ -261,11 +272,46 @@ def login():
                 return redirect(url_for("auth.verify_email_page"))
 
             login_user(user)
+            user.last_ip    = request.remote_addr
+            user.last_seen  = dt.utcnow()
+            user.login_count = (user.login_count or 0) + 1
+            db.session.commit()
+
+            SecurityEvent.log(
+                SecurityEvent.LOGIN_OK,
+                ip=request.remote_addr,
+                user_id=user.id,
+                extra={"pseudo": user.pseudo}
+            )
+
             flash(f"Bienvenue {user.pseudo} !", "success")
             return redirect(url_for("auth.dashboard"))
         else:
             flash("Email ou mot de passe incorrect.", "danger")
-            return redirect(url_for("auth.login"))
+            SecurityEvent.log(
+            SecurityEvent.LOGIN_FAIL,
+            ip=request.remote_addr,
+            extra={"email_tried": form.email.data}
+            )
+            # Détecter le brute-force
+            if detect_bruteforce(request.remote_addr):
+                SecurityEvent.log(
+                    SecurityEvent.BRUTE_SUSPECT,
+                    ip=request.remote_addr,
+                    extra={"reason": "Too many failed logins in 5min"}
+                )
+                return redirect(url_for("auth.login"))
+            
+        if user and user.role == "banned":
+            SecurityEvent.log(
+                SecurityEvent.BANNED_ATTEMPT,
+                ip=request.remote_addr,
+                user_id=user.id,
+                extra={"pseudo": user.pseudo}
+            )
+            flash("Votre compte a été banni.", "danger")
+            return redirect(url_for("auth.login")) 
+            
 
     return render_template("login.html", form=form)
 

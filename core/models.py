@@ -23,6 +23,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default="user")
     created_at = db.Column(db.DateTime, default=db.func.now())
     email_verified = db.Column(db.Boolean, default=False)
+    ip_address  = db.Column(db.String(45), nullable=True) 
+    last_ip     = db.Column(db.String(45), nullable=True)
+    last_seen   = db.Column(db.DateTime, nullable=True)    
+    login_count = db.Column(db.Integer, default=0)   
 
     submissions = db.relationship("Submission", backref="user", lazy="dynamic")
     scoreboard = db.relationship("Scoreboard", backref="user", uselist=False)
@@ -133,6 +137,7 @@ class Submission(db.Model):
     correct = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     points_obtenus = db.Column(db.Integer, default=0)
+    ip_address = db.Column(db.String(45), nullable=True)
 
     def verifier(self) -> bool:
         # Charge explicitement le challenge depuis la base
@@ -235,3 +240,5 @@ class EmailVerification(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+from core.security import SecurityEvent

@@ -12,8 +12,13 @@ COPY requirements.txt .
 # Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Installer fail2ban et nettoyer les caches apt et installation de nodejs
+RUN apt-get update && apt-get install -y fail2ban nodejs npm --no-install-recommends && apt-get clean
+RUN npm install -g docx
+
 # Copier tout le reste du code dans le conteneur
 COPY . .
+
 
 # Définir la variable d'environnement Flask
 ENV FLASK_ENV=production
