@@ -8,7 +8,7 @@ from functools import wraps
 from core import db
 from core.models import User, Challenge, Submission, Scoreboard, Flag, RssFeed
 from core.security import SecurityEvent, get_dashboard_stats
-from utils.layer1_reader import get_layer1_stats
+from layer1_reader import get_layer1_stats
 from datetime import datetime, timedelta
 import csv
 import io
