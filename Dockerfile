@@ -13,8 +13,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Installer fail2ban et nettoyer les caches apt et installation de nodejs
-RUN apt-get update && apt-get install -y fail2ban nodejs --no-install-recommends && apt-get clean
-
+RUN apt-get update && apt-get install -y fail2ban nodejs npm --no-install-recommends && apt-get clean
+RUN npm install -g docx
 
 # Copier tout le reste du code dans le conteneur
 COPY . .
