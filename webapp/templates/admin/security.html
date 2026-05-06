@@ -264,6 +264,264 @@
 
   </div>
 
+  {#
+  ══════════════════════════════════════════════════════════════
+  BLOC À INSÉRER dans webapp/templates/admin/security.html
+  Coller juste AVANT la section "JOURNAL DES ÉVÉNEMENTS"
+  ══════════════════════════════════════════════════════════════
+  La route admin.security doit passer layer1=get_layer1_stats()
+  dans render_template().
+  ══════════════════════════════════════════════════════════════
+#}
+
+<!-- ══ COUCHE 1 — RÉSEAU ══ -->
+<div class="sec-layer-title">
+  <span class="sec-layer-badge">COUCHE 1</span>
+  <h3>🌐 Protection Réseau — Nginx & Fail2ban</h3>
+  {% if not layer1.fail2ban.available %}
+    <span class="sec-badge sec-badge--orange">⚠️ Fail2ban non détecté</span>
+  {% else %}
+    <span class="sec-badge sec-badge--green">✅ Actif</span>
+  {% endif %}
+</div>
+
+<!-- Stat cards couche 1 -->
+<div class="sec-stats-grid sec-stats-grid--4">
+
+  <div class="sec-stat-card sec-stat-card--red">
+    <div class="sec-stat-top"><span class="sec-stat-icon">🔒</span><span class="sec-stat-label">IPs bannies (F2B)</span></div>
+    <div class="sec-stat-val">{{ layer1.fail2ban.total_banned }}</div>
+    <div class="sec-stat-sub">En ce moment, tous jails</div>
+  </div>
+
+  <div class="sec-stat-card sec-stat-card--orange">
+    <div class="sec-stat-top"><span class="sec-stat-icon">🚫</span><span class="sec-stat-label">Requêtes bloquées</span></div>
+    <div class="sec-stat-val">{{ layer1.blocked|length }}</div>
+    <div class="sec-stat-sub">Dernières 50 entrées</div>
+  </div>
+
+  <div class="sec-stat-card sec-stat-card--purple">
+    <div class="sec-stat-top"><span class="sec-stat-icon">🔍</span><span class="sec-stat-label">Scans de ports</span></div>
+    <div class="sec-stat-val">{{ layer1.port_scans.total }}</div>
+    <div class="sec-stat-sub">
+      {% if layer1.port_scans.available %}Détectés via iptables{% else %}iptables LOG non configuré{% endif %}
+    </div>
+  </div>
+
+  <div class="sec-stat-card sec-stat-card--neutral">
+    <div class="sec-stat-top"><span class="sec-stat-icon">📋</span><span class="sec-stat-label">Jails actifs</span></div>
+    <div class="sec-stat-val">{{ layer1.fail2ban.jails|length }}</div>
+    <div class="sec-stat-sub">Fail2ban jails configurés</div>
+  </div>
+
+</div>
+
+<!-- Jails Fail2ban -->
+{% if layer1.fail2ban.available and layer1.fail2ban.jails %}
+<div class="sec-section">
+  <div class="sec-section-header">
+    <h3>🔒 Jails Fail2ban</h3>
+    <span class="sec-section-sub">État en temps réel de chaque règle</span>
+  </div>
+  <div class="sec-table-wrap">
+    <table class="sec-table">
+      <thead>
+        <tr>
+          <th>Jail</th>
+          <th>Bannies actuellement</th>
+          <th>Total bans</th>
+          <th>Échecs actuels</th>
+          <th>Total échecs</th>
+          <th>IPs bannies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for jail in layer1.fail2ban.jails %}
+        <tr {% if jail.currently_banned > 0 %}class="sec-row-danger"{% endif %}>
+          <td><code class="sec-ip" style="color:#00f5c0;">{{ jail.name }}</code></td>
+          <td>
+            {% if jail.currently_banned > 0 %}
+              <strong style="color:#ef4444;">{{ jail.currently_banned }}</strong>
+            {% else %}
+              <span class="sec-muted">0</span>
+            {% endif %}
+          </td>
+          <td><span style="color:#fff;">{{ jail.total_banned }}</span></td>
+          <td>{{ jail.currently_failed }}</td>
+          <td class="sec-muted">{{ jail.total_failed }}</td>
+          <td>
+            {% for ip in jail.banned_ips[:3] %}
+              <code class="sec-ip" style="font-size:0.72rem;">{{ ip }}</code>
+            {% endfor %}
+            {% if jail.banned_ips|length > 3 %}
+              <span class="sec-muted">+{{ jail.banned_ips|length - 3 }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif layer1.fail2ban.error %}
+<div class="sec-section">
+  <div class="sec-section-header"><h3>🔒 Fail2ban</h3></div>
+  <div class="sec-empty-row" style="padding:20px;">
+    ⚠️ {{ layer1.fail2ban.error }} — Voir le guide d'installation (install_layer1.sh)
+  </div>
+</div>
+{% endif %}
+
+<!-- Scans de ports -->
+{% if layer1.port_scans.top_ips %}
+<div class="sec-section sec-section--danger">
+  <div class="sec-section-header">
+    <h3>🔍 Top IPs — Scan de ports</h3>
+    <span class="sec-section-sub">Détecté via iptables LOG (PORTSCAN:)</span>
+  </div>
+  <div class="sec-table-wrap">
+    <table class="sec-table">
+      <thead>
+        <tr><th>Adresse IP</th><th>Tentatives</th><th>Statut Fail2ban</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for ip, count in layer1.port_scans.top_ips %}
+        {% set is_banned_f2b = false %}
+        {% for jail in layer1.fail2ban.jails %}
+          {% if ip in jail.banned_ips %}{% set is_banned_f2b = true %}{% endif %}
+        {% endfor %}
+        <tr>
+          <td><code class="sec-ip">{{ ip }}</code></td>
+          <td><strong style="color:#ef4444;">{{ count }}</strong> paquets</td>
+          <td>
+            {% if is_banned_f2b %}
+              <span class="sec-badge sec-badge--red">🔒 Banni</span>
+            {% else %}
+              <span class="sec-badge sec-badge--orange">⚠️ Libre</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set already = banned_ips|selectattr('ip_address','equalto',ip)|list|length > 0 %}
+            {% if not already %}
+            <button class="sec-quick-ban-btn"
+                    onclick="prefillBan('{{ ip }}','Port scan: {{ count }} paquets détectés')">
+              🔨 Bannir
+            </button>
+            {% else %}
+            <span class="sec-muted sec-badge sec-badge--gray">Déjà banni</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Requêtes bloquées par Nginx -->
+{% if layer1.blocked %}
+<div class="sec-section">
+  <div class="sec-section-header">
+    <h3>🚫 Requêtes bloquées par Nginx</h3>
+    <span class="sec-section-sub">Scanners, bots, User-Agents suspects (444/403)</span>
+  </div>
+  <div class="sec-table-wrap">
+    <table class="sec-table">
+      <thead>
+        <tr><th>IP</th><th>Heure</th><th>Requête</th><th>Code</th><th>User-Agent</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for req in layer1.blocked %}
+        <tr>
+          <td><code class="sec-ip">{{ req.ip }}</code></td>
+          <td class="sec-muted">{{ req.time }}</td>
+          <td class="sec-path" style="max-width:180px;">{{ req.request[:60] }}{% if req.request|length > 60 %}…{% endif %}</td>
+          <td>
+            {% if req.status == "444" %}
+              <span class="sec-badge sec-badge--red">444</span>
+            {% elif req.status == "403" %}
+              <span class="sec-badge sec-badge--orange">403</span>
+            {% else %}
+              <span class="sec-badge sec-badge--gray">{{ req.status }}</span>
+            {% endif %}
+          </td>
+          <td class="sec-ua">{{ req.ua }}</td>
+          <td>
+            {% set already = banned_ips|selectattr('ip_address','equalto',req.ip)|list|length > 0 %}
+            {% if not already %}
+            <button class="sec-quick-ban-btn"
+                    onclick="prefillBan('{{ req.ip }}','Requête bloquée Nginx: {{ req.request[:40] }}')">
+              🔨
+            </button>
+            {% else %}
+            <span class="sec-muted" style="font-size:0.72rem;">Banni</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Historique des bans Fail2ban -->
+{% if layer1.recent_bans %}
+<div class="sec-section">
+  <div class="sec-section-header">
+    <h3>📋 Historique des bans Fail2ban</h3>
+    <span class="sec-section-sub">20 derniers bans/unbans</span>
+  </div>
+  <div class="sec-table-wrap">
+    <table class="sec-table">
+      <thead>
+        <tr><th>Heure</th><th>Action</th><th>Jail</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        {% for ban in layer1.recent_bans %}
+        <tr>
+          <td class="sec-muted">{{ ban.ts }}</td>
+          <td>
+            {% if ban.action == "Ban" %}
+              <span class="sec-badge sec-badge--red">🔒 Banni</span>
+            {% else %}
+              <span class="sec-badge sec-badge--green">✅ Débanni</span>
+            {% endif %}
+          </td>
+          <td><code style="font-size:0.78rem;color:#a78bfa;">{{ ban.jail }}</code></td>
+          <td><code class="sec-ip">{{ ban.ip }}</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<style>
+/* ── Titre de couche ── */
+.sec-layer-title {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; margin-bottom: 16px;
+  border-bottom: 2px solid rgba(0,245,192,0.15);
+}
+.sec-layer-title h3 {
+  font-family:'Orbitron',sans-serif; font-size:1rem; color:#fff; font-weight:700; margin:0; flex:1;
+}
+.sec-layer-badge {
+  background: linear-gradient(135deg,#00f5c0,#0088ff);
+  color:#050a10; font-weight:800; font-size:0.7rem;
+  padding:4px 10px; border-radius:6px; letter-spacing:0.1em;
+  flex-shrink:0;
+}
+
+/* ── Grille 4 colonnes ── */
+.sec-stats-grid--4 { grid-template-columns: repeat(4,1fr); }
+@media(max-width:900px){ .sec-stats-grid--4{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:600px){ .sec-stats-grid--4{ grid-template-columns:1fr; } }
+</style>
+
   <!-- ══ JOURNAL ══ -->
   <div class="sec-section">
     <div class="sec-section-header">

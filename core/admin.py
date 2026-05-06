@@ -8,6 +8,7 @@ from functools import wraps
 from core import db
 from core.models import User, Challenge, Submission, Scoreboard, Flag, RssFeed
 from core.security import SecurityEvent, get_dashboard_stats
+from utils.layer1_reader import get_layer1_stats
 from datetime import datetime, timedelta
 import csv
 import io
@@ -393,7 +394,7 @@ def security():
     from core.security import get_dashboard_stats, BannedIP
     stats = get_dashboard_stats()
     banned_ips = BannedIP.query.order_by(BannedIP.banned_at.desc()).all()
-    return render_template('admin/security.html', stats=stats, banned_ips=banned_ips)
+    return render_template('admin/security.html', stats=stats, banned_ips=banned_ips, layer1=get_layer1_stats())
  
  
 # ── Bannir une IP ────────────────────────────────────────────────────
