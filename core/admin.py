@@ -2,7 +2,7 @@
 # CyberCampus CTF - Panel Admin
 # ------------------------------
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file
+from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
 from core import db
@@ -502,7 +502,77 @@ def security_export_csv():
         headers={'Content-Disposition': f'attachment; filename={filename}'}
     )
  
- 
+@admin_bp.route('/security/live-filters')
+@login_required
+def security_live_filters():
+    """Retourne les matches de tous les filtres en JSON pour l'AJAX."""
+    import subprocess, re, json
+    from pathlib import Path
+
+    LOG = "/var/log/nginx/cybercampus_access.log"
+    FILTER_DIR = Path("/etc/fail2ban/filter.d")
+    
+    filters = [
+        "cybercampus-blocked",
+        "cybercampus-dirscan", 
+        "cybercampus-flagspam",
+        "cybercampus-ratelimit",
+        "nginx-cybercampus-login",
+        "nginx-cybercampus-admin",
+        "nginx-badbots",
+        "nginx-noscript",
+    ]
+
+    results = []
+    for f in filters:
+        filter_path = FILTER_DIR / f"{f}.conf"
+        if not filter_path.exists():
+            continue
+        try:
+            out = subprocess.run(
+                ["fail2ban-regex", LOG, str(filter_path), "--print-all-matched"],
+                capture_output=True, text=True, timeout=10
+            )
+            txt = out.stdout
+
+            # Total matches
+            total_match = re.search(r"Failregex: (\d+) total", txt)
+            total = int(total_match.group(1)) if total_match else 0
+
+            # Lignes matchées
+            matched_lines = []
+            in_matched = False
+            for line in txt.splitlines():
+                if "Matched line(s):" in line:
+                    in_matched = True
+                    continue
+                if in_matched:
+                    if line.strip().startswith("`-"):
+                        break
+                    line = line.strip().lstrip("|").strip()
+                    if line:
+                        try:
+                            data = json.loads(line)
+                            matched_lines.append(data)
+                        except Exception:
+                            matched_lines.append({"raw": line})
+
+            results.append({
+                "filter": f,
+                "total": total,
+                "matches": matched_lines[-20:],  # 20 derniers
+            })
+        except Exception as e:
+            results.append({"filter": f, "total": 0, "matches": [], "error": str(e)})
+
+    return jsonify(results) 
+
+@admin_bp.route('/security/live-stats')
+@login_required  
+def security_live_stats():
+    from layer1_reader import get_layer1_stats
+    return jsonify(get_layer1_stats())
+
 # ── Export Word ──────────────────────────────────────────────────────
 @admin_bp.route('/security/export/word', methods=['POST'])
 @login_required
