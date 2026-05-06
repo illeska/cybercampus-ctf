@@ -12,6 +12,10 @@ COPY requirements.txt .
 # Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Installer fail2ban et nettoyer les caches apt
+RUN apt-get update && apt-get install -y fail2ban --no-install-recommends && apt-get clean
+
+
 # Copier tout le reste du code dans le conteneur
 COPY . .
 

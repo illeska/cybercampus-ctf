@@ -1,63 +1,16 @@
 # ══════════════════════════════════════════════════════════════════
 # layer1_reader.py
 # Lit les logs Nginx + Fail2ban pour le dashboard admin
-# Utilise le socket Unix Fail2ban directement (pas de fail2ban-client)
+# Utilise fail2ban-client avec socket Unix
 # ══════════════════════════════════════════════════════════════════
 
-import socket
-import struct
-import json
-import re
 import subprocess
+import re
 from pathlib import Path
 
 FAIL2BAN_SOCKET   = "/var/run/fail2ban/fail2ban.sock"
 NGINX_BLOCKED_LOG = Path("/var/log/nginx/cybercampus_blocked.log")
 FAIL2BAN_LOG      = Path("/var/log/fail2ban/fail2ban.log")
-
-
-# ── Communication socket Unix Fail2ban ────────────────────────────
-
-def _f2b_send(command: list) -> str:
-    """
-    Envoie une commande au socket Unix Fail2ban et retourne la réponse texte.
-    Protocole : pickle-like maison de Fail2ban (longueur 4 octets + données JSON-ish).
-    On utilise la sérialisation native fail2ban (pickle python).
-    """
-    import pickle
-
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.settimeout(5)
-    sock.connect(FAIL2BAN_SOCKET)
-
-    # Fail2ban attend un pickle de la commande
-    data = pickle.dumps(command, protocol=2)
-    # Header : longueur sur 4 octets big-endian
-    sock.sendall(struct.pack(">i", len(data)) + data)
-
-    # Lecture réponse
-    raw_len = b""
-    while len(raw_len) < 4:
-        chunk = sock.recv(4 - len(raw_len))
-        if not chunk:
-            break
-        raw_len += chunk
-
-    if len(raw_len) < 4:
-        sock.close()
-        return ""
-
-    length = struct.unpack(">i", raw_len)[0]
-    raw_data = b""
-    while len(raw_data) < length:
-        chunk = sock.recv(length - len(raw_data))
-        if not chunk:
-            break
-        raw_data += chunk
-
-    sock.close()
-    response = pickle.loads(raw_data)
-    return response
 
 
 # ── Statut Fail2ban ───────────────────────────────────────────────
@@ -70,74 +23,60 @@ def get_fail2ban_status() -> dict:
         "error": None,
     }
 
+    def run(args):
+        return subprocess.run(
+            ["fail2ban-client", "--socket", FAIL2BAN_SOCKET] + args,
+            capture_output=True, text=True, timeout=5
+        )
+
     try:
-        # Récupère la liste des jails
-        response = _f2b_send(["status"])
-        if not isinstance(response, (list, tuple)) or len(response) < 2:
-            result["error"] = "Réponse inattendue du socket"
+        out = run(["status"])
+        if out.returncode != 0:
+            result["error"] = out.stderr.strip() or "fail2ban-client non disponible"
             return result
-
-        # response[1] est un tuple de tuples : (('Number of jail', N), ('Jail list', [...]))
-        jail_data = dict(response[1])
-        jail_list = jail_data.get("Jail list", [])
-
-        if isinstance(jail_list, str):
-            jail_names = [j.strip() for j in jail_list.split(",") if j.strip()]
-        else:
-            jail_names = list(jail_list)
 
         result["available"] = True
 
+        match = re.search(r"Jail list:\s+(.+)", out.stdout)
+        if not match:
+            return result
+
+        jail_names = [j.strip() for j in match.group(1).split(",") if j.strip()]
+
         for jail in jail_names:
-            try:
-                jail_resp = _f2b_send(["status", jail])
-                if not isinstance(jail_resp, (list, tuple)) or len(jail_resp) < 2:
-                    continue
+            jail_out = run(["status", jail])
+            if jail_out.returncode != 0:
+                continue
 
-                jail_info = dict(jail_resp[1])
+            txt = jail_out.stdout
 
-                # Filter stats
-                filter_stats = dict(jail_info.get("Filter", []))
-                # Action stats
-                action_stats = dict(jail_info.get("Actions", []))
+            def extract(pattern, default=0):
+                m = re.search(pattern, txt)
+                return int(m.group(1)) if m else default
 
-                currently_failed = filter_stats.get("Currently failed", 0)
-                total_failed     = filter_stats.get("Total failed", 0)
-                currently_banned = action_stats.get("Currently banned", 0)
-                total_banned     = action_stats.get("Total banned", 0)
-                banned_ips_raw   = action_stats.get("Banned IP list", [])
+            def extract_ips(pattern):
+                m = re.search(pattern, txt)
+                if not m:
+                    return []
+                raw = m.group(1).strip()
+                return [ip.strip() for ip in raw.split() if ip.strip()] if raw else []
 
-                if isinstance(banned_ips_raw, str):
-                    banned_ips = [ip.strip() for ip in banned_ips_raw.split() if ip.strip()]
-                else:
-                    banned_ips = list(banned_ips_raw)
+            currently_banned = extract(r"Currently banned:\s+(\d+)")
 
-                result["jails"].append({
-                    "name":             jail,
-                    "currently_banned": int(currently_banned),
-                    "total_banned":     int(total_banned),
-                    "banned_ips":       banned_ips,
-                    "currently_failed": int(currently_failed),
-                    "total_failed":     int(total_failed),
-                })
-                result["total_banned"] += int(currently_banned)
-
-            except Exception as e:
-                result["jails"].append({
-                    "name":             jail,
-                    "currently_banned": 0,
-                    "total_banned":     0,
-                    "banned_ips":       [],
-                    "currently_failed": 0,
-                    "total_failed":     0,
-                })
+            result["jails"].append({
+                "name":             jail,
+                "currently_banned": currently_banned,
+                "total_banned":     extract(r"Total banned:\s+(\d+)"),
+                "banned_ips":       extract_ips(r"Banned IP list:\s+(.+)"),
+                "currently_failed": extract(r"Currently failed:\s+(\d+)"),
+                "total_failed":     extract(r"Total failed:\s+(\d+)"),
+            })
+            result["total_banned"] += currently_banned
 
     except FileNotFoundError:
-        result["error"] = "Socket Fail2ban introuvable"
-    except ConnectionRefusedError:
-        result["error"] = "Fail2ban non démarré"
-    except PermissionError:
-        result["error"] = "Permission refusée sur le socket Fail2ban"
+        result["error"] = "fail2ban-client non installé"
+    except subprocess.TimeoutExpired:
+        result["error"] = "timed out"
     except Exception as e:
         result["error"] = str(e)
 
@@ -147,15 +86,12 @@ def get_fail2ban_status() -> dict:
 # ── Requêtes bloquées par Nginx ───────────────────────────────────
 
 def get_blocked_requests(limit: int = 50) -> list:
-    """Lit cybercampus_blocked.log — format JSON ou classique."""
     if not NGINX_BLOCKED_LOG.exists():
         return []
 
-    # Pattern JSON (format actuel)
     pattern_json = re.compile(
         r'^\{"time":"(?P<time>[^"]+)","remote_addr":"(?P<ip>[^"]+)","method":"(?P<method>[^"]+)","uri":"(?P<uri>[^"]+)","status":"(?P<status>[^"]+)"'
     )
-    # Pattern classique fallback
     pattern_classic = re.compile(
         r'^(?P<ip>[\d\.a-fA-F:]+) - \[(?P<time>[^\]]+)\] "(?P<request>[^"]*)" (?P<status>\d+) "(?P<ua>[^"]*)"'
     )
