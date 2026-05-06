@@ -19,10 +19,6 @@ FAIL2BAN_LOG      = Path("/var/log/fail2ban/fail2ban.log")
 # ── Lecture Fail2ban via client ────────────────────────────────────
 
 def get_fail2ban_status() -> dict:
-    """
-    Lit le statut de tous les jails Fail2ban via fail2ban-client.
-    Retourne un dict structuré.
-    """
     result = {
         "available": False,
         "jails": [],
@@ -31,9 +27,8 @@ def get_fail2ban_status() -> dict:
     }
 
     try:
-        # Liste des jails
         out = subprocess.run(
-            ["fail2ban-client", "status"],
+            ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock", "status"],
             capture_output=True, text=True, timeout=5
         )
         if out.returncode != 0:
@@ -42,7 +37,6 @@ def get_fail2ban_status() -> dict:
 
         result["available"] = True
 
-        # Extraire les noms de jails
         match = re.search(r"Jail list:\s+(.+)", out.stdout)
         if not match:
             return result
@@ -51,7 +45,7 @@ def get_fail2ban_status() -> dict:
 
         for jail in jail_names:
             jail_out = subprocess.run(
-                ["fail2ban-client", "status", jail],
+                ["fail2ban-client", "--socket", "/var/run/fail2ban/fail2ban.sock", "status", jail],
                 capture_output=True, text=True, timeout=5
             )
             if jail_out.returncode != 0:
@@ -71,16 +65,13 @@ def get_fail2ban_status() -> dict:
                 return [ip.strip() for ip in raw.split() if ip.strip()] if raw else []
 
             currently_banned = extract(r"Currently banned:\s+(\d+)")
-            total_banned_all  = extract(r"Total banned:\s+(\d+)")
-            banned_ips        = extract_ips(r"Banned IP list:\s+(.+)")
-
             result["jails"].append({
-                "name":            jail,
+                "name":             jail,
                 "currently_banned": currently_banned,
-                "total_banned":    total_banned_all,
-                "banned_ips":      banned_ips,
+                "total_banned":     extract(r"Total banned:\s+(\d+)"),
+                "banned_ips":       extract_ips(r"Banned IP list:\s+(.+)"),
                 "currently_failed": extract(r"Currently failed:\s+(\d+)"),
-                "total_failed":    extract(r"Total failed:\s+(\d+)"),
+                "total_failed":     extract(r"Total failed:\s+(\d+)"),
             })
             result["total_banned"] += currently_banned
 

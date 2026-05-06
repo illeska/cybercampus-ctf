@@ -16,6 +16,7 @@ services:
       - /var/log/nginx:/var/log/nginx:ro        
       - /var/log/fail2ban:/var/log/fail2ban:ro 
       - /var/log/kern.log:/var/log/kern.log:ro 
+      - /run/fail2ban/fail2ban.sock:/run/fail2ban/fail2ban.sock
     restart: always
 
   db:
