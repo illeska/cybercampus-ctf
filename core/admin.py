@@ -678,7 +678,7 @@ def security_export_word():
     tmp_docx.close()
  
     # Appeler le script Node.js
-    script_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'js', 'gen_security_report.js')
+    script_path = os.path.join(os.path.dirname(__file__), '..', 'webapp', 'static', 'js', 'gen_security_report.js')
     result = subprocess.run(
         ['node', script_path, tmp_json.name, tmp_docx.name],
         capture_output=True, text=True, timeout=30
