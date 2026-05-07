@@ -116,7 +116,8 @@
 
 
   <!-- ════════════════════════════════════════════════════════════ -->
-  <!-- TAB 1 — MENACES ACTIVES (vue compacte, tout d'un coup d'œil) -->
+  <!-- TAB 1 — MENACES ACTIVES                                     -->
+  <!-- Une ligne par IP — clic pour ouvrir — gravité par motif     -->
   <!-- ════════════════════════════════════════════════════════════ -->
   <div class="soc-tab-content active" data-tab-content="threats">
 
@@ -127,141 +128,168 @@
       <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="clearSelection()">✕ Annuler</button>
     </div>
 
-    <!-- Toolbar filtre + recherche -->
+    <!-- Toolbar -->
     <div class="soc-threats-toolbar">
       <div class="soc-filter-chips">
         <button class="soc-chip active" data-list-filter="all">Toutes</button>
         <button class="soc-chip" data-list-filter="critical">🔴 Critique</button>
         <button class="soc-chip" data-list-filter="high">🟠 Élevé</button>
+        <button class="soc-chip" data-list-filter="moderate">🟡 Modéré</button>
         <button class="soc-chip" data-list-filter="unseen">👁 Non vues</button>
       </div>
-      <input type="text" id="ip-search" class="soc-search" style="max-width:220px;" placeholder="🔍 Rechercher IP..." />
+      <input type="text" id="ip-search" class="soc-search" style="max-width:200px;" placeholder="🔍 IP..." />
     </div>
 
-    <!-- Liste compacte des menaces -->
-    <div id="threat-list">
-      {% set all_threats = [] %}
-      {% for ip, count in stats.suspicious_ips %}
-        {% set _ = all_threats.append({'ip': ip, 'count': count, 'kind': 'bruteforce', 'reason': 'Brute-force login'}) %}
-      {% endfor %}
-      {% if layer1.port_scans.top_ips %}
-        {% for ip, count in layer1.port_scans.top_ips %}
-          {% set _ = all_threats.append({'ip': ip, 'count': count, 'kind': 'portscan', 'reason': 'Port scan détecté'}) %}
-        {% endfor %}
-      {% endif %}
-      {# Ajouter depuis le live Fail2ban les IPs bannies récemment #}
-      {% if layer1.recent_bans %}
-        {% for ban in layer1.recent_bans[:5] %}
-          {% if ban.action == 'Ban' %}
-            {% set already = all_threats|selectattr('ip','equalto', ban.ip)|list|length > 0 %}
-            {% if not already %}
-              {% set _ = all_threats.append({'ip': ban.ip, 'count': 1, 'kind': 'f2b-' ~ ban.jail, 'reason': 'Banni par ' ~ ban.jail}) %}
-            {% endif %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+    <!-- En-tête colonnes -->
+    <div class="soc-threat-header">
+      <span></span>
+      <span>IP</span>
+      <span>Niveau</span>
+      <span>Motif principal</span>
+      <span>Hits</span>
+      <span>Actions</span>
+      <span></span>
+    </div>
 
-      {% if not all_threats %}
+    <!-- Liste -->
+    <div id="threat-list">
+
+      {% if not stats.suspicious_ips and not layer1.port_scans.top_ips %}
       <div class="soc-empty-state">
         <span class="soc-empty-icon">🛡️</span>
         <p><strong>Aucune menace active</strong></p>
-        <p class="soc-muted">Tout est calme.</p>
+        <p class="soc-muted">Tout est calme sur les 30 dernières minutes.</p>
       </div>
       {% endif %}
 
-      {% for t in all_threats %}
-      {% set is_banned = banned_ips|selectattr('ip_address','equalto', t.ip)|list|length > 0 %}
-      {# ── Calcul niveau de menace intelligent ── #}
-      {% if t.kind == 'portscan' or 'dirscan' in t.kind or 'noscript' in t.kind or 'blocked' in t.kind %}
-        {% set risk = 'critical' %}
-        {% set threat_icon = '🔴' %}
-        {% set threat_label = 'Critique' %}
-      {% elif t.kind == 'bruteforce' and t.count >= 20 %}
-        {% set risk = 'high' %}
-        {% set threat_icon = '🟠' %}
-        {% set threat_label = 'Élevé' %}
-      {% elif t.kind == 'bruteforce' %}
-        {% set risk = 'moderate' %}
-        {% set threat_icon = '🟡' %}
-        {% set threat_label = 'Modéré' %}
-      {% elif t.count >= 20 %}
-        {% set risk = 'critical' %}
-        {% set threat_icon = '🔴' %}
-        {% set threat_label = 'Critique' %}
-      {% elif t.count >= 10 %}
-        {% set risk = 'high' %}
-        {% set threat_icon = '🟠' %}
-        {% set threat_label = 'Élevé' %}
-      {% else %}
-        {% set risk = 'moderate' %}
-        {% set threat_icon = '🟡' %}
-        {% set threat_label = 'Modéré' %}
-      {% endif %}
+      {# ── IPs depuis security.py (basé sur le motif) ── #}
+      {% for ip, data in stats.suspicious_ips %}
+      {% set is_banned = banned_ips|selectattr('ip_address','equalto', ip)|list|length > 0 %}
+      {% set risk = data.max_severity %}
+      {% set risk_icon = data.max_icon %}
+      {% set risk_label = {'critical': 'Critique', 'high': 'Élevé', 'moderate': 'Modéré', 'low': 'Faible'}.get(risk, risk) %}
 
-      {# ── Icône type de menace ── #}
-      {% if 'bruteforce' in t.kind %}{% set kind_icon = '🔓' %}
-      {% elif 'portscan' in t.kind %}{% set kind_icon = '🔍' %}
-      {% elif 'dirscan' in t.kind %}{% set kind_icon = '📂' %}
-      {% elif 'ratelimit' in t.kind or 'rate' in t.kind %}{% set kind_icon = '⏱️' %}
-      {% elif 'blocked' in t.kind %}{% set kind_icon = '🚫' %}
-      {% else %}{% set kind_icon = '⚠️' %}{% endif %}
+      {# Motif principal = event le plus grave #}
+      {% set main_event = data.events | sort(attribute='severity', reverse=True) | first %}
 
       <div class="soc-trow soc-trow--{{ risk }}"
-           data-ip="{{ t.ip }}"
+           data-ip="{{ ip }}"
            data-risk="{{ risk }}"
-           data-banned="{{ '1' if is_banned else '0' }}"
-           data-marked="">
+           data-banned="{{ '1' if is_banned else '0' }}">
 
-        <!-- Checkbox -->
         <label class="soc-checkwrap" onclick="event.stopPropagation()">
           <input type="checkbox" class="soc-rowcheck" onchange="updateBulkBar()" {% if is_banned %}disabled{% endif %} />
           <span class="soc-checkmark"></span>
         </label>
 
-        <!-- IP + niveau -->
         <div class="soc-trow-ip">
-          <code class="soc-ip">{{ t.ip }}</code>
-          <span class="soc-pill soc-pill--{{ risk }}">{{ threat_icon }} {{ threat_label }}</span>
-          {% if is_banned %}<span class="soc-pill soc-pill--gray soc-pill--xs">🔒 Bannie</span>{% endif %}
-          <span class="soc-trow-mark" data-marked-tag="{{ t.ip }}"></span>
+          <code class="soc-ip">{{ ip }}</code>
+          {% if is_banned %}<span class="soc-pill soc-pill--gray soc-pill--xs">🔒</span>{% endif %}
+          <span class="soc-trow-mark" data-marked-tag="{{ ip }}"></span>
         </div>
 
-        <!-- Type + hits -->
+        <div>
+          <span class="soc-pill soc-pill--{{ risk }}">{{ risk_icon }} {{ risk_label }}</span>
+        </div>
+
         <div class="soc-trow-meta">
-          <span class="soc-trow-kind">{{ kind_icon }} {{ t.reason }}</span>
-          <span class="soc-trow-hits">{{ t.count }} hit{{ 's' if t.count > 1 else '' }}</span>
-        </div>
-
-        <!-- Actions inline -->
-        <div class="soc-trow-actions">
-          <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="toggleMark(this,'{{ t.ip }}')">👁</button>
-          <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ t.ip }}','known')" title="Joueur légitime">👤</button>
-          {% if not is_banned %}
-          <button class="soc-btn soc-btn--mini soc-btn--red"
-                  onclick="prefillBan('{{ t.ip }}','{{ t.reason }}')">🔨 Ban</button>
-          {% else %}
-          <span class="soc-muted soc-tiny">Banni ✓</span>
+          {% if main_event %}
+          <span class="soc-trow-kind">{{ main_event.icon }} {{ main_event.label }}</span>
+          {% if main_event.path %}<span class="soc-trow-path">{{ main_event.path[:40] }}</span>{% endif %}
           {% endif %}
         </div>
 
-        <!-- Expand (hamburger) -->
-        <button class="soc-trow-expand" onclick="toggleExpand(this)" title="Voir détails">⋯</button>
+        <div>
+          <span class="soc-trow-hits">{{ data.total_hits }}</span>
+        </div>
 
-        <!-- Détail expandable -->
-        <div class="soc-trow-detail" style="display:none;">
-          <div class="soc-trow-detail-grid">
-            <div><span class="soc-detail-card-label">Type</span><span class="soc-detail-card-val">{{ kind_icon }} {{ t.kind }}</span></div>
-            <div><span class="soc-detail-card-label">Hits</span><span class="soc-detail-card-val" style="color:var(--soc-yellow);">{{ t.count }}</span></div>
-            <div><span class="soc-detail-card-label">Réseau</span><span class="soc-detail-card-val">{% if t.ip.startswith('192.168.') or t.ip.startswith('10.') or t.ip == '127.0.0.1' %}Local{% else %}Externe{% endif %}</span></div>
-            <div><span class="soc-detail-card-label">Statut</span><span class="soc-detail-card-val">{{ '🔒 Bannie' if is_banned else '⚠️ Active' }}</span></div>
+        <div class="soc-trow-actions">
+          <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ ip }}','known')" title="Joueur légitime">👤</button>
+          {% if not is_banned %}
+          <button class="soc-btn soc-btn--mini soc-btn--red"
+                  onclick="prefillBan('{{ ip }}','{{ main_event.label if main_event else risk_label }}')">🔨</button>
+          {% else %}
+          <span class="soc-muted soc-tiny">Banni</span>
+          {% endif %}
+        </div>
+
+        <button class="soc-trow-expand" onclick="toggleExpand(this)">▾</button>
+
+        <!-- Détail accordion — tous les motifs de cette IP -->
+        <div class="soc-trow-detail">
+          <div class="soc-trow-detail-events">
+            {% for ev in data.events | sort(attribute='severity', reverse=True) %}
+            <div class="soc-trow-ev">
+              <span class="soc-pill soc-pill--{{ {'critical':'red','high':'orange','moderate':'yellow','low':'blue'}.get(ev.severity,'gray') }} soc-pill--xs">{{ ev.icon }}</span>
+              <span class="soc-trow-ev-label">{{ ev.label }}</span>
+              {% if ev.path %}<code class="soc-trow-ev-path">{{ ev.path[:60] }}</code>{% endif %}
+              <span class="soc-trow-ev-count">×{{ ev.count }}</span>
+            </div>
+            {% endfor %}
           </div>
-          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ t.ip }}','watch')">⚠️ Surveiller</button>
-            <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ t.ip }}',null)">✕ Effacer marque</button>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="soc-muted soc-tiny">Réseau : {% if ip.startswith('192.168.') or ip.startswith('10.') %}Local{% else %}Externe{% endif %}</span>
+            <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ ip }}','watch')">⚠️ Surveiller</button>
+            <button class="soc-btn soc-btn--mini soc-btn--ghost" onclick="setMarkJS('{{ ip }}',null)">✕ Reset marque</button>
           </div>
         </div>
       </div>
       {% endfor %}
+
+      {# ── Port scans depuis layer1 (pas dans security_event) ── #}
+      {% if layer1.port_scans.top_ips %}
+        {% for ip, count in layer1.port_scans.top_ips %}
+        {% set is_banned = banned_ips|selectattr('ip_address','equalto', ip)|list|length > 0 %}
+        {% set already = stats.suspicious_ips|selectattr(0,'equalto', ip)|list|length > 0 %}
+        {% if not already %}
+        <div class="soc-trow soc-trow--critical"
+             data-ip="{{ ip }}"
+             data-risk="critical"
+             data-banned="{{ '1' if is_banned else '0' }}">
+
+          <label class="soc-checkwrap" onclick="event.stopPropagation()">
+            <input type="checkbox" class="soc-rowcheck" onchange="updateBulkBar()" {% if is_banned %}disabled{% endif %} />
+            <span class="soc-checkmark"></span>
+          </label>
+
+          <div class="soc-trow-ip">
+            <code class="soc-ip">{{ ip }}</code>
+            {% if is_banned %}<span class="soc-pill soc-pill--gray soc-pill--xs">🔒</span>{% endif %}
+          </div>
+
+          <div><span class="soc-pill soc-pill--critical">🔴 Critique</span></div>
+
+          <div class="soc-trow-meta">
+            <span class="soc-trow-kind">🔍 Scan de ports</span>
+          </div>
+
+          <div><span class="soc-trow-hits">{{ count }}</span></div>
+
+          <div class="soc-trow-actions">
+            {% if not is_banned %}
+            <button class="soc-btn soc-btn--mini soc-btn--red"
+                    onclick="prefillBan('{{ ip }}','Port scan détecté')">🔨</button>
+            {% else %}
+            <span class="soc-muted soc-tiny">Banni</span>
+            {% endif %}
+          </div>
+
+          <button class="soc-trow-expand" onclick="toggleExpand(this)">▾</button>
+
+          <div class="soc-trow-detail">
+            <div class="soc-trow-detail-events">
+              <div class="soc-trow-ev">
+                <span class="soc-pill soc-pill--red soc-pill--xs">🔍</span>
+                <span class="soc-trow-ev-label">Scan de ports détecté via kern.log</span>
+                <span class="soc-trow-ev-count">×{{ count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+
     </div>
   </div>
 
@@ -926,60 +954,75 @@
 .soc-detail-card-label { font-size: 0.65rem; color: var(--soc-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
 .soc-detail-card-val { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: #fff; font-weight: 600; }
 
-/* ══ THREAT ROWS COMPACTES ══ */
+/* ══ THREAT TABLE HEADER ══ */
+.soc-threat-header {
+  display: grid;
+  grid-template-columns: 28px 160px 100px 1fr 50px 120px 32px;
+  gap: 8px; align-items: center;
+  padding: 5px 12px;
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--soc-accent);
+  border-bottom: 1px solid rgba(0,245,192,0.1);
+  margin-bottom: 4px;
+}
+
+/* ══ THREAT ROWS ══ */
 .soc-trow {
   display: grid;
-  grid-template-columns: 28px 1fr 1fr auto 32px;
+  grid-template-columns: 28px 160px 100px 1fr 50px 120px 32px;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   background: var(--soc-bg);
   border: 1px solid var(--soc-bord);
-  border-radius: 10px;
-  margin-bottom: 6px;
+  border-radius: 8px;
+  margin-bottom: 3px;
   transition: all 0.15s;
-  position: relative;
-  flex-wrap: wrap;
 }
-.soc-trow:hover { background: rgba(0,245,192,0.02); border-color: rgba(0,245,192,0.1); }
-.soc-trow--critical { border-left: 3px solid var(--soc-red); background: rgba(239,68,68,0.04); }
+.soc-trow:hover { background: rgba(0,245,192,0.02); }
+.soc-trow--critical { border-left: 3px solid var(--soc-red);    background: rgba(239,68,68,0.04); }
 .soc-trow--high     { border-left: 3px solid var(--soc-orange); }
 .soc-trow--moderate { border-left: 3px solid var(--soc-yellow); }
-.soc-trow[data-banned="1"] { opacity: 0.6; }
+.soc-trow--low      { border-left: 3px solid var(--soc-blue); opacity: 0.8; }
+.soc-trow[data-banned="1"] { opacity: 0.55; }
 .soc-trow[data-marked="known"] { border-left-color: var(--soc-green); }
 .soc-trow[data-marked="watch"] { border-left-color: var(--soc-orange); }
 
-.soc-trow-ip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
-.soc-trow-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.soc-trow-kind { font-size: 0.75rem; color: #cbd5e1; }
-.soc-trow-hits { font-size: 0.7rem; color: var(--soc-yellow); font-weight: 700; font-family: 'Orbitron', sans-serif; }
-.soc-trow-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.soc-trow-ip { display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; }
+.soc-trow-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; overflow: hidden; }
+.soc-trow-kind  { font-size: 0.74rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.soc-trow-path  { font-size: 0.64rem; color: var(--soc-muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.soc-trow-hits  { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--soc-yellow); font-weight: 700; text-align: center; }
+.soc-trow-mark  { font-size: 0.65rem; }
+.soc-trow-actions { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+
 .soc-trow-expand {
-  background: none; border: 1px solid var(--soc-bord);
-  color: var(--soc-muted); border-radius: 6px;
-  width: 28px; height: 28px; cursor: pointer;
-  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--soc-bord); color: var(--soc-muted);
+  border-radius: 5px; width: 26px; height: 26px; cursor: pointer;
+  font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
   transition: all 0.15s; flex-shrink: 0;
 }
-.soc-trow-expand:hover { color: #fff; border-color: var(--soc-accent); }
-.soc-trow-expand.open { color: var(--soc-accent); border-color: var(--soc-bord-hi); }
+.soc-trow-expand:hover { color: var(--soc-accent); border-color: var(--soc-bord-hi); }
+.soc-trow-expand.open { color: var(--soc-accent); transform: rotate(180deg); }
 
-/* Détail expandable */
+/* Accordion détail */
 .soc-trow-detail {
+  display: none;
   grid-column: 1 / -1;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.25);
   border-top: 1px solid var(--soc-bord);
-  border-radius: 0 0 8px 8px;
-  padding: 12px 14px;
-  margin: 4px -14px -10px;
-  animation: expand-in 0.2s ease;
+  padding: 10px 12px;
+  margin: 4px -12px -8px;
+  border-radius: 0 0 6px 6px;
+  animation: expand-in 0.18s ease;
 }
-@keyframes expand-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-.soc-trow-detail-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 10px; margin-bottom: 10px;
-}
-.soc-trow-detail-grid > div { display: flex; flex-direction: column; gap: 3px; }
+@keyframes expand-in { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+.soc-trow-detail-events { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.soc-trow-ev { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; }
+.soc-trow-ev-label { color: #cbd5e1; flex-shrink: 0; }
+.soc-trow-ev-path  { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--soc-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.soc-trow-ev-count { color: var(--soc-yellow); font-weight: 700; font-size: 0.72rem; margin-left: auto; flex-shrink: 0; }
 
 /* ══ PANELS GÉNÉRIQUES ══ */
 .soc-panel {

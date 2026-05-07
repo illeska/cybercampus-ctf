@@ -144,20 +144,78 @@ def get_dashboard_stats() -> dict:
         SecurityEvent.timestamp >= h24,
     ).count()
 
-    # ── IPs suspectes (brute-force détecté sur 5 min) ──────────────
-    suspicious_ips = (
+    # ── IPs suspectes — détection intelligente par motif ──────────
+    # On récupère tous les events suspects des 30 dernières minutes
+    min30 = now - timedelta(minutes=30)
+
+    suspicious_raw = (
         db.session.query(
             SecurityEvent.ip_address,
+            SecurityEvent.event_type,
+            SecurityEvent.path,
             db.func.count(SecurityEvent.id).label("count"),
         )
         .filter(
-            SecurityEvent.event_type == SecurityEvent.LOGIN_FAIL,
-            SecurityEvent.timestamp >= min5,
+            SecurityEvent.event_type.in_([
+                SecurityEvent.LOGIN_FAIL,
+                SecurityEvent.FLAG_FAIL,
+                SecurityEvent.BRUTE_SUSPECT,
+                SecurityEvent.BANNED_ATTEMPT,
+                SecurityEvent.RATE_LIMIT,
+                SecurityEvent.PORT_SCAN,
+            ]),
+            SecurityEvent.timestamp >= min30,
+            SecurityEvent.ip_address.isnot(None),
         )
-        .group_by(SecurityEvent.ip_address)
-        .having(db.func.count(SecurityEvent.id) >= 5)
-        .order_by(db.desc("count"))
+        .group_by(SecurityEvent.ip_address, SecurityEvent.event_type, SecurityEvent.path)
         .all()
+    )
+
+    # Gravité par type d'event (indépendant du nombre de hits)
+    SEVERITY_MAP = {
+        SecurityEvent.PORT_SCAN:      ("critical", "🔴", "Scan de ports"),
+        SecurityEvent.BANNED_ATTEMPT: ("critical", "🔴", "Tentative IP bannie"),
+        SecurityEvent.BRUTE_SUSPECT:  ("high",     "🟠", "Brute-force détecté"),
+        SecurityEvent.RATE_LIMIT:     ("high",     "🟠", "Rate limit déclenché"),
+        SecurityEvent.LOGIN_FAIL:     ("moderate", "🟡", "Échecs de connexion"),
+        SecurityEvent.FLAG_FAIL:      ("low",      "🔵", "Soumissions flag échouées"),
+    }
+
+    # Regrouper par IP, garder la gravité la plus haute
+    SEVERITY_ORDER = {"critical": 4, "high": 3, "moderate": 2, "low": 1}
+    ip_threats = defaultdict(lambda: {
+        "max_severity": "low",
+        "max_icon": "🔵",
+        "events": [],
+        "total_hits": 0,
+    })
+
+    for ip, etype, path, count in suspicious_raw:
+        severity, icon, label = SEVERITY_MAP.get(etype, ("low", "🔵", etype))
+        d = ip_threats[ip]
+        d["total_hits"] += count
+        d["events"].append({
+            "type": etype,
+            "label": label,
+            "path": path or "",
+            "count": count,
+            "severity": severity,
+            "icon": icon,
+        })
+        if SEVERITY_ORDER.get(severity, 0) > SEVERITY_ORDER.get(d["max_severity"], 0):
+            d["max_severity"] = severity
+            d["max_icon"] = icon
+
+    # Trier : gravité d'abord, puis hits
+    suspicious_ips = sorted(
+        [
+            (ip, {**data, "ip": ip})
+            for ip, data in ip_threats.items()
+        ],
+        key=lambda x: (
+            -SEVERITY_ORDER.get(x[1]["max_severity"], 0),
+            -x[1]["total_hits"]
+        )
     )
 
     # ── Top IPs (24h) ──────────────────────────────────────────────
@@ -252,4 +310,3 @@ class BannedIP(db.Model):
  
     def __repr__(self):
         return f"<BannedIP {self.ip_address}>"
- 
