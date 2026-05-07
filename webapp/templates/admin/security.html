@@ -1315,6 +1315,48 @@
 .soc-check input { accent-color: var(--soc-accent); width: 14px; height: 14px; }
 .soc-link-btn { background: none; border: none; color: var(--soc-accent); font-size: 0.76rem; cursor: pointer; padding: 0; text-decoration: underline; margin-right: 12px; }
 
+/* ══ IP CARDS LIVE (regroupées par IP) ══ */
+.soc-live-clean {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: rgba(16,185,129,0.05);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.soc-ip-card {
+  background: var(--soc-bg);
+  border: 1px solid var(--soc-bord);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  padding: 14px 16px;
+  transition: border-color 0.2s;
+}
+.soc-ip-card--critical {
+  border-color: rgba(239,68,68,0.35);
+  background: rgba(239,68,68,0.04);
+  box-shadow: 0 0 20px rgba(239,68,68,0.08);
+}
+.soc-ip-card--high {
+  border-color: rgba(245,158,11,0.3);
+  background: rgba(245,158,11,0.03);
+}
+.soc-ip-card--moderate {
+  border-color: rgba(251,191,36,0.2);
+}
+.soc-ip-card-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.soc-ip-card-left { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.soc-ip-card-right {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-left: auto;
+}
+.soc-ip-card-filters { display: flex; gap: 4px; flex-wrap: wrap; }
+
 /* ══ RESPONSIVE ══ */
 @media (max-width: 1100px) {
   .soc-kpi-strip { grid-template-columns: repeat(3, 1fr); }
@@ -1584,43 +1626,102 @@ function refreshLiveData() {
     .then(r => r.json())
     .then(data => {
       const container = document.getElementById('live-filters-container');
-      let html = '';
+
+      // ── Regroupement par IP ──────────────────────────────────────
+      // On construit un dict { ip -> { filters: [], matches: [] } }
+      const byIP = {};
+      const cleanFilters = [];
+
       data.forEach(f => {
         const hasMatches = f.matches && f.matches.length > 0;
+        if (!hasMatches) {
+          cleanFilters.push(f.filter);
+          return;
+        }
+        f.matches.forEach(m => {
+          const ip = m.remote_addr || 'unknown';
+          if (!byIP[ip]) byIP[ip] = { filters: new Set(), matches: [], totalHits: 0 };
+          byIP[ip].filters.add(f.filter);
+          byIP[ip].matches.push({ ...m, _filter: f.filter });
+          byIP[ip].totalHits++;
+        });
+      });
+
+      const ipList = Object.entries(byIP).sort((a, b) => b[1].totalHits - a[1].totalHits);
+
+      let html = '';
+
+      // ── Résumé filtres propres ────────────────────────────────────
+      if (cleanFilters.length > 0) {
+        html += `<div class="soc-live-clean">
+          <span class="soc-pill soc-pill--green">✅ ${cleanFilters.length} filtre${cleanFilters.length > 1 ? 's' : ''} propre${cleanFilters.length > 1 ? 's' : ''}</span>
+          <span class="soc-muted soc-tiny">${cleanFilters.join(' · ')}</span>
+        </div>`;
+      }
+
+      if (ipList.length === 0) {
+        html += '<div class="soc-empty-state"><span class="soc-empty-icon">🛡️</span><p><strong>Aucune activité suspecte</strong></p><p class="soc-muted">Tous les filtres sont propres.</p></div>';
+      }
+
+      // ── Une carte par IP ──────────────────────────────────────────
+      ipList.forEach(([ip, info]) => {
+        const filters = Array.from(info.filters);
+        const hits = info.totalHits;
+        const risk = hits >= 20 ? 'critical' : hits >= 5 ? 'high' : 'moderate';
+        const riskLabel = { critical: '🔴 Critique', high: '🟠 Élevé', moderate: '🟡 Modéré' }[risk];
+        const lastMatch = info.matches[info.matches.length - 1];
+        const lastSeen = (lastMatch?.time || '').replace('T', ' ').slice(0, 19);
+
+        // Rows groupées par filtre
+        const rowsByFilter = {};
+        info.matches.forEach(m => {
+          if (!rowsByFilter[m._filter]) rowsByFilter[m._filter] = [];
+          rowsByFilter[m._filter].push(m);
+        });
+
+        const tableRows = info.matches.slice(-20).map(m => `
+          <tr>
+            <td class="soc-muted soc-tiny soc-nowrap">${(m.time||'').replace('T',' ').slice(0,19)}</td>
+            <td><code style="font-size:0.65rem;color:#94a3b8;background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;">${m._filter}</code></td>
+            <td><span class="soc-pill soc-pill--orange" style="font-size:0.62rem;">${m.method||'-'}</span></td>
+            <td class="soc-path" style="max-width:160px;">${m.uri||'-'}</td>
+            <td><span class="soc-pill soc-pill--${m.status >= 400 ? 'red' : 'gray'}" style="font-size:0.62rem;">${m.status||'-'}</span></td>
+            <td class="soc-ua" style="max-width:180px;font-size:0.68rem;">${(m.http_user_agent||'-').slice(0,50)}</td>
+          </tr>
+        `).join('');
+
         html += `
-          <div class="soc-panel" style="margin-bottom:10px; ${hasMatches ? 'border-color:rgba(239,68,68,0.3);' : ''}">
-            <div class="soc-panel-header soc-panel-header--row">
-              <h3>
-                ${hasMatches ? '🔴' : '🟢'} ${f.filter}
-                <span class="soc-pill ${hasMatches ? 'soc-pill--red' : 'soc-pill--green'}" style="margin-left:8px;">
-                  ${f.total} match${f.total > 1 ? 'es' : ''}
-                </span>
-              </h3>
+          <div class="soc-ip-card soc-ip-card--${risk}" id="ipc-${ip.replace(/\./g,'-')}">
+            <div class="soc-ip-card-header">
+              <div class="soc-ip-card-left">
+                <code class="soc-ip" style="font-size:0.95rem;">${ip}</code>
+                <span class="soc-pill soc-pill--${risk}" style="margin-left:6px;">${riskLabel}</span>
+                <span class="soc-pill soc-pill--gray" style="margin-left:4px;">${hits} hit${hits > 1 ? 's' : ''}</span>
+              </div>
+              <div class="soc-ip-card-right">
+                <span class="soc-muted soc-tiny">Dernier hit : ${lastSeen}</span>
+                <div class="soc-ip-card-filters">
+                  ${filters.map(f => `<code style="font-size:0.62rem;color:#a78bfa;background:rgba(139,92,246,0.1);padding:1px 6px;border-radius:4px;">${f}</code>`).join('')}
+                </div>
+                <button class="soc-btn soc-btn--mini soc-btn--red"
+                        onclick="prefillBan('${ip}', 'Détecté par Fail2ban: ${filters.join(', ')}')">
+                  🔨 Bannir
+                </button>
+              </div>
             </div>
-            ${hasMatches ? `
-            <div class="soc-table-wrap">
+            <div class="soc-table-wrap" style="margin-top:10px;">
               <table class="soc-table">
-                <thead><tr><th>IP</th><th>Heure</th><th>Méthode</th><th>URI</th><th>Status</th><th>UA</th></tr></thead>
-                <tbody>
-                  ${f.matches.map(m => `
-                    <tr>
-                      <td><code class="soc-ip">${m.remote_addr || '-'}</code></td>
-                      <td class="soc-muted soc-tiny">${(m.time||'').replace('T',' ').slice(0,19)}</td>
-                      <td><span class="soc-pill soc-pill--orange">${m.method||'-'}</span></td>
-                      <td class="soc-path">${m.uri||'-'}</td>
-                      <td><span class="soc-pill soc-pill--red">${m.status||'-'}</span></td>
-                      <td class="soc-ua">${(m.http_user_agent||'-').slice(0,60)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
+                <thead><tr><th>Heure</th><th>Filtre</th><th>Méthode</th><th>URI</th><th>Status</th><th>User-Agent</th></tr></thead>
+                <tbody>${tableRows}</tbody>
               </table>
-            </div>` : '<div class="soc-empty-row" style="padding:14px;">✅ Aucun match — filtre propre</div>'}
+            </div>
           </div>`;
       });
-      container.innerHTML = html || '<div class="soc-empty-row">Aucun filtre disponible</div>';
+
+      container.innerHTML = html;
       document.getElementById('live-last-update').textContent = 'Mis à jour : ' + new Date().toLocaleTimeString();
     })
-    .catch(err => {
+    .catch(() => {
       document.getElementById('live-filters-container').innerHTML =
         `<div class="soc-empty-row">❌ Erreur de chargement</div>`;
     });
